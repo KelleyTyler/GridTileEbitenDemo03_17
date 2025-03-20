@@ -53,3 +53,14 @@ func GetSettingsFromJSON() GameSettings {
 func (sets *GameSettings) ToString() string {
 	return fmt.Sprintf("SETTINGS:\n%12s: %s\n%12s: %3d, %3d\n%12s: %3d,%3d\n", "VERSION", sets.VersionID, "Window Size", sets.WindowSizeX, sets.WindowSizeY, "Screen Res", sets.ScreenResX, sets.ScreenResY)
 }
+
+func GetSettingsFromBakedIn() GameSettings {
+	var gSets GameSettings = GameSettings{
+		VersionID:   "0.0.1",
+		WindowSizeX: 860,
+		WindowSizeY: 660,
+		ScreenResX:  860,
+		ScreenResY:  660,
+	}
+	return gSets
+}

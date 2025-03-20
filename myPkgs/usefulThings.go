@@ -24,3 +24,7 @@ func (coord *CoordInts) IsEqualTo(coord2 CoordInts) bool {
 	}
 	return false
 }
+
+// func (coord CoordInts) Copy() CoordInts {
+// 	return
+// }
