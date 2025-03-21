@@ -3,7 +3,9 @@ package mypkgs
 /*
 	The purpose of this file is to provide some "USEFUL" but misc things
 */
-import "fmt"
+import (
+	"fmt"
+)
 
 type CoordInts struct {
 	X, Y int
@@ -28,3 +30,16 @@ func (coord *CoordInts) IsEqualTo(coord2 CoordInts) bool {
 // func (coord CoordInts) Copy() CoordInts {
 // 	return
 // }
+
+func IntArrayContains(s []int, c int) bool {
+	for _, a := range s {
+		if a == c {
+			return true
+		}
+	}
+	return false
+}
+
+func (coord1 CoordInts) GetDifferenceInInts(coord2 CoordInts) (int, int) {
+	return (coord2.X - coord1.X), (coord2.Y - coord1.Y)
+}

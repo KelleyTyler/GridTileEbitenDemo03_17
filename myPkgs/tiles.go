@@ -29,7 +29,12 @@ func (t *Tile) PrintTile() {
 }
 
 // func (t *Tile)GetTILE() {}
-
+func (imat IntMatrix) DrawAGridTile(screen *ebiten.Image, coord CoordInts, OffsetX int, OffsetY int, tileW int, tileH int, GapX int, GapY int, clr color.Color, aa bool) {
+	// test1X := ((len(imat[0]) * tileW) + (len(imat[0]) * GapX)) + OffsetX
+	// test1Y := ((len(imat) * tileH) + (len(imat) * GapY)) + OffsetY
+	vector.DrawFilledRect(screen, float32((tileW*coord.X)+(GapX*coord.X)+OffsetX), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY), float32(tileW), float32(tileH), clr, aa)
+	vector.StrokeRect(screen, float32((tileW*coord.X)+(GapX*coord.X)+OffsetX), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY), float32(tileW), float32(tileH), 2.0, color.Black, aa)
+}
 func (imat IntMatrix) DrawGridTile(screen *ebiten.Image, OffsetX int, OffsetY int, tileW int, tileH int, GapX int, GapY int, colors []color.Color) {
 	// colorA := color.RGBA{255, 0, 0, 255}
 	// colorB := color.RGBA{0, 0, 255, 255}
@@ -62,7 +67,7 @@ func (imat IntMatrix) DrawGridTile(screen *ebiten.Image, OffsetX int, OffsetY in
 	//vector.StrokeRect(screen, float32(OffsetX-0), float32(OffsetY-0), float32(test1X-OffsetX), float32(test1Y-OffsetY), 2.0, color.RGBA{0, 253, 100, 255}, true)
 }
 
-func (imat IntMatrix) ChangeValOnMouseEvent(Raw_Mouse_X int, Raw_Mouse_Y int, OffsetX int, OffsetY int, tileW int, tileH int, GapX int, GapY int, cycleStart int, cycleEnd int) (int, int) {
+func (imat IntMatrix) ChangeValOnMouseEvent(Raw_Mouse_X int, Raw_Mouse_Y int, OffsetX int, OffsetY int, tileW int, tileH int, GapX int, GapY int, cycleStart int, cycleEnd int, makeChange bool) (int, int) {
 
 	test1X := ((len(imat[0]) * tileW) + (len(imat[0]) * GapX)) + OffsetX
 	test1Y := ((len(imat) * tileH) + (len(imat) * GapY)) + OffsetY
@@ -97,7 +102,7 @@ func (imat IntMatrix) ChangeValOnMouseEvent(Raw_Mouse_X int, Raw_Mouse_Y int, Of
 		// fmt.Printf("A: %d,%d\n", mXi_01, mYi_01)                                                               //inner bounds of each rectangle
 		// fmt.Printf("B: %d,%d\n", mYi_02, mYi_02)                                                               //outer bounds of each rectangle;
 		// fmt.Printf("C: %d,%d\n\n\n", (tileW*mXi)+(mXi*GapX)+(tileW+GapX), (tileH*mYi)+(mYi*GapY)+(tileH+GapY)) //gaps ending\
-		if (((mXo) > (mXi_01)) && (mXo) < mXi_02) && ((mYo) > (mYi_01) && mYo < mYi_02) {
+		if (((mXo) > (mXi_01)) && (mXo) < mXi_02) && ((mYo) > (mYi_01) && mYo < mYi_02) && makeChange {
 			//change the coord;
 			if imat[mYi][mXi] < cycleEnd {
 				imat[mYi][mXi] += 1
@@ -135,21 +140,54 @@ func (imat IntMatrix) IsValid(cord CoordInts) bool {
 	}
 	return false
 }
+func (imat IntMatrix) IsValid_With_Constant_Buffer(cord CoordInts, buffer int) bool {
+	if (cord.X > -1+buffer && cord.X < len(imat[0])-buffer) && (cord.Y > -1+buffer && cord.Y < len(imat)-buffer) {
+		return true
+	}
+	return false
+}
+func (imat IntMatrix) IsValid_WithDir_Buffer(cord CoordInts, buffer [4]int) bool {
+	if (cord.X > -1+buffer[3] && cord.X < len(imat[0])-buffer[1]) && (cord.Y > -1+buffer[0] && cord.Y < len(imat)-buffer[2]) {
+		return true
+	}
+	return false
+}
 
-type CoordArray []CoordInts
+type CoordList []CoordInts
 
-func (cord CoordArray) ToString() string {
+func (cord CoordList) ToString() string {
 	retStrng := "COORDAR:\n"
 	retStrng += fmt.Sprintf("--SIZE: %d\n", len(cord))
 	return retStrng
 }
 
-func (cord CoordArray) PushToReturn(coord CoordInts) CoordArray {
+func (cord CoordList) PushToReturn(coord CoordInts) CoordList {
 	temp := append(cord, coord)
 	return temp
 }
-func (cord CoordArray) RemoveCoordFromList(coord CoordInts) (CoordArray, bool) {
-	temp := make(CoordArray, 0)
+func (cord CoordList) PopFromFront() (CoordInts, CoordList) {
+	temp := cord[0]
+	temp2 := cord.RemovePointFromList(0)
+	return temp, temp2
+}
+func (cord CoordList) PopFromBack() (CoordInts, CoordList) {
+	temp := cord[len(cord)-1]
+	temp2 := cord.RemovePointFromList(len(cord) - 1)
+	return temp, temp2
+}
+
+func (coord CoordList) ToCoordArray() []CoordInts {
+	outAr := make([]CoordInts, len(coord))
+	copy(outAr, coord)
+	return outAr
+}
+func (coord CoordList) FromCoordArray(c []CoordInts) CoordList {
+	outList := make(CoordList, len(c))
+	copy(outList, c)
+	return outList
+}
+func (cord CoordList) RemoveCoordFromList(coord CoordInts) (CoordList, bool) {
+	temp := make(CoordList, 0)
 	isThere := false
 	for _, c := range cord {
 		if !c.IsEqualTo(coord) {
@@ -158,8 +196,8 @@ func (cord CoordArray) RemoveCoordFromList(coord CoordInts) (CoordArray, bool) {
 	}
 	return temp, isThere
 }
-func (cord CoordArray) RemovePointFromList(num int) CoordArray {
-	temp := make(CoordArray, 0)
+func (cord CoordList) RemovePointFromList(num int) CoordList {
+	temp := make(CoordList, 0)
 	for i, _ := range cord {
 		if i != num {
 			temp = append(temp, cord[i])
@@ -167,7 +205,7 @@ func (cord CoordArray) RemovePointFromList(num int) CoordArray {
 	}
 	return temp
 }
-func (cord CoordArray) CountInstances(coord CoordInts) int {
+func (cord CoordList) CountInstances(coord CoordInts) int {
 	temp := 0
 	for _, c := range cord {
 		if c.IsEqualTo(coord) {
@@ -177,7 +215,7 @@ func (cord CoordArray) CountInstances(coord CoordInts) int {
 	return temp
 }
 
-func (cord CoordArray) PrintCordArray() {
+func (cord CoordList) PrintCordArray() {
 	fmt.Print("\n\n------------------------\n")
 	for i, c := range cord {
 		fmt.Printf("%2d: {%3d %3d}", i, c.X, c.Y)
@@ -192,7 +230,7 @@ func (cord CoordArray) PrintCordArray() {
 	fmt.Print("\n------------------------\n")
 }
 
-func (cord CoordArray) SortDescOnX() CoordArray {
+func (cord CoordList) SortDescOnX() CoordList {
 	temp := make([]CoordInts, len(cord))
 	copy(temp, cord)
 	var tempcord CoordInts
@@ -219,12 +257,12 @@ func (cord CoordArray) SortDescOnX() CoordArray {
 }
 
 /*
-CoordArray.RemoveDuplicates
+CoordList.RemoveDuplicates
 this should be done;
 this will remove duplicates;
 */
-func (cord CoordArray) RemoveDuplicates() CoordArray {
-	temp := make(CoordArray, len(cord))
+func (cord CoordList) RemoveDuplicates() CoordList {
+	temp := make(CoordList, len(cord))
 	copy(temp, cord)
 	temp = temp.SortDescOnX()
 	for i := 1; i < len(temp); i++ {
@@ -233,7 +271,7 @@ func (cord CoordArray) RemoveDuplicates() CoordArray {
 		}
 	}
 	temp, _ = temp.RemoveCoordFromList(CoordInts{X: -1, Y: -1})
-	// temp2 := make(CoordArray, 0)
+	// temp2 := make(CoordList, 0)
 	// for _, c := range cord {
 
 	// }
@@ -241,34 +279,71 @@ func (cord CoordArray) RemoveDuplicates() CoordArray {
 }
 
 type IntegerGridManager struct {
-	Imat       IntMatrix
-	Coords     CoordArray
-	Tile_Size  CoordInts
-	Margin     CoordInts
-	Position   CoordInts
-	CycleStart int
-	CycleEnd   int
-	Colors     []color.Color
-	FullColors bool
-	LastPoint  CoordInts //the last point clicked
-	Fails      int
+	Imat               IntMatrix
+	Coords             CoordList
+	Tile_Size          CoordInts
+	Margin             CoordInts
+	Position           CoordInts
+	CycleStart         int
+	CycleEnd           int
+	Colors             []color.Color
+	FullColors         bool
+	LastPoint          CoordInts //the last point clicked
+	Fails              int
+	AlgorithmRunning   bool
+	FailsMax           int
+	PFinder            Pathfinding
+	PFinderEndSelect   bool
+	PFinderStartSelect bool
 }
 
 func (igd *IntegerGridManager) Draw(screen *ebiten.Image) {
+	if igd.PFinder.IsStartInit {
+		igd.Imat[igd.PFinder.StartPos.Y][igd.PFinder.StartPos.X] = 5
+	}
+	if igd.PFinder.IsEndInit {
+		igd.Imat[igd.PFinder.EndPos.Y][igd.PFinder.EndPos.X] = 6
+	}
 	igd.Imat.DrawGridTile(screen, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors)
+	if igd.PFinder.IsFullyInitialized {
+		igd.Imat.DrawAGridTile(screen, igd.PFinder.Cursor.Position, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{50, 140, 50, 255}, false)
+		if igd.PFinder.HasFalsePos {
+			// igd.Imat.DrawAGridTile(screen, igd.PFinder.FalsePos, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{140, 50, 50, 255}, false)
+
+			for _, j := range igd.PFinder.FalsePos {
+				igd.Imat.DrawAGridTile(screen, j, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{140, 50, 50, 255}, false)
+			}
+			for _, x := range igd.PFinder.Moves {
+				igd.Imat.DrawAGridTile(screen, x, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{50, 125, 125, 255}, false)
+
+			}
+		}
+	}
 }
 
 func (igd *IntegerGridManager) UpdateOnMouseEvent(Raw_Mouse_X, Raw_Mouse_Y int) {
 	tempX, tempY := -1, -1
 	if igd.FullColors {
-		tempX, tempY = igd.Imat.ChangeValOnMouseEvent(Raw_Mouse_X, Raw_Mouse_Y, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.CycleStart, len(igd.Colors)-1)
+		tempX, tempY = igd.Imat.ChangeValOnMouseEvent(Raw_Mouse_X, Raw_Mouse_Y, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.CycleStart, len(igd.Colors)-1, !(igd.PFinderStartSelect || igd.PFinderEndSelect))
 	} else {
-		tempX, tempY = igd.Imat.ChangeValOnMouseEvent(Raw_Mouse_X, Raw_Mouse_Y, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.CycleStart, igd.CycleEnd)
+		tempX, tempY = igd.Imat.ChangeValOnMouseEvent(Raw_Mouse_X, Raw_Mouse_Y, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.CycleStart, igd.CycleEnd, !(igd.PFinderStartSelect || igd.PFinderEndSelect))
 	}
 	if tempX != -1 && tempY != -1 {
-		igd.LastPoint = CoordInts{tempX, tempY}
-		if (!igd.LastPoint.IsEqualTo(CoordInts{-1, -1})) {
-			igd.Coords = igd.Coords.PushToReturn(igd.LastPoint)
+		if !igd.PFinderEndSelect && !igd.PFinderStartSelect {
+			igd.LastPoint = CoordInts{tempX, tempY}
+			if (!igd.LastPoint.IsEqualTo(CoordInts{-1, -1})) {
+				igd.Coords = igd.Coords.PushToReturn(igd.LastPoint)
+			}
+		} else if igd.PFinderEndSelect {
+			igd.PFinder.EndPos = CoordInts{tempX, tempY}
+			igd.Imat[tempY][tempX] = 5
+			igd.PFinder.IsEndInit = true
+			igd.PFinderEndSelect = false
+		} else if igd.PFinderStartSelect {
+			igd.PFinder.StartPos = CoordInts{tempX, tempY}
+			igd.Imat[tempY][tempX] = 6
+			igd.PFinder.IsStartInit = true
+			igd.PFinderStartSelect = false
 		}
 	}
 }
@@ -276,14 +351,18 @@ func (igd *IntegerGridManager) Init(N_TilesX, N_TilesY int, TSizeX, TSizeY int, 
 	igd.Margin = CoordInts{X: MargX, Y: MargY}
 	igd.Position = CoordInts{X: PosX, Y: PosY}
 	igd.Tile_Size = CoordInts{X: TSizeX, Y: TSizeY}
-	igd.Colors = []color.Color{color.RGBA{255, 0, 0, 255}, color.RGBA{0, 0, 255, 255}, color.RGBA{0, 255, 0, 255}, color.RGBA{0, 255, 255, 255}, color.RGBA{255, 255, 0, 255}}
+	igd.Colors = []color.Color{color.RGBA{255, 0, 0, 255}, color.RGBA{0, 0, 255, 255}, color.RGBA{0, 255, 0, 255},
+		color.RGBA{0, 255, 255, 255}, color.RGBA{255, 255, 0, 255}, color.RGBA{255, 255, 255, 255}, color.RGBA{75, 75, 75, 255}}
 	igd.Imat = igd.Imat.MakeIntMatrix(N_TilesX, N_TilesY)
 	igd.Imat.InitBlankMatrix(N_TilesX, N_TilesY, 0)
-	igd.FullColors = true
+	igd.FullColors = false
 	igd.CycleStart = 0
-	igd.CycleEnd = 2
+	igd.CycleEnd = 4
 	igd.LastPoint = CoordInts{-1, -1}
 	igd.Fails = 0
+	igd.FailsMax = 30
+	igd.AlgorithmRunning = false
+	igd.PFinder = Pathfinding{IsActive: false, IsFullyInitialized: false, IsEndInit: false, HasFalsePos: false}
 }
 func (igd *IntegerGridManager) ToString() string {
 	strng := "INTEGER GRID MANAGER:\n"
@@ -311,6 +390,8 @@ func (igd *IntegerGridManager) DEMO_COORDS_00(a, x, y int) {
 		igd.Coords = igd.Coords.SortDescOnX()
 	case 6:
 		igd.Coords = igd.Coords.RemoveDuplicates()
+	case 7:
+
 	default:
 		fmt.Printf("DEFAULT DEMO COORDS_00")
 	}
@@ -337,7 +418,7 @@ func (igd *IntegerGridManager) DrawCoordsOnImat() {
 func (igd *IntegerGridManager) Process() {
 	//igd.ClearImat()
 	igd.Coords = igd.Coords.RemoveDuplicates()
-	temp := make(CoordArray, len(igd.Coords))
+	temp := make(CoordList, len(igd.Coords))
 	copy(temp, igd.Coords)
 	var frustration bool = true
 	for _, c := range igd.Coords {
@@ -353,7 +434,8 @@ func (igd *IntegerGridManager) Process() {
 		// if igd.Imat.GetCoordVal(c) != 1 {
 
 		// }
-		if igd.Imat.IsValid(nn) && igd.Imat.GetCoordVal(nn) != 1 { // && igd.Imat.GetCoordVal(ne) != 1 && igd.Imat.GetCoordVal(nw) != 1
+		buffer := 2
+		if igd.Imat.IsValid_With_Constant_Buffer(nn, buffer) && igd.Imat.GetCoordVal(nn) != 1 { // && igd.Imat.GetCoordVal(ne) != 1 && igd.Imat.GetCoordVal(nw) != 1
 			igd.Imat[c.Y][c.X] = 1
 			if igd.Imat.IsValid(nn) {
 				temp = temp.PushToReturn(nn)
@@ -362,21 +444,21 @@ func (igd *IntegerGridManager) Process() {
 			frustration = false
 		}
 
-		if igd.Imat.IsValid(ee) && igd.Imat.GetCoordVal(ee) != 1 { //&& igd.Imat.GetCoordVal(ne) != 1 && igd.Imat.GetCoordVal(se) != 1
+		if igd.Imat.IsValid_With_Constant_Buffer(ee, buffer) && igd.Imat.GetCoordVal(ee) != 1 { //&& igd.Imat.GetCoordVal(ne) != 1 && igd.Imat.GetCoordVal(se) != 1
 			igd.Imat[c.Y][c.X] = 1
 			temp = temp.PushToReturn(ee)
 			temp, _ = temp.RemoveCoordFromList(c)
 			frustration = false
 
 		}
-		if igd.Imat.IsValid(ss) && igd.Imat.GetCoordVal(ss) != 1 { //&& igd.Imat.GetCoordVal(sw) != 1&& igd.Imat.GetCoordVal(se) != 1
+		if igd.Imat.IsValid_With_Constant_Buffer(ss, buffer) && igd.Imat.GetCoordVal(ss) != 1 { //&& igd.Imat.GetCoordVal(sw) != 1&& igd.Imat.GetCoordVal(se) != 1
 			igd.Imat[c.Y][c.X] = 1
 			temp = temp.PushToReturn(ss)
 			temp, _ = temp.RemoveCoordFromList(c)
 			frustration = false
 
 		}
-		if igd.Imat.IsValid(ww) && igd.Imat.GetCoordVal(ww) != 1 { //&& igd.Imat.GetCoordVal(sw) != 1 && igd.Imat.GetCoordVal(nw) != 1
+		if igd.Imat.IsValid_With_Constant_Buffer(ww, buffer) && igd.Imat.GetCoordVal(ww) != 1 { //&& igd.Imat.GetCoordVal(sw) != 1 && igd.Imat.GetCoordVal(nw) != 1
 			igd.Imat[c.Y][c.X] = 1
 			temp = temp.PushToReturn(ww)
 			temp, _ = temp.RemoveCoordFromList(c)
@@ -398,7 +480,7 @@ func (igd *IntegerGridManager) Process() {
 func (igd *IntegerGridManager) Process2(setBools bool) {
 	//igd.ClearImat()
 	igd.Coords = igd.Coords.RemoveDuplicates()
-	temp := make(CoordArray, len(igd.Coords))
+	temp := make(CoordList, len(igd.Coords))
 	copy(temp, igd.Coords)
 	var frustration bool = true
 	randInt := rand.Intn(len(igd.Coords))
@@ -518,6 +600,44 @@ func (igd *IntegerGridManager) Process2b(maxTicks int) {
 		}
 	}
 }
+func (igd *IntegerGridManager) Process3b(maxTicks int, lims int, lim2 int, nums []int) {
+
+	for i := range maxTicks {
+		if len(igd.Coords) > 0 {
+			igd.Process3(lims, lim2, nums)
+			// igd.Process3()
+			if igd.Fails > igd.FailsMax {
+				break
+			}
+		}
+		if i != 0 {
+			if i%2 == 0 {
+				igd.CullCoords(2, false, []int{0, 2})
+			} else if i%5 == 0 {
+				igd.CullCoords(4, false, []int{0, 2})
+			}
+		}
+		// if igd.Fails > igd.FailsMax {
+		// 	fmt.Printf("DEAD\n")
+		// }
+	}
+
+}
+
+func (igd *IntegerGridManager) Process3c(maxTicks int, lims int, lim2 int, nums []int) {
+	if igd.AlgorithmRunning {
+		igd.Process3b(maxTicks, lims, lim2, nums)
+		if igd.Fails > igd.FailsMax {
+			fmt.Printf("FINISHED\n")
+			igd.CullCoords(8, true, nums)
+			igd.AlgorithmRunning = false
+		}
+		// igd.CullCoords(2, false, []int{0, 2})
+		// igd.CullCoords(2, true, []int{0, 2})
+		// igd.CullCoords(2, false, []int{0, 2})
+		// igd.CullCoords(2, false, []int{0, 2})
+	}
+}
 
 func (igd *IntegerGridManager) Process3(lims int, lim2 int, nums []int) {
 	var randInt = 0
@@ -525,7 +645,7 @@ func (igd *IntegerGridManager) Process3(lims int, lim2 int, nums []int) {
 	if len(igd.Coords) > 0 {
 		randInt = rand.Intn(len(igd.Coords))
 	}
-	temp := make(CoordArray, len(igd.Coords))
+	temp := make(CoordList, len(igd.Coords))
 	copy(temp, igd.Coords)
 	var frustration bool = true
 	var canDiag = false
@@ -554,7 +674,7 @@ func (igd *IntegerGridManager) Process3(lims int, lim2 int, nums []int) {
 		// case 3:
 		// default:
 		// }
-		if igd.Imat.IsValid(nn) && (igd.Imat.GetCoordVal(nn) != 1) && nEBool && nWBool { // igd.Imat.GetCoordVal(ne) != 1 && igd.Imat.GetCoordVal(nw) != 1
+		if igd.Imat.IsValid(nn) && (igd.Imat.GetCoordVal(nn) != 1) && (igd.Imat.GetCoordVal(nn) != 4) && nEBool && nWBool { // igd.Imat.GetCoordVal(ne) != 1 && igd.Imat.GetCoordVal(nw) != 1
 			igd.Imat[c.Y][c.X] = 1
 			temp = temp.PushToReturn(nn)
 			temp = append(temp, igd.AddAllToCoords(c, canDiag, nums)...)
@@ -563,7 +683,7 @@ func (igd *IntegerGridManager) Process3(lims int, lim2 int, nums []int) {
 			frustration = false
 		}
 
-		if igd.Imat.IsValid(ee) && igd.Imat.GetCoordVal(ee) != 1 && nEBool && sEBool { //&& igd.Imat.GetCoordVal(ne) != 1 && igd.Imat.GetCoordVal(se) != 1
+		if igd.Imat.IsValid(ee) && igd.Imat.GetCoordVal(ee) != 1 && (igd.Imat.GetCoordVal(ee) != 4) && nEBool && sEBool { //&& igd.Imat.GetCoordVal(ne) != 1 && igd.Imat.GetCoordVal(se) != 1
 			igd.Imat[c.Y][c.X] = 1
 			temp = temp.PushToReturn(ee)
 			temp, _ = temp.RemoveCoordFromList(c)
@@ -572,7 +692,7 @@ func (igd *IntegerGridManager) Process3(lims int, lim2 int, nums []int) {
 			frustration = false
 
 		}
-		if igd.Imat.IsValid(ss) && igd.Imat.GetCoordVal(ss) != 1 && sEBool && sWBool { //&& igd.Imat.GetCoordVal(sw) != 1&& igd.Imat.GetCoordVal(se) != 1
+		if igd.Imat.IsValid(ss) && igd.Imat.GetCoordVal(ss) != 1 && (igd.Imat.GetCoordVal(ss) != 4) && sEBool && sWBool { //&& igd.Imat.GetCoordVal(sw) != 1&& igd.Imat.GetCoordVal(se) != 1
 			igd.Imat[c.Y][c.X] = 1
 			temp = temp.PushToReturn(ss)
 			temp, _ = temp.RemoveCoordFromList(c)
@@ -581,7 +701,7 @@ func (igd *IntegerGridManager) Process3(lims int, lim2 int, nums []int) {
 			frustration = false
 
 		}
-		if igd.Imat.IsValid(ww) && igd.Imat.GetCoordVal(ww) != 1 && sWBool && nWBool { //&& igd.Imat.GetCoordVal(sw) != 1 && igd.Imat.GetCoordVal(nw) != 1
+		if igd.Imat.IsValid(ww) && igd.Imat.GetCoordVal(ww) != 1 && (igd.Imat.GetCoordVal(ww) != 4) && sWBool && nWBool { //&& igd.Imat.GetCoordVal(sw) != 1 && igd.Imat.GetCoordVal(nw) != 1
 			igd.Imat[c.Y][c.X] = 1
 			temp = temp.PushToReturn(ww)
 			temp, _ = temp.RemoveCoordFromList(c)
@@ -594,12 +714,15 @@ func (igd *IntegerGridManager) Process3(lims int, lim2 int, nums []int) {
 			frustration = false
 
 		}
+		temp = temp.RemoveDuplicates()
 
+		igd.Coords = temp
 	} else {
 		temp, _ = temp.RemoveCoordFromList(c)
 		// igd.Imat[c.Y][c.X] = 4
-		igd.CullCoords(lim2, true, nums)
-
+		igd.CullCoords(lim2, canDiag, nums)
+		//igd.CullCoords(lim2, true, nums)
+		//temp = igd.Coords
 	}
 	if frustration {
 		igd.Fails++
@@ -607,13 +730,15 @@ func (igd *IntegerGridManager) Process3(lims int, lim2 int, nums []int) {
 		igd.Fails = 0
 
 	}
+
 	//igd.DrawCoordsOnImat()
 	//fmt.Printf("C:%2d,%2d\t D:%2d,%2d\t E:%2d,%2d\n-------\n", c.X, c.Y, d.X, d.Y, e.X, e.Y)
-	temp = temp.RemoveDuplicates()
+	// temp = temp.RemoveDuplicates()
 
-	igd.Coords = temp
+	// igd.Coords = temp
 	//copy(igd.Coords, temp)
 	igd.DrawCoordsOnImat()
+	// fmt.Printf("SIZE: %3d SIZE %3d\n", len(igd.Coords), len(temp))
 }
 
 /* should cull igd.Coords;
@@ -637,24 +762,36 @@ func (igd *IntegerGridManager) SamplePoint(cord CoordInts, min int) bool {
 }
 
 func (igd *IntegerGridManager) CullCoords(limit int, canDiag bool, nums []int) {
-	temp := make(CoordArray, len(igd.Coords))
+	temp := make(CoordList, len(igd.Coords))
 	copy(temp, igd.Coords)
 	for _, c := range igd.Coords {
 		//b := igd.GetNumberOfValidNeighbors(c, []int{1, 4})
-		q := igd.GetNumberOfValidNeighbors(c, canDiag, nums)
+		q := igd.GetNumberOfValidNeighbors(c, !canDiag, nums)
 		if q < limit {
 			temp, _ = temp.RemoveCoordFromList(c)
 			igd.Imat[c.Y][c.X] = 4
 			//fmt.Printf("LIMIT COORDCULLING %d %d %d %d\n", b, q, c.X, c.Y)
 		}
+		//additional culling:
+		// if !canDiag {
+		// 	// nn := igd.Imat.GetCoordVal(CoordInts{X: c.X, Y: c.Y - 1})
+
+		// 	// ee := igd.Imat.GetCoordVal(CoordInts{X: c.X + 1, Y: c.Y})
+
+		// 	// ss := igd.Imat.GetCoordVal(CoordInts{X: c.X, Y: c.Y + 1})
+
+		// 	// ww := igd.Imat.GetCoordVal(CoordInts{X: c.X - 1, Y: c.Y})
+		// 	// if(nn==1 && ss==1 ||)
+		// 	//if(igd.IMat.)
+		// }
 		//fmt.Printf("LIMIT COORDCULLING BEE %d %d %d %d\n", b, q, c.X, c.Y)
 	}
 	//fmt.Printf("\n\n")
 	igd.Coords = temp
 }
-func (igd *IntegerGridManager) AddAllToCoords(coord CoordInts, canDiag bool, nums []int) CoordArray {
+func (igd *IntegerGridManager) AddAllToCoords(coord CoordInts, canDiag bool, nums []int) CoordList {
 	nn, ne, ee, se, ss, sw, ww, nw := igd.ValidateAllNeighbors(coord, nums) //[]int{0, 2}
-	temp := make(CoordArray, 0)
+	temp := make(CoordList, 0)
 	if !nn {
 		temp = append(temp, CoordInts{X: coord.X, Y: coord.Y - 1})
 	} else {

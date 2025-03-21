@@ -13,6 +13,13 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
+const (
+	buttonHieght0 = 16
+	buttonX_1     = 140
+	buttonX_2     = 72
+	buttonHieght1 = 32
+)
+
 var (
 	Settings mypkgs.GameSettings
 	// imatrix         mypkgs.IntMatrix
@@ -30,14 +37,16 @@ type Game struct {
 	btn4, btn5, btn6    mypkgs.Button
 	btn7, btn8, btn9    mypkgs.Button
 	btn10, btn11, btn12 mypkgs.Button
-	coorAr              mypkgs.CoordArray
+	btn13, btn14, btn15 mypkgs.Button
+	btn16, btn17, btn18 mypkgs.Button
+	coorAr              mypkgs.CoordList
 	isRunning           bool
 	IntGrid             mypkgs.IntegerGridManager
 }
 
 func init() {
-	Settings = mypkgs.GetSettingsFromJSON()
-	// Settings = mypkgs.GetSettingsFromBakedIn()
+	// Settings = mypkgs.GetSettingsFromJSON()
+	Settings = mypkgs.GetSettingsFromBakedIn()
 	fmt.Printf("DONE INIT\n")
 	backgroundImg = ebiten.NewImage(Settings.ScreenResX, Settings.ScreenResY)
 	foregroundImg = ebiten.NewImage(Settings.ScreenResX, Settings.ScreenResY)
@@ -62,8 +71,14 @@ func (g *Game) init() error {
 	g.btn9.InitButton("Btn9", "9", 0, Settings.ScreenResX-72, 88, 64, 16, 0, 0)
 	g.btn10.InitButton("Btn10", "Btn10", 0, Settings.ScreenResX-140, 108, 64, 16, 0, 0)
 	g.btn11.InitButton("Btn11", "Btn11", 0, Settings.ScreenResX-72, 108, 64, 16, 0, 0)
+	g.btn12.InitButton("Btn12", "set PF \n Start", 0, Settings.ScreenResX-140, 136, 64, 32, 0, 0)
+	g.btn13.InitButton("Btn13", "set pF \n Stop", 0, Settings.ScreenResX-72, 136, 64, 32, 0, 0)
+	g.btn14.InitButton("Btn14", "Pathfind\nINIT", 0, Settings.ScreenResX-140, 172, 64, 32, 0, 0)
+	g.btn15.InitButton("Btn15", "Pathfind\nStart", 0, Settings.ScreenResX-72, 172, 64, 32, 0, 0)
+	g.btn16.InitButton("Btn16", "----", 0, Settings.ScreenResX-140, 208, 64, 32, 0, 0)
+	g.btn17.InitButton("Btn17", "----", 0, Settings.ScreenResX-72, 208, 64, 32, 0, 0)
 	g.coorAr = append(g.coorAr, mypkgs.CoordInts{X: 2, Y: 2})
-	g.IntGrid.Init(32, 32, 16, 16, 8, 8, 4, 4)
+	g.IntGrid.Init(64, 64, 8, 8, 8, 8, 2, 2)
 	return nil
 }
 func (g *Game) PreDraw(screen *ebiten.Image) {
@@ -83,6 +98,12 @@ func (g *Game) PreDraw(screen *ebiten.Image) {
 	g.btn9.DrawButton(screen)
 	g.btn10.DrawButton(screen)
 	g.btn11.DrawButton(screen)
+	g.btn12.DrawButton(screen)
+	g.btn13.DrawButton(screen)
+	g.btn14.DrawButton(screen)
+	g.btn15.DrawButton(screen)
+	g.btn16.DrawButton(screen)
+	g.btn17.DrawButton(screen)
 	//screen.DrawImage()
 }
 
@@ -106,6 +127,10 @@ func (g *Game) Update() error {
 		g.btn9.Update(mx, my, true)
 		g.btn10.Update(mx, my, true)
 		g.btn11.Update(mx, my, true)
+		g.btn12.Update(mx, my, true)
+		g.btn13.Update(mx, my, true)
+		g.btn14.Update(mx, my, true)
+		g.btn15.Update(mx, my, true)
 	} else {
 		g.btn0.Update(mx, my, false)
 		g.btn1.Update(mx, my, false)
@@ -119,6 +144,10 @@ func (g *Game) Update() error {
 		g.btn9.Update(mx, my, false)
 		g.btn10.Update(mx, my, false)
 		g.btn11.Update(mx, my, false)
+		g.btn12.Update(mx, my, false)
+		g.btn13.Update(mx, my, false)
+		g.btn14.Update(mx, my, false)
+		g.btn15.Update(mx, my, false)
 	}
 
 	if g.btn0.UpdateTwo() {
@@ -160,24 +189,43 @@ func (g *Game) Update() error {
 		}
 	}
 	if g.btn6.UpdateTwo() {
-		g.IntGrid.Process()
+		go g.IntGrid.Process()
 	}
+
 	if g.btn7.UpdateTwo() {
 		g.IntGrid.Process2b(5)
 	}
 	if g.btn8.UpdateTwo() {
 		if len(g.IntGrid.Coords) > 0 {
-			g.IntGrid.Process3(8, 4, []int{0, 2})
+			if !g.IntGrid.AlgorithmRunning {
+				g.IntGrid.AlgorithmRunning = true
+			}
+			g.IntGrid.Process3c(50, 10, 6, []int{0, 2}) //8,4
 		}
 	}
 	if g.btn9.UpdateTwo() {
 		g.IntGrid.CullCoords(2, true, []int{0, 2})
 	}
 	if g.btn10.UpdateTwo() {
-		g.IntGrid.CullCoords(4, true, []int{0, 2})
+		g.IntGrid.CullCoords(5, true, []int{0, 2})
 	}
 	if g.btn11.UpdateTwo() {
 		g.IntGrid.CullCoords(8, true, []int{0, 2})
+	}
+	if g.btn12.UpdateTwo() && !g.IntGrid.PFinder.IsStartInit {
+		g.IntGrid.PFinderStartSelect = !g.IntGrid.PFinderStartSelect
+	}
+	if g.btn13.UpdateTwo() && !g.IntGrid.PFinder.IsEndInit {
+		g.IntGrid.PFinderEndSelect = !g.IntGrid.PFinderEndSelect
+	}
+	if g.btn14.UpdateTwo() {
+		g.IntGrid.PathfindingProcess()
+	}
+	if g.btn15.UpdateTwo() {
+		go g.IntGrid.MoveCursorAround(mypkgs.CoordInts{X: 2, Y: 2}, []int{0, 2, 3, 4})
+	}
+	if g.btn16.UpdateTwo() {
+		g.IntGrid.PFinder.HasFalsePos = !g.IntGrid.PFinder.HasFalsePos
 	}
 	g.PreDraw(foregroundImg)
 	g.gameDebugMsg = fmt.Sprintf("FPS:%8.3f TPS:%8.3f\n", ebiten.ActualFPS(), ebiten.ActualTPS())
