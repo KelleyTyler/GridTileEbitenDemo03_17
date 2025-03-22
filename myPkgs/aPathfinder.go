@@ -25,6 +25,10 @@ type Pathfinding struct {
 	HasFalsePos        bool
 }
 
+// func (igd *Pathfinding) Tick_DownFalseposlane() {
+
+// }
+
 func (pFndr *Pathfinding) ToString() string {
 	outstrng := "PATHFINDING:\n"
 	outstrng += fmt.Sprintf("\n START: %d, %d\n END: %d %d\n", pFndr.StartPos.X, pFndr.StartPos.Y, pFndr.EndPos.X, pFndr.EndPos.Y)
@@ -35,6 +39,20 @@ func (pFndr *Pathfinding) PrintString() {
 }
 func (igd *IntegerGridManager) DrawPathfinder(screen *ebiten.Image) {
 
+}
+func (igd *IntegerGridManager) RESETPathfinder() {
+	if igd.PFinder.IsFullyInitialized {
+		igd.Imat[igd.PFinder.EndPos.Y][igd.PFinder.EndPos.X] = 1
+		igd.Imat[igd.PFinder.StartPos.Y][igd.PFinder.StartPos.X] = 1
+		igd.PFinder.IsEndInit = false
+		igd.PFinder.IsStartInit = false
+		igd.PFinder.FalsePos = make(CoordList, 0)
+		igd.PFinder.Moves = make(CoordList, 0)
+		igd.PFinder.HasFalsePos = false
+		igd.PFinder.IsFullyInitialized = false
+		igd.PFinder.EndPos = CoordInts{X: -1, Y: -1}
+		igd.PFinder.StartPos = CoordInts{X: -1, Y: -1}
+	}
 }
 
 // func (igd *IntegerGridManager) SelectPathfinderStart() {
@@ -55,43 +73,55 @@ func (igd *IntegerGridManager) PathfindingProcess() {
 	if igd.PFinder.IsFullyInitialized {
 		//get vector to the target area;
 		//igd.SLOPEMOVE(2, []int{0, 2, 3, 4})'
-		igd.PFinder.FalsePos = BresenhamLine(igd.PFinder.StartPos, igd.PFinder.EndPos)
+		// igd.PFinder.FalsePos = BresenhamLine(igd.PFinder.StartPos, igd.PFinder.EndPos)
+		// igd.PFinder.HasFalsePos = true
+
+	}
+}
+func (igd *IntegerGridManager) PFindr_DrawSlope() {
+	if igd.PFinder.IsFullyInitialized {
+		igd.SLOPEMOVE(1, []int{0, 2, 3, 4})
 		igd.PFinder.HasFalsePos = true
-		// yFirst := true
-		// vX, vY := igd.PFinder.Cursor.Position.GetDifferenceInInts(igd.PFinder.EndPos)
-		// var dirs = CoordInts{0, 0}
-		// var vectrex = CoordInts{X: 0, Y: 0}
-		// if vY == 0 {
-		// 	//-----
-		// 	fmt.Printf("Y== 0\n")
-		// 	dirs.X = 0
-		// } else if vY > 0 {
-		// 	vectrex.Y = vY
-		// 	dirs.Y = 2
-		// } else {
-		// 	vectrex.Y = vY * -1
-		// 	dirs.Y = 0
-		// }
-		// if vX == 0 {
-		// 	//-----
-		// 	dirs.X = 0
-		// } else if vX > 0 {
-		// 	vectrex.X = vX
-		// 	dirs.X = 1
-		// } else {
-		// 	vectrex.X = vX * -1
-		// 	dirs.X = 3
-		// }
-		// if yFirst {
-		// 	if igd.PFinder.Cursor.Position.Y != igd.PFinder.EndPos.Y {
-		// 		igd.MoveCursorSteps(CoordInts{dirs.Y, 1}, 2, []int{0, 2, 3, 4})
-		// 	} else {
+	}
+}
 
-		// 		fmt.Printf("DELTA Y== 0\n")
-		// 		igd.MoveCursorSteps(CoordInts{dirs.X, 1}, 2, []int{0, 2, 3, 4})
-		// 	}
+func (igd *IntegerGridManager) PFindr_DrawManhattan() {
+	if igd.PFinder.IsFullyInitialized {
+		yFirst := true
+		vX, vY := igd.PFinder.Cursor.Position.GetDifferenceInInts(igd.PFinder.EndPos)
+		var dirs = CoordInts{0, 0}
+		var vectrex = CoordInts{X: 0, Y: 0}
+		if vY == 0 {
+			//-----
+			fmt.Printf("Y== 0\n")
+			dirs.X = 0
+		} else if vY > 0 {
+			vectrex.Y = vY
+			dirs.Y = 2
+		} else {
+			vectrex.Y = vY * -1
+			dirs.Y = 0
+		}
+		if vX == 0 {
+			//-----
+			dirs.X = 0
+		} else if vX > 0 {
+			vectrex.X = vX
+			dirs.X = 1
+		} else {
+			vectrex.X = vX * -1
+			dirs.X = 3
+		}
+		if yFirst {
+			if igd.PFinder.Cursor.Position.Y != igd.PFinder.EndPos.Y {
+				igd.MoveCursorSteps(CoordInts{dirs.Y, 1}, 2, []int{0, 2, 3, 4})
+			} else {
 
-		// }
+				fmt.Printf("DELTA Y== 0\n")
+				igd.MoveCursorSteps(CoordInts{dirs.X, 1}, 2, []int{0, 2, 3, 4})
+			}
+
+		}
 
 		// tempPos := MoveModifierCoords(igd.PFinder.Cursor.Position, Vect.X, 0)
 		// if len(igd.PFinder.Nodes) > 0 {
@@ -101,11 +131,33 @@ func (igd *IntegerGridManager) PathfindingProcess() {
 		// }
 	}
 }
+func (igd *IntegerGridManager) PFindr_DrawBresenHamLine() {
+	if igd.PFinder.IsFullyInitialized {
+		if !igd.PFinder.HasFalsePos {
+			igd.PFinder.FalsePos = BresenhamLine(igd.PFinder.StartPos, igd.PFinder.EndPos)
+			igd.PFinder.HasFalsePos = true
+		} else {
+			// igd.PFinder.Cursor.Position = igd.PFinder.FalsePos[igd.PFinder.Cursor.ticker]
+			temp := igd.PFinder.FalsePos[igd.PFinder.Cursor.ticker]
+			if a, c := IntArrayContains_giveMeWhat([]int{0, 2, 3, 4}, igd.Imat.GetCoordVal(temp)); a {
+				fmt.Printf("HAS WALL: %d at %d , %d\n", c, temp.X, temp.Y)
+			} else {
+				igd.PFinder.Cursor.Position = temp
+				igd.PFinder.Moves = append(igd.PFinder.Moves, temp)
+				if igd.PFinder.Cursor.ticker < len(igd.PFinder.FalsePos)-1 {
+					igd.PFinder.Cursor.ticker++
+				}
+			}
+
+		}
+	}
+}
 
 type PF_Cursor struct {
 	Position        CoordInts
 	Neighbors       [4]CoordInts
 	Neighbor_Values [4]int
+	ticker          int
 	// Previous        *PF_Cursor
 	// Next            *PF_Cursor
 	// Number          int
@@ -118,6 +170,7 @@ func (pfCurs *PF_Cursor) InitP(StartPos CoordInts, imat IntMatrix) {
 	temp, temp2, _ := imat.GetNeighbors(StartPos)
 	pfCurs.Neighbor_Values = temp2
 	pfCurs.Neighbors = [4]CoordInts(temp)
+	pfCurs.ticker = 0
 }
 
 func MoveModifier(startX, startY, dir, mag int) (int, int) {
@@ -157,9 +210,9 @@ func (igd *IntegerGridManager) MoveCursorSteps(Vect CoordInts, steps int, walls 
 	for i := 0; (i < len(igd.Imat)) && (i < steps); i++ {
 		tempPos = MoveModifierCoords(tempCurs.Position, Vect.X, i)
 		fmt.Printf("MOVE: %d - POINT: %d %d Val Here: %d\n", i, tempPos.X, tempPos.Y, igd.Imat.GetCoordVal(tempPos))
-		if IntArrayContains(walls, igd.Imat.GetCoordVal(tempPos)) {
+		if a, c := IntArrayContains_giveMeWhat(walls, igd.Imat.GetCoordVal(tempPos)); a {
 			valer = i
-
+			fmt.Printf("HAS WALL: %d at %d , %d\n", c, tempPos.X, tempPos.Y)
 			igd.PFinder.FalsePos = append(igd.PFinder.FalsePos, tempPos)
 			tempPos = MoveModifierCoords(tempCurs.Position, Vect.X, i-1)
 
@@ -260,7 +313,7 @@ func (igd *IntegerGridManager) SLOPEMOVE(ticks int, walls []int) {
 	}
 	igd.PFinder.Cursor.Position = tempPos
 
-	igd.PFinder.HasFalsePos = true
+	// igd.PFinder.HasFalsePos = true
 	igd.PFinder.HasFalsePos = true
 }
 
@@ -268,15 +321,20 @@ func BresenhamLine(c1 CoordInts, c2 CoordInts) CoordList {
 	outList := make(CoordList, 0)
 	if math.Abs(float64(c2.Y)-float64(c1.Y)) < math.Abs(float64(c2.X)-float64(c1.X)) {
 		if c1.X > c2.X {
-			//
+			fmt.Printf("BRESENHAM:%16s \n", "Low Inverted")
 			outList = BresenhamLine_Low(c2, c1)
+			outList = outList.FlipOrder()
 		} else {
+			fmt.Printf("BRESENHAM:%16s \n", "Low Regular")
 			outList = BresenhamLine_Low(c1, c2)
 		}
 	} else {
 		if c1.Y > c2.Y {
+			fmt.Printf("BRESENHAM:%16s \n", "High Inverted")
 			outList = BresenHamLine_High(c2, c1)
+			outList = outList.FlipOrder()
 		} else {
+			fmt.Printf("BRESENHAM:%16s \n", "High Regular")
 			outList = BresenHamLine_High(c1, c2)
 		}
 	}
@@ -287,13 +345,13 @@ func BresenhamLine_Low(c1 CoordInts, c2 CoordInts) CoordList {
 	dx := c2.X - c1.X
 	dy := c2.Y - c1.Y
 	yi := 1
-	if dx < 0 {
+	if dy < 0 {
 		yi = -1
 		dy = -dy
 	}
 	D := (2 * dy) - dx
 	y := c1.Y
-
+	//fmt.Printf("\tdx,dy:%3d,%3d\n\tyi:%3d y:%d\n\tInitial D:%d\n", dx, dy, yi, y, D)
 	//need a conditional here;
 	for x := c1.X; x < c2.X; x++ {
 		//add to array here
@@ -304,8 +362,10 @@ func BresenhamLine_Low(c1 CoordInts, c2 CoordInts) CoordList {
 		} else {
 			D = D + (2 * dy)
 		}
+		//fmt.Printf("\n\t x:%3d y:%3d D:%3d\n", x, y, D)
 		outList = append(outList, CoordInts{X: x, Y: y})
 	}
+	outList = append(outList, c2)
 	return outList
 }
 func BresenHamLine_High(c1 CoordInts, c2 CoordInts) CoordList {
@@ -326,9 +386,10 @@ func BresenHamLine_High(c1 CoordInts, c2 CoordInts) CoordList {
 			x = x + xi
 			D = D + (2 * (dx - dy))
 		} else {
-			D = D + 2*dx
+			D = D + (2 * dx)
 		}
 		outList = append(outList, CoordInts{X: x, Y: y})
 	}
+	outList = append(outList, c2)
 	return outList
 }

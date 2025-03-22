@@ -39,7 +39,14 @@ func IntArrayContains(s []int, c int) bool {
 	}
 	return false
 }
-
+func IntArrayContains_giveMeWhat(s []int, c int) (bool, int) {
+	for _, a := range s {
+		if a == c {
+			return true, a
+		}
+	}
+	return false, -1
+}
 func (coord1 CoordInts) GetDifferenceInInts(coord2 CoordInts) (int, int) {
 	return (coord2.X - coord1.X), (coord2.Y - coord1.Y)
 }

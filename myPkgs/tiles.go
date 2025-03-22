@@ -66,7 +66,29 @@ func (imat IntMatrix) DrawGridTile(screen *ebiten.Image, OffsetX int, OffsetY in
 	vector.StrokeRect(screen, float32(OffsetX-3), float32(OffsetY-3), float32(test1X-OffsetX-GapX+6), float32(test1Y-OffsetY-GapY+6), 4.0, color.RGBA{0, 50, 50, 255}, true)
 	//vector.StrokeRect(screen, float32(OffsetX-0), float32(OffsetY-0), float32(test1X-OffsetX), float32(test1Y-OffsetY), 2.0, color.RGBA{0, 253, 100, 255}, true)
 }
+func (imat IntMatrix) GetCoordOfMouseEvent(Raw_Mouse_X int, Raw_Mouse_Y int, OffsetX int, OffsetY int, tileW int, tileH int, GapX int, GapY int) (int, int, bool) {
+	test1X := ((len(imat[0]) * tileW) + (len(imat[0]) * GapX)) + OffsetX
+	test1Y := ((len(imat) * tileH) + (len(imat) * GapY)) + OffsetY
+	var mXi = -1
+	var mYi = -1
+	var isOnTile = false
+	if (Raw_Mouse_X > OffsetX && Raw_Mouse_X < test1X-GapX) && (Raw_Mouse_Y > OffsetY && Raw_Mouse_Y < test1Y-GapY) {
+		var mX = float32(Raw_Mouse_X-OffsetX) / float32(tileW+GapX) //float32(test1X)
+		var mY = float32(Raw_Mouse_Y-OffsetY) / float32(tileH+GapY) //float32(test1Y)
+		mXi = int(mX)
+		mYi = int(mY)
+		mXo, mYo := (Raw_Mouse_X - OffsetX), (Raw_Mouse_Y - OffsetY)
+		mXi_01 := (tileW * mXi) + (mXi * GapX)
+		mYi_01 := (tileH * mYi) + (mYi * GapY)
 
+		mXi_02 := (tileW * mXi) + (mXi * GapX) + tileW
+		mYi_02 := (tileH * mYi) + (mYi * GapY) + tileH
+		if (((mXo) > (mXi_01)) && (mXo) < mXi_02) && ((mYo) > (mYi_01) && mYo < mYi_02) {
+			isOnTile = true
+		}
+	}
+	return mXi, mYi, isOnTile
+}
 func (imat IntMatrix) ChangeValOnMouseEvent(Raw_Mouse_X int, Raw_Mouse_Y int, OffsetX int, OffsetY int, tileW int, tileH int, GapX int, GapY int, cycleStart int, cycleEnd int, makeChange bool) (int, int) {
 
 	test1X := ((len(imat[0]) * tileW) + (len(imat[0]) * GapX)) + OffsetX
@@ -278,23 +300,38 @@ func (cord CoordList) RemoveDuplicates() CoordList {
 	return temp
 }
 
+//	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
+//		s[i], s[j] = s[j], s[i]
+//	}
+func (cord CoordList) FlipOrder() CoordList {
+	temp := make(CoordList, len(cord))
+	copy(temp, cord)
+	for i, j := 0, len(temp)-1; i < j; i, j = i+1, j-1 {
+		temp[i], temp[j] = temp[j], temp[i]
+	}
+	return temp
+}
+
 type IntegerGridManager struct {
-	Imat               IntMatrix
-	Coords             CoordList
-	Tile_Size          CoordInts
-	Margin             CoordInts
-	Position           CoordInts
-	CycleStart         int
-	CycleEnd           int
-	Colors             []color.Color
-	FullColors         bool
-	LastPoint          CoordInts //the last point clicked
-	Fails              int
-	AlgorithmRunning   bool
-	FailsMax           int
-	PFinder            Pathfinding
+	Imat             IntMatrix
+	Coords           CoordList
+	Tile_Size        CoordInts
+	Margin           CoordInts
+	Position         CoordInts
+	CycleStart       int
+	CycleEnd         int
+	Colors           []color.Color
+	FullColors       bool
+	LastPoint        CoordInts //the last point clicked
+	Fails            int
+	AlgorithmRunning bool
+	FailsMax         int
+	PFinder          Pathfinding
+	//---------------------------------
 	PFinderEndSelect   bool
 	PFinderStartSelect bool
+	//--------------------------------
+	SelectPoints bool
 }
 
 func (igd *IntegerGridManager) Draw(screen *ebiten.Image) {
@@ -307,6 +344,7 @@ func (igd *IntegerGridManager) Draw(screen *ebiten.Image) {
 	igd.Imat.DrawGridTile(screen, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors)
 	if igd.PFinder.IsFullyInitialized {
 		igd.Imat.DrawAGridTile(screen, igd.PFinder.Cursor.Position, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{50, 140, 50, 255}, false)
+
 		if igd.PFinder.HasFalsePos {
 			// igd.Imat.DrawAGridTile(screen, igd.PFinder.FalsePos, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{140, 50, 50, 255}, false)
 
@@ -317,7 +355,9 @@ func (igd *IntegerGridManager) Draw(screen *ebiten.Image) {
 				igd.Imat.DrawAGridTile(screen, x, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{50, 125, 125, 255}, false)
 
 			}
+
 		}
+		igd.Imat.DrawAGridTile(screen, igd.PFinder.Cursor.Position, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{255, 15, 0, 1}, false) //{255,15,0,1}
 	}
 }
 
@@ -329,7 +369,7 @@ func (igd *IntegerGridManager) UpdateOnMouseEvent(Raw_Mouse_X, Raw_Mouse_Y int) 
 		tempX, tempY = igd.Imat.ChangeValOnMouseEvent(Raw_Mouse_X, Raw_Mouse_Y, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.CycleStart, igd.CycleEnd, !(igd.PFinderStartSelect || igd.PFinderEndSelect))
 	}
 	if tempX != -1 && tempY != -1 {
-		if !igd.PFinderEndSelect && !igd.PFinderStartSelect {
+		if !igd.PFinderEndSelect && !igd.PFinderStartSelect && igd.SelectPoints {
 			igd.LastPoint = CoordInts{tempX, tempY}
 			if (!igd.LastPoint.IsEqualTo(CoordInts{-1, -1})) {
 				igd.Coords = igd.Coords.PushToReturn(igd.LastPoint)
@@ -344,6 +384,102 @@ func (igd *IntegerGridManager) UpdateOnMouseEvent(Raw_Mouse_X, Raw_Mouse_Y int) 
 			igd.Imat[tempY][tempX] = 6
 			igd.PFinder.IsStartInit = true
 			igd.PFinderStartSelect = false
+		}
+	}
+}
+
+func (igd *IntegerGridManager) DrawACircleOnClick(Raw_Mouse_X, Raw_Mouse_Y int, Radius int, valueIs int) {
+	var center CoordInts
+	var is_OnPoint bool
+	center.X, center.Y, is_OnPoint = igd.Imat.GetCoordOfMouseEvent(Raw_Mouse_X, Raw_Mouse_Y, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y)
+
+	if is_OnPoint {
+		fmt.Printf("MIDPOINT CIRCLE\n\tCENTER (x,y): %3d,%3d\n\tRadius:%3d\n", center.X, center.Y, Radius)
+		//temp := center
+		P := 1 - Radius
+		x := Radius
+		y := 0
+		for x > y {
+			y++
+			if P <= 0 {
+				fmt.Printf("P is less than Or Equal to zero\n")
+				P = P + 2*y + 1
+			} else {
+				fmt.Printf("P is Greater than zero\n")
+				x--
+				P = P + 2*y - 2*x + 1
+			}
+			//output here
+			igd.circleDrawWSub(x, y, valueIs+2, center)
+			if x < y {
+				break
+			}
+		}
+	}
+}
+
+func (igd *IntegerGridManager) circleDrawWSub(x, y, valueIs int, center CoordInts) {
+
+	/*
+			cout << "(" << x + x_centre << ", " << y + y_centre << ") ";
+		        cout << "(" << -x + x_centre << ", " << y + y_centre << ") ";
+		        cout << "(" << x + x_centre << ", " << -y + y_centre << ") ";
+		        cout << "(" << -x + x_centre << ", " << -y + y_centre << ")\n";
+
+	*/
+	temp_01A := center
+	// temp_01A.X += r
+	// temp_01A.Y += r
+	temp_01A.X += x
+	temp_01A.Y += y
+
+	temp_01B := center
+	// temp_01B.X += r
+	// temp_01B.Y += r
+	temp_01B.X -= x
+	temp_01B.Y += y
+
+	temp_02A := center
+	temp_02B := center
+	// temp_02A.Y += r
+	// temp_02A.X += r
+	temp_02A.X += x
+	temp_02A.Y -= y
+	// temp_02B.Y += r
+	// temp_02B.X += r
+	temp_02B.X -= x
+	temp_02B.Y -= y
+	//temp.X += Radius
+	// rsqure := math.Pow(float64(Radius), 2.0)
+	//x^2 +y^2 = r^2
+	if igd.Imat.IsValid(center) {
+		igd.Imat[center.Y][center.X] = valueIs
+	}
+	if igd.Imat.IsValid(temp_01A) {
+		igd.Imat[temp_01A.Y][temp_01A.X] = valueIs
+	}
+	if igd.Imat.IsValid(temp_01B) {
+		igd.Imat[temp_01B.Y][temp_01B.X] = valueIs
+	}
+	if igd.Imat.IsValid(temp_02A) {
+		igd.Imat[temp_02A.Y][temp_02A.X] = valueIs
+	}
+	if igd.Imat.IsValid(temp_02B) {
+		igd.Imat[temp_02B.Y][temp_02B.X] = valueIs
+	}
+
+	if x != y {
+		if igd.Imat.IsValid(CoordInts{center.X + y, center.Y + x}) {
+			igd.Imat[center.Y+x][center.X+y] = valueIs
+		}
+		if igd.Imat.IsValid(CoordInts{center.X - y, center.Y + x}) {
+			igd.Imat[center.Y+x][center.X-y] = valueIs
+		}
+		if igd.Imat.IsValid(CoordInts{center.X + y, center.Y - x}) {
+			igd.Imat[center.Y-x][center.X+y] = valueIs
+		}
+		if igd.Imat.IsValid(CoordInts{center.X - y, center.Y - x}) {
+			igd.Imat[center.Y-x][center.X-y] = valueIs
 		}
 	}
 }
