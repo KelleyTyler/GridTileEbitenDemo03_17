@@ -68,8 +68,8 @@ func (g *Game) init() error {
 	g.btn09.InitButton("btn09", "SelectPoints", 2, Settings.ScreenResX-72, 88, 64, 16, 0, 0)
 	g.btn10.InitButton("Btn10", "Btn10", 0, Settings.ScreenResX-140, 108, 64, 16, 0, 0)
 	g.btn11.InitButton("Btn11", "Btn11", 0, Settings.ScreenResX-72, 108, 64, 16, 0, 0)
-	g.btn12.InitButton("Btn12", "set PF \n Start", 0, Settings.ScreenResX-140, 136, 64, 32, 0, 0)
-	g.btn13.InitButton("Btn13", "set pF \n Stop", 0, Settings.ScreenResX-72, 136, 64, 32, 0, 0)
+	g.btn12.InitButton("Btn12", "Pathfind\nSet Start", 0, Settings.ScreenResX-140, 136, 64, 32, 0, 0)
+	g.btn13.InitButton("Btn13", "Pathfind\nSet Stop", 0, Settings.ScreenResX-72, 136, 64, 32, 0, 0)
 	g.btn14.InitButton("Btn14", "Reset\nStart/Stop", 0, Settings.ScreenResX-140, 172, 64, 32, 0, 0)
 	g.btn15.InitButton("Btn15", "Pathfind\nINIT", 0, Settings.ScreenResX-72, 172, 64, 32, 0, 0)
 
