@@ -87,6 +87,8 @@ func (igd *IntegerGridManager) PFindr_DrawSlope() {
 func (igd *IntegerGridManager) PFindr_DrawManhattan() {
 	if igd.PFinder.IsFullyInitialized {
 		yFirst := true
+		// yLock := false
+		// xLock := false
 		vX, vY := igd.PFinder.Cursor.Position.GetDifferenceInInts(igd.PFinder.EndPos)
 		var dirs = CoordInts{0, 0}
 		var vectrex = CoordInts{X: 0, Y: 0}
@@ -111,13 +113,19 @@ func (igd *IntegerGridManager) PFindr_DrawManhattan() {
 			vectrex.X = vX * -1
 			dirs.X = 3
 		}
+
 		if yFirst {
 			if igd.PFinder.Cursor.Position.Y != igd.PFinder.EndPos.Y {
 				igd.MoveCursorSteps(CoordInts{dirs.Y, 1}, 2, []int{0, 2, 3, 4})
 			} else {
 
 				fmt.Printf("DELTA Y== 0\n")
-				igd.MoveCursorSteps(CoordInts{dirs.X, 1}, 2, []int{0, 2, 3, 4})
+				if igd.PFinder.Cursor.Position.X != igd.PFinder.EndPos.X {
+
+					igd.MoveCursorSteps(CoordInts{dirs.X, 1}, 2, []int{0, 2, 3, 4})
+				} else {
+					fmt.Printf("DELTA X== 0\n")
+				}
 			}
 
 		}
@@ -130,6 +138,32 @@ func (igd *IntegerGridManager) PFindr_DrawManhattan() {
 		// }
 	}
 }
+
+func (igd *IntegerGridManager) MoveCursorSteps(Vect CoordInts, steps int, walls []int) (int, bool) {
+	var tempCurs PF_Cursor = igd.PFinder.Cursor
+	tempPos := MoveModifierCoords(tempCurs.Position, Vect.X, 0)
+	var valer int
+
+	for i := 0; (i < len(igd.Imat)) && (i < steps); i++ {
+		tempPos = MoveModifierCoords(tempCurs.Position, Vect.X, i)
+		fmt.Printf("MOVE: %d - POINT: %d %d Val Here: %d\n", i, tempPos.X, tempPos.Y, igd.Imat.GetCoordVal(tempPos))
+		if a, c := IntArrayContains_giveMeWhat(walls, igd.Imat.GetCoordVal(tempPos)); a {
+			valer = i
+			fmt.Printf("HAS WALL: %d at %d , %d\n", c, tempPos.X, tempPos.Y)
+			igd.PFinder.FalsePos = append(igd.PFinder.FalsePos, tempPos)
+			tempPos = MoveModifierCoords(tempCurs.Position, Vect.X, i-1)
+
+			break
+		} else {
+			igd.PFinder.Moves = append(igd.PFinder.Moves, tempPos)
+		}
+	}
+	igd.PFinder.HasFalsePos = true
+	igd.PFinder.Cursor.Position = tempPos
+	fmt.Printf(" MOVE CURSOR AROUND: Dir: %d  Mag %d  Actual: %d \n\n", Vect.X, Vect.Y, valer)
+	return valer, true
+}
+
 func (igd *IntegerGridManager) PFindr_DrawBresenHamLine() {
 	if igd.PFinder.IsFullyInitialized {
 		if !igd.PFinder.HasFalsePos {
@@ -199,31 +233,6 @@ func MoveModifierCoords(start CoordInts, dir, mag int) CoordInts {
 		ender.X -= mag
 	}
 	return ender
-}
-
-func (igd *IntegerGridManager) MoveCursorSteps(Vect CoordInts, steps int, walls []int) (int, bool) {
-	var tempCurs PF_Cursor = igd.PFinder.Cursor
-	tempPos := MoveModifierCoords(tempCurs.Position, Vect.X, 0)
-	var valer int
-
-	for i := 0; (i < len(igd.Imat)) && (i < steps); i++ {
-		tempPos = MoveModifierCoords(tempCurs.Position, Vect.X, i)
-		fmt.Printf("MOVE: %d - POINT: %d %d Val Here: %d\n", i, tempPos.X, tempPos.Y, igd.Imat.GetCoordVal(tempPos))
-		if a, c := IntArrayContains_giveMeWhat(walls, igd.Imat.GetCoordVal(tempPos)); a {
-			valer = i
-			fmt.Printf("HAS WALL: %d at %d , %d\n", c, tempPos.X, tempPos.Y)
-			igd.PFinder.FalsePos = append(igd.PFinder.FalsePos, tempPos)
-			tempPos = MoveModifierCoords(tempCurs.Position, Vect.X, i-1)
-
-			break
-		} else {
-			igd.PFinder.Moves = append(igd.PFinder.Moves, tempPos)
-		}
-	}
-	igd.PFinder.HasFalsePos = true
-	igd.PFinder.Cursor.Position = tempPos
-	fmt.Printf(" MOVE CURSOR AROUND: Dir: %d  Mag %d  Actual: %d \n\n", Vect.X, Vect.Y, valer)
-	return valer, true
 }
 
 func (igd *IntegerGridManager) MoveCursorAround(Vect CoordInts, walls []int) (int, bool) {

@@ -6,6 +6,7 @@ import (
 	"math/rand"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 type IntegerGridManager struct {
@@ -37,7 +38,13 @@ func (igd *IntegerGridManager) Draw(screen *ebiten.Image) {
 	if igd.PFinder.IsEndInit {
 		igd.Imat[igd.PFinder.EndPos.Y][igd.PFinder.EndPos.X] = 6
 	}
-	igd.Imat.DrawGridTile(screen, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors)
+	igd.Imat.DrawGridTiles(screen, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors)
+	if igd.PFinder.IsStartInit {
+		igd.Imat.DrawAGridTile(screen, igd.PFinder.StartPos, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{250, 250, 250, 255}, true)
+	}
+	if igd.PFinder.IsEndInit {
+		igd.Imat.DrawAGridTile(screen, igd.PFinder.EndPos, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{50, 50, 50, 255}, true)
+	}
 	if igd.PFinder.IsFullyInitialized {
 		//igd.Imat.DrawAGridTile(screen, igd.PFinder.Cursor.Position, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{50, 140, 50, 255}, false)
 
@@ -73,14 +80,44 @@ func (igd *IntegerGridManager) UpdateOnMouseEvent(Raw_Mouse_X, Raw_Mouse_Y int) 
 			}
 		} else if igd.PFinderEndSelect {
 			igd.PFinder.EndPos = CoordInts{tempX, tempY}
-			igd.Imat[tempY][tempX] = 5
+			//igd.Imat[tempY][tempX] = 5
 			igd.PFinder.IsEndInit = true
 			igd.PFinderEndSelect = false
 		} else if igd.PFinderStartSelect {
 			igd.PFinder.StartPos = CoordInts{tempX, tempY}
-			igd.Imat[tempY][tempX] = 6
+			//igd.Imat[tempY][tempX] = 6
 			igd.PFinder.IsStartInit = true
 			igd.PFinderStartSelect = false
+		}
+	}
+}
+
+func (igd *IntegerGridManager) UpdateOnMouseEvent2() {
+	Raw_Mouse_X, Raw_Mouse_Y := ebiten.CursorPosition()
+	tempX, tempY := -1, -1
+	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButton(0)) {
+		if igd.FullColors {
+			tempX, tempY = igd.Imat.ChangeValOnMouseEvent(Raw_Mouse_X, Raw_Mouse_Y, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.CycleStart, len(igd.Colors)-1, !(igd.PFinderStartSelect || igd.PFinderEndSelect))
+		} else {
+			tempX, tempY = igd.Imat.ChangeValOnMouseEvent(Raw_Mouse_X, Raw_Mouse_Y, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.CycleStart, igd.CycleEnd, !(igd.PFinderStartSelect || igd.PFinderEndSelect))
+		}
+		if tempX != -1 && tempY != -1 {
+			if !igd.PFinderEndSelect && !igd.PFinderStartSelect && igd.SelectPoints {
+				igd.LastPoint = CoordInts{tempX, tempY}
+				if (!igd.LastPoint.IsEqualTo(CoordInts{-1, -1})) {
+					igd.Coords = igd.Coords.PushToReturn(igd.LastPoint)
+				}
+			} else if igd.PFinderEndSelect {
+				igd.PFinder.EndPos = CoordInts{tempX, tempY}
+				igd.Imat[tempY][tempX] = 5
+				igd.PFinder.IsEndInit = true
+				igd.PFinderEndSelect = false
+			} else if igd.PFinderStartSelect {
+				igd.PFinder.StartPos = CoordInts{tempX, tempY}
+				igd.Imat[tempY][tempX] = 6
+				igd.PFinder.IsStartInit = true
+				igd.PFinderStartSelect = false
+			}
 		}
 	}
 }

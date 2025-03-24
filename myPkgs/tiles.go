@@ -44,7 +44,7 @@ func (imat IntMatrix) DrawAGridTile_With_Line(screen *ebiten.Image, coord CoordI
 	//vector.StrokeRect(screen, float32((tileW*coord.X)+(GapX*coord.X)+OffsetX), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY), float32(tileW), float32(tileH), 2.0, color.Black, aa)
 }
 
-func (imat IntMatrix) DrawGridTile(screen *ebiten.Image, OffsetX int, OffsetY int, tileW int, tileH int, GapX int, GapY int, colors []color.Color) {
+func (imat IntMatrix) DrawGridTiles(screen *ebiten.Image, OffsetX int, OffsetY int, tileW int, tileH int, GapX int, GapY int, colors []color.Color) {
 	test1X := ((len(imat[0]) * tileW) + (len(imat[0]) * GapX)) + OffsetX
 	test1Y := ((len(imat) * tileH) + (len(imat) * GapY)) + OffsetY
 	for y, _ := range imat {
@@ -80,6 +80,14 @@ func (imat IntMatrix) GetCoordOfMouseEvent(Raw_Mouse_X int, Raw_Mouse_Y int, Off
 	}
 	return mXi, mYi, isOnTile
 }
+
+func (imat IntMatrix) IsCursorInBounds(OffsetX int, OffsetY int, tileW int, tileH int, GapX int, GapY int) bool {
+	Raw_Mouse_X, Raw_Mouse_Y := ebiten.CursorPosition()
+	test1X := ((len(imat[0]) * tileW) + (len(imat[0]) * GapX)) + OffsetX
+	test1Y := ((len(imat) * tileH) + (len(imat) * GapY)) + OffsetY
+	return ((Raw_Mouse_X > OffsetX && Raw_Mouse_X < test1X-GapX) && (Raw_Mouse_Y > OffsetY && Raw_Mouse_Y < test1Y-GapY))
+}
+
 func (imat IntMatrix) ChangeValOnMouseEvent(Raw_Mouse_X int, Raw_Mouse_Y int, OffsetX int, OffsetY int, tileW int, tileH int, GapX int, GapY int, cycleStart int, cycleEnd int, makeChange bool) (int, int) {
 
 	test1X := ((len(imat[0]) * tileW) + (len(imat[0]) * GapX)) + OffsetX
@@ -164,4 +172,14 @@ func (imat IntMatrix) IsValid_WithDir_Buffer(cord CoordInts, buffer [4]int) bool
 		return true
 	}
 	return false
+}
+
+func (imat IntMatrix) ClearAnArea(c1_X, c1_Y, c2_X, c2_Y, val int) {
+
+	for i := c1_Y; i < c2_Y; i++ {
+		for j := c1_X; j < c2_X; j++ {
+			imat[i][j] = val
+		}
+	}
+
 }
