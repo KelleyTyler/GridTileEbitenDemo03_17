@@ -37,6 +37,8 @@ type Game struct {
 	btn14, btn15, btn16, btn17, btn18, btn19, btn20 mypkgs.Button //btn21, btn22, btn23, btn24, btn25, btn26, btn27 mypkgs.Button
 	btn21                                           mypkgs.Button
 	coorAr                                          mypkgs.CoordList
+	numPanel00, numPanel01, numPanel02, numPanel03  mypkgs.NumSelect_Button
+	numPanel04, numPanel05, numPanel06, numPanel07  mypkgs.NumSelect_Button
 	isRunning                                       bool
 	IntGrid                                         mypkgs.IntegerGridManager
 }
@@ -83,16 +85,25 @@ func (g *Game) init() error {
 	g.btn19.InitButton("Btn19", "Draw\nCircle", 2, col1, block3+36, 64, 32, 0, 0)
 	g.btn20.InitButton("Btn20", "", 0, col0, block3+72, 64, 32, 0, 0)
 	g.btn21.InitButton("Btn21", "", 0, col1, block3+72, 64, 32, 0, 0)
-
+	block4 := 444
+	g.numPanel00.Init("nums00", "", true, col0, block4, 32, 16, 0, 10, 20, 1)
+	g.numPanel01.Init("nums01", "", true, col1, block4, 32, 16, 0, 6, 20, 1)
+	g.numPanel02.Init("nums02", "", true, col0, block4+36, 32, 16, 1, 8, 16, 1)
+	g.numPanel03.Init("", "circ. Rad", true, col1, block4+36, 32, 16, 0, 0, 20, 1)
+	g.numPanel04.Init("nums03", "", true, col0, block4+36+36, 32, 16, 0, 0, 10, 1)
+	g.numPanel05.Init("nums02", "", true, col1, block4+36+36, 32, 16, 0, 0, 16, 1)
+	g.numPanel06.Init("nums03", "", true, col0, block4+36+36+36, 32, 16, 0, 0, 10, 1)
+	g.numPanel07.Init("nums03", "", true, col1, block4+36+36+36, 32, 16, 0, 0, 10, 1)
 	g.coorAr = append(g.coorAr, mypkgs.CoordInts{X: 2, Y: 2})
-	g.IntGrid.Init(32, 32, 16, 16, 8, 8, 2, 2)
+	g.IntGrid.Init(32, 32, 16, 16, 64, 8, 2, 2)
 
 	return nil
 }
 func (g *Game) PreDraw(screen *ebiten.Image) {
 	screen.Clear()
 	screen.DrawImage(backgroundImg, nil)
-	g.IntGrid.Draw(screen)
+	g.IntGrid.Draw(screen) //if made into a goroutine this needs to have some better way of streaming output;
+	//alternatively this perhaps is a great way to
 	// imatrix.DrawGridTile(screen, tile_offset_X, tile_offset_Y, tileW, tileH, tile_Margin_W, tile_Margin_H) //DrawGridTile(screen, 8, 8, 16, 16, 2, 2)
 	g.btn00.DrawButton(screen)
 	g.btn01.DrawButton(screen)
@@ -119,6 +130,15 @@ func (g *Game) PreDraw(screen *ebiten.Image) {
 	g.btn19.DrawButton(screen)
 	g.btn20.DrawButton(screen)
 	g.btn21.DrawButton(screen)
+
+	g.numPanel00.Draw(screen)
+	g.numPanel01.Draw(screen)
+	g.numPanel02.Draw(screen)
+	g.numPanel03.Draw(screen)
+	g.numPanel04.Draw(screen)
+	g.numPanel05.Draw(screen)
+	g.numPanel06.Draw(screen)
+	g.numPanel07.Draw(screen)
 	//screen.DrawImage()
 }
 
@@ -128,7 +148,7 @@ func (g *Game) Update() error {
 	}
 
 	mx, my := ebiten.CursorPosition()
-	g.IntGrid.UpdateOnMouseEvent2()
+	go g.IntGrid.UpdateOnMouseEvent2()
 	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButton0) {
 		// g.IntGrid.UpdateOnMouseEvent(mx, my)
 		// g.btn00.Update(mx, my, true)
@@ -154,7 +174,7 @@ func (g *Game) Update() error {
 		// g.btn20.Update(mx, my, true)
 
 		if g.btn19.IsToggled {
-			g.IntGrid.DrawACircleOnClick(mx, my, 7, 0)
+			g.IntGrid.DrawACircleOnClick(mx, my, g.numPanel03.GetCurrValue(), 1)
 			//g.btn20.IsToggled = false
 		}
 		// 	//g.btn21.Update(mx, my, true)
@@ -183,6 +203,14 @@ func (g *Game) Update() error {
 		// 	// g.btn21.Update(mx, my, false)
 	}
 
+	g.numPanel00.Update()
+	g.numPanel01.Update()
+	g.numPanel02.Update()
+	g.numPanel03.Update()
+	g.numPanel04.Update()
+	g.numPanel05.Update()
+	g.numPanel06.Update()
+	g.numPanel07.Update()
 	if g.btn00.Update3() {
 		g.IntGrid.DEMO_COORDS_00(4, 0, 0) //igd.Coords.PrintCordArray()
 	}
@@ -233,8 +261,15 @@ func (g *Game) Update() error {
 			if !g.IntGrid.AlgorithmRunning {
 				g.IntGrid.AlgorithmRunning = true
 			}
-			g.IntGrid.Process3c(50, 10, 6, []int{0, 2}) //8,4
+			// g.IntGrid.Process3c(50, 10, 6, []int{0, 2, 3}) //8,4
+			// g.IntGrid.Process3c(50, g.numPanel00.CurValue, g.numPanel01.CurValue, g.numPanel02.CurValue, g.numPanel03.CurValue, g.numPanel04.CurValue, []int{0, 2, 3}) //8,4
+			g.IntGrid.Process3c(50, g.numPanel00.CurValue, g.numPanel01.CurValue, []int{0, 2, 3}) //8,4 //, g.numPanel02.CurValue
+
 		}
+		// if !g.IntGrid.AlgorithmRunning {
+		// 	g.IntGrid.AlgorithmRunning = true
+		// }
+		// g.IntGrid.Process3c(50, g.numPanel00.CurValue, g.numPanel01.CurValue, []int{0, 2, 3})
 	}
 	if g.btn09.Update3() {
 		g.IntGrid.SelectPoints = true
@@ -273,7 +308,41 @@ func (g *Game) Update() error {
 	if g.btn19.Update3() {
 
 	}
+	if g.btn20.Update3() {
+		g.IntGrid.PFinder.Cursor.ShowNeighbors = !g.IntGrid.PFinder.Cursor.ShowNeighbors
+	}
+	//inpututil.IsKeyJustPressed(ebiten.KeyW)
+	if inpututil.IsKeyJustPressed(ebiten.KeyW) {
 
+		//g.numPanel00.CurValue
+		if g.IntGrid.MoveCursorFreely(0, 1, []int{0, 2, 3, 4}) {
+			g.IntGrid.Position.Y += 18
+		}
+
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyA) {
+		// g.IntGrid.Position.X -= 1
+
+		if g.IntGrid.MoveCursorFreely(3, 1, []int{0, 2, 3, 4}) {
+			g.IntGrid.Position.X += 18
+		}
+
+	}
+
+	if inpututil.IsKeyJustPressed(ebiten.KeyS) {
+		// g.IntGrid.Position.Y += 1
+		if g.IntGrid.MoveCursorFreely(2, 1, []int{0, 2, 3, 4}) {
+			g.IntGrid.Position.Y -= 18
+		}
+
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyD) {
+		if g.IntGrid.MoveCursorFreely(1, 1, []int{0, 2, 3, 4}) {
+			g.IntGrid.Position.X -= 18
+		}
+
+		// g.IntGrid.Position.X += 1
+	}
 	g.PreDraw(foregroundImg)
 	g.gameDebugMsg = fmt.Sprintf("FPS:%8.3f TPS:%8.3f\n", ebiten.ActualFPS(), ebiten.ActualTPS())
 	g.gameDebugMsg += fmt.Sprintf("%s\n", Settings.ToString())

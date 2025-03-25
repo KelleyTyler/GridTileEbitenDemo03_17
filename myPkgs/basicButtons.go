@@ -29,9 +29,18 @@ import (
 // type ButtonType uint8
 
 // const (
-// 	BtnTypeMomentary ButtonType = 0
-// 	BtnTypeToggle    ButtonType = 1
+//
+//	BtnTypeMomentary ButtonType = 0
+//	BtnTypeToggle    ButtonType = 1
+//
 // )
+func IsMouseOverPos(adj_x, adj_y int, position, size CoordInts) bool {
+	if mx, my := ebiten.CursorPosition(); (mx > position.X+adj_x && mx < position.X+size.X+adj_x) && (my > position.Y+adj_y && my < position.Y+size.Y+adj_y) {
+		return true
+	} else {
+		return false
+	}
+}
 
 type Button struct {
 	Coords    CoordInts
@@ -188,7 +197,9 @@ func (btn *Button) InitButton(name, label string, bType int, Pos_X, Pos_Y, BtnWi
 	btn.Color = []color.Color{color.RGBA{75, 150, 75, 255}, color.RGBA{120, 220, 75, 255}, color.RGBA{140, 240, 100, 255},
 		color.RGBA{150, 75, 75, 255}, color.RGBA{220, 120, 75, 255}, color.RGBA{240, 140, 90, 255}}
 }
-
+func (btn *Button) ChangeLabel(strng string) {
+	btn.Label = strng
+}
 func (btn *Button) DrawButton(screen *ebiten.Image) {
 
 	// w := btn.Size.X
@@ -242,11 +253,105 @@ func (btn *Button) DrawButton_adj(screen *ebiten.Image, adj_X, adj_Y int) {
 	// screen.DrawImage(, &opts)
 }
 
-type NumSelect struct {
+type TextPanel struct {
+	Position CoordInts
+	Size     CoordInts
+	Label    string
+	Color    color.Color
+}
+
+func (txtPnl *TextPanel) Draw(screen *ebiten.Image) {
+	vector.DrawFilledRect(screen, float32(txtPnl.Position.X), float32(txtPnl.Position.Y), float32(txtPnl.Size.X), float32(txtPnl.Size.Y), txtPnl.Color, true)
+	vector.StrokeRect(screen, float32(txtPnl.Position.X), float32(txtPnl.Position.Y), float32(txtPnl.Size.X), float32(txtPnl.Size.Y), 2.0, color.Black, true)
+	ebitenutil.DebugPrintAt(screen, txtPnl.Label, txtPnl.Position.X, txtPnl.Position.Y)
+}
+func (txtPnl *TextPanel) Init(label string, position, size CoordInts, color color.Color) {
+	txtPnl.Position = position
+	txtPnl.Size = size
+	txtPnl.Label = label
+	txtPnl.Color = color
+}
+
+type NumSelect_Button struct {
 	Position CoordInts
 	Size     CoordInts
 	Btns     [3]Button //has a numSelect button
-	Value    int
+	CurValue int
+	MinValue int
+	MaxValue int
+	iterator int
+	ShowLbl  bool
+	Label    TextPanel
+}
+
+// func (nsel *NumSelect_Button) Init(name, label string, Pos_X, Pos_Y, BtnWidth, BtnHeight, OffsetX, OffsetY int) {
+// 	nsel.Position = CoordInts{X: Pos_X, Y: Pos_Y}
+// 	nsel.Size = CoordInts{X: BtnWidth, Y: BtnHeight}
+
+// }
+func (nsel *NumSelect_Button) Init(name, label string, showlbl bool, Pos_X, Pos_Y, PWidth, PHeight, mintVal, startVal, maxVal, iterate int) {
+	nsel.Position = CoordInts{X: Pos_X, Y: Pos_Y}
+	nsel.Size = CoordInts{X: 64, Y: PHeight}
+	nsel.Btns[0].InitButton("LButton", " -", 0, Pos_X, Pos_Y, 16, PHeight, 0, 0)
+	nsel.Btns[1].InitButton("DButton", "", 0, Pos_X+16, Pos_Y, 32, PHeight, 0, 0)
+	nsel.Btns[2].InitButton("RButton", " +", 0, Pos_X+48, Pos_Y, 16, PHeight, 0, 0)
+	nsel.MinValue = mintVal
+	nsel.CurValue = startVal
+	nsel.MaxValue = maxVal
+	nsel.iterator = iterate
+	// nsel.Label = label
+	nsel.Label.Init(label, CoordInts{X: Pos_X, Y: Pos_Y - 16}, CoordInts{X: 64, Y: 16}, color.RGBA{75, 150, 75, 255})
+	nsel.ShowLbl = showlbl
+}
+func (nsel *NumSelect_Button) Draw(screen *ebiten.Image) {
+	nsel.Btns[0].DrawButton(screen)
+	//DrawArrow(screen, nsel.Btns[0].Coords, nsel.Btns[0].Size, 1.0, color.Black, true)
+	nsel.Btns[1].DrawButton(screen)
+
+	nsel.Btns[2].DrawButton(screen)
+	if nsel.ShowLbl {
+		nsel.Label.Draw(screen)
+	}
+	// DrawArrow01(screen, nsel.Btns[2].Coords, nsel.Btns[2].Size, 1.0, color.RGBA{255, 100, 100, 255}, false)
+}
+
+func (nsel *NumSelect_Button) Update() {
+	if nsel.Btns[0].Update3() {
+		if (nsel.CurValue - nsel.iterator) >= nsel.MinValue {
+			nsel.CurValue -= nsel.iterator
+		} else {
+			nsel.CurValue = nsel.MinValue
+		}
+	}
+	if nsel.Btns[1].Update3() {
+
+	}
+	if nsel.Btns[2].Update3() {
+		if (nsel.CurValue + nsel.iterator) <= nsel.MaxValue {
+			nsel.CurValue += nsel.iterator
+		} else {
+			nsel.CurValue = nsel.MaxValue
+		}
+	}
+	nsel.Btns[1].ChangeLabel(fmt.Sprintf(" %03d", nsel.CurValue))
+}
+func (nsel *NumSelect_Button) GetCurrValue() int {
+	return nsel.CurValue
+}
+func DrawArrow(screen *ebiten.Image, pos CoordInts, cellSize CoordInts, swidth float32, colr color.Color, aa bool) {
+	midH := float32(pos.Y) + (float32(cellSize.Y) / 2)
+	midW := float32(pos.X) + (float32(cellSize.X) / 2)
+	vector.StrokeLine(screen, float32(pos.X), midH, midW, midH, swidth, colr, aa)
+	vector.StrokeLine(screen, float32(pos.X), float32(pos.Y), midW, midH, swidth, colr, aa)
+	vector.StrokeLine(screen, float32(pos.X), float32(pos.Y+cellSize.Y), midW, midH, swidth, colr, aa)
+}
+func DrawArrow01(screen *ebiten.Image, pos CoordInts, cellSize CoordInts, swidth float32, colr color.Color, aa bool) {
+	// aX := 13
+	midH := float32(pos.Y) + (float32(cellSize.Y) / 2)
+	midW := float32(pos.X) + (float32(cellSize.X) / 2)
+	vector.StrokeLine(screen, midW-2, midH, float32(pos.X+cellSize.X-2), midH, swidth, colr, aa)
+	// vector.StrokeLine(screen, float32(pos.X), float32(pos.Y), midW, midH, swidth, colr, aa)
+	// vector.StrokeLine(screen, float32(pos.X), float32(pos.Y+cellSize.Y), midW, midH, swidth, colr, aa)
 }
 
 /*

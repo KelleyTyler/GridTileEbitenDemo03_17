@@ -85,7 +85,69 @@ func (iMat IntMatrix) GetNeighbors(coordPoint CoordInts) (CoordList, [4]int, int
 	//----
 	return outList, outAr, iMat.GetCoordVal(coordPoint)
 }
+func (iMat IntMatrix) GetNeighbors8(coordPoint CoordInts) (CoordList, [8]int, int) {
+	outList := make(CoordList, 8)
+	var outAr [8]int
+	//North
+	outList[0] = CoordInts{coordPoint.X, coordPoint.Y - 1}
+	if coordPoint.Y < 1 {
+		outAr[0] = -1
+	} else {
+		outAr[0] = iMat.GetCoordVal(outList[0])
+	}
+	//northeast
+	outList[1] = CoordInts{coordPoint.X + 1, coordPoint.Y - 1}
+	if coordPoint.X > len(iMat[0])-2 || coordPoint.Y < 1 {
+		outAr[1] = -1
+	} else {
+		outAr[1] = iMat.GetCoordVal(outList[1])
+	}
+	//east
+	outList[2] = CoordInts{coordPoint.X + 1, coordPoint.Y}
+	if coordPoint.X > len(iMat[0])-2 {
+		outAr[2] = -1
+	} else {
+		outAr[2] = iMat.GetCoordVal(outList[2])
+	}
+	//south east
+	outList[3] = CoordInts{coordPoint.X + 1, coordPoint.Y + 1}
+	if coordPoint.X > len(iMat[0])-2 || coordPoint.Y > len(iMat)-2 {
+		outAr[3] = -1
+	} else {
+		outAr[3] = iMat.GetCoordVal(outList[3])
+	}
 
+	//south
+	outList[4] = CoordInts{coordPoint.X, coordPoint.Y + 1}
+	if coordPoint.Y > len(iMat)-2 {
+		outAr[4] = -1
+	} else {
+		outAr[4] = iMat.GetCoordVal(outList[4])
+	}
+	//southwest
+	outList[5] = CoordInts{coordPoint.X - 1, coordPoint.Y + 1}
+	if coordPoint.X < 1 {
+		outAr[5] = -1
+	} else {
+		outAr[5] = iMat.GetCoordVal(outList[5])
+	}
+	//west
+	outList[6] = CoordInts{coordPoint.X - 1, coordPoint.Y}
+	if coordPoint.X < 1 {
+		outAr[6] = -1
+	} else {
+		outAr[6] = iMat.GetCoordVal(outList[6])
+	}
+	//northwest
+	outList[7] = CoordInts{coordPoint.X - 1, coordPoint.Y - 1}
+	if coordPoint.X < 1 {
+		outAr[7] = -1
+	} else {
+		outAr[7] = iMat.GetCoordVal(outList[7])
+	}
+	//----
+	return outList, outAr, iMat.GetCoordVal(coordPoint)
+}
 func (iMat IntMatrix) GetNeighborsButFiltered(coordPoint CoordInts, FilterFor []int) (CoordList, [4]int, int) {
 	outList, numList, num := iMat.GetNeighbors(coordPoint)
 	outList2 := make(CoordList, len(outList))

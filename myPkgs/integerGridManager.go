@@ -60,7 +60,8 @@ func (igd *IntegerGridManager) Draw(screen *ebiten.Image) {
 			}
 
 		}
-		igd.Imat.DrawAGridTile_With_Line(screen, igd.PFinder.Cursor.Position, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{200, 150, 0, 255}, color.Black, 2.0, false)
+		igd.DrawCursor(screen)
+		// igd.Imat.DrawAGridTile_With_Line(screen, igd.PFinder.Cursor.Position, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{200, 150, 0, 255}, color.Black, 2.0, false)
 		// igd.Imat.DrawAGridTile(screen, igd.PFinder.Cursor.Position, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{255, 15, 0, 1}, false) //{255,15,0,1}
 	}
 }
@@ -144,11 +145,39 @@ func (igd *IntegerGridManager) DrawACircleOnClick(Raw_Mouse_X, Raw_Mouse_Y int, 
 				P = P + 2*y - 2*x + 1
 			}
 			//output here
-			igd.circleDrawWSub(x, y, valueIs+2, center)
+			igd.circleDrawWSub(x, y, valueIs, center)
 			if x < y {
 				break
 			}
 		}
+
+		temp_01A := center
+		temp_01A.X += Radius
+		// igd.Imat[temp_01A.Y][temp_01A.X] = valueIs
+		if igd.Imat.IsValid(temp_01A) {
+			igd.Imat[temp_01A.Y][temp_01A.X] = valueIs
+		}
+		temp_01B := center
+		temp_01B.X -= Radius
+		if igd.Imat.IsValid(temp_01B) {
+			igd.Imat[temp_01B.Y][temp_01B.X] = valueIs
+		}
+		temp_01C := center
+		temp_01C.Y -= Radius
+		if igd.Imat.IsValid(temp_01C) {
+			igd.Imat[temp_01C.Y][temp_01C.X] = valueIs
+		}
+		temp_01D := center
+		temp_01D.Y += Radius
+		if igd.Imat.IsValid(temp_01D) {
+			igd.Imat[temp_01D.Y][temp_01D.X] = valueIs
+		}
+
+		fmt.Printf("0: %d %d VALUEIS %d\n", center.X, center.Y, valueIs)
+		fmt.Printf("A: %d %d\n", temp_01A.X, temp_01A.Y)
+		fmt.Printf("B: %d %d\n", temp_01B.X, temp_01B.Y)
+		fmt.Printf("C: %d %d\n", temp_01C.X, temp_01C.Y)
+		fmt.Printf("D: %d %d\n", temp_01D.X, temp_01D.Y)
 	}
 }
 
@@ -161,6 +190,7 @@ func (igd *IntegerGridManager) circleDrawWSub(x, y, valueIs int, center CoordInt
 		        cout << "(" << -x + x_centre << ", " << -y + y_centre << ")\n";
 
 	*/
+
 	temp_01A := center
 	// temp_01A.X += r
 	// temp_01A.Y += r
@@ -217,6 +247,7 @@ func (igd *IntegerGridManager) circleDrawWSub(x, y, valueIs int, center CoordInt
 		}
 	}
 }
+
 func (igd *IntegerGridManager) Init(N_TilesX, N_TilesY int, TSizeX, TSizeY int, PosX, PosY int, MargX, MargY int) {
 	igd.Margin = CoordInts{X: MargX, Y: MargY}
 	igd.Position = CoordInts{X: PosX, Y: PosY}
@@ -470,8 +501,8 @@ func (igd *IntegerGridManager) Process2b(maxTicks int) {
 		}
 	}
 }
-func (igd *IntegerGridManager) Process3b(maxTicks int, lims int, lim2 int, nums []int) {
-
+func (igd *IntegerGridManager) Process3b(maxTicks int, lims int, lim2 int, nums []int) { //, lim4, lim5 int
+	// ,lim3 int, lim4, lim5 int,
 	for i := range maxTicks {
 		if len(igd.Coords) > 0 {
 			igd.Process3(lims, lim2, nums)
@@ -482,9 +513,9 @@ func (igd *IntegerGridManager) Process3b(maxTicks int, lims int, lim2 int, nums 
 		}
 		if i != 0 {
 			if i%2 == 0 {
-				igd.CullCoords(2, false, []int{0, 2})
+				igd.CullCoords(2, false, nums) //2 //lim4
 			} else if i%5 == 0 {
-				igd.CullCoords(4, false, []int{0, 2})
+				igd.CullCoords(4, false, nums) //4 //lim5
 			}
 		}
 		// if igd.Fails > igd.FailsMax {
@@ -494,12 +525,21 @@ func (igd *IntegerGridManager) Process3b(maxTicks int, lims int, lim2 int, nums 
 
 }
 
-func (igd *IntegerGridManager) Process3c(maxTicks int, lims int, lim2 int, nums []int) {
+func (igd *IntegerGridManager) Process3c(maxTicks int, lims int, lim2 int, nums []int) { //,lim4, lim5 int //, lim3, lim4, lim5 int
+	min_Y, max_Y := 2, len(igd.Imat)-2
+	min_X, max_X := 2, len(igd.Imat[0])-2
+	//fmt.Printf("TEST\n")
 	if igd.AlgorithmRunning {
-		igd.Process3b(maxTicks, lims, lim2, nums)
+		if len(igd.Coords) < 1 {
+			//fmt.Printf("STARTING\n")
+			rX, rY := rand.Intn(max_X-min_X)+min_X, rand.Intn(max_Y-min_Y)+min_Y
+			igd.Coords = append(igd.Coords, CoordInts{X: rX, Y: rY})
+			//igd.AlgorithmRunning = true
+		}
+		igd.Process3b(maxTicks, lims, lim2, nums) //lim4, lim5
 		if igd.Fails > igd.FailsMax {
 			fmt.Printf("FINISHED\n")
-			igd.CullCoords(8, true, nums)
+			igd.CullCoords(8, true, nums) //8
 			igd.AlgorithmRunning = false
 		}
 		// igd.CullCoords(2, false, []int{0, 2})
@@ -507,6 +547,10 @@ func (igd *IntegerGridManager) Process3c(maxTicks int, lims int, lim2 int, nums 
 		// igd.CullCoords(2, false, []int{0, 2})
 		// igd.CullCoords(2, false, []int{0, 2})
 	}
+	// else {
+	// 	fmt.Printf("STARTING\n")
+
+	// }
 }
 
 func (igd *IntegerGridManager) Process3(lims int, lim2 int, nums []int) {

@@ -18,7 +18,7 @@ type Pathfinding struct {
 	Nodes              CoordList
 	Color              color.Color
 	SpriteDim          CoordInts
-	Cursor             PF_Cursor
+	Cursor             Cell
 	FalsePos           CoordList
 	Moves              CoordList
 	HasFalsePos        bool
@@ -66,7 +66,7 @@ func (igd *IntegerGridManager) PathfindingProcess() {
 	if igd.PFinder.IsStartInit && igd.PFinder.IsEndInit && !igd.PFinder.IsFullyInitialized {
 		igd.PFinder.IsFullyInitialized = true
 		fmt.Printf("\nINITIALIZED AND READY\n")
-		igd.PFinder.Cursor.InitP(igd.PFinder.StartPos, igd.Imat)
+		igd.PFinder.Cursor.InitP(igd.PFinder.StartPos, igd.PFinder.EndPos, igd.Imat)
 	}
 
 	if igd.PFinder.IsFullyInitialized {
@@ -140,7 +140,7 @@ func (igd *IntegerGridManager) PFindr_DrawManhattan() {
 }
 
 func (igd *IntegerGridManager) MoveCursorSteps(Vect CoordInts, steps int, walls []int) (int, bool) {
-	var tempCurs PF_Cursor = igd.PFinder.Cursor
+	var tempCurs Cell = igd.PFinder.Cursor
 	tempPos := MoveModifierCoords(tempCurs.Position, Vect.X, 0)
 	var valer int
 
@@ -186,26 +186,6 @@ func (igd *IntegerGridManager) PFindr_DrawBresenHamLine() {
 	}
 }
 
-type PF_Cursor struct {
-	Position        CoordInts
-	Neighbors       [4]CoordInts
-	Neighbor_Values [4]int
-	ticker          int
-	// Previous        *PF_Cursor
-	// Next            *PF_Cursor
-	// Number          int
-}
-
-func (pfCurs *PF_Cursor) InitP(StartPos CoordInts, imat IntMatrix) {
-	// limit_X, limit_Y := imat.GetDimensions()
-
-	pfCurs.Position = StartPos
-	temp, temp2, _ := imat.GetNeighbors(StartPos)
-	pfCurs.Neighbor_Values = temp2
-	pfCurs.Neighbors = [4]CoordInts(temp)
-	pfCurs.ticker = 0
-}
-
 func MoveModifier(startX, startY, dir, mag int) (int, int) {
 	endX, endY := startX, startY
 	switch dir {
@@ -234,9 +214,82 @@ func MoveModifierCoords(start CoordInts, dir, mag int) CoordInts {
 	}
 	return ender
 }
+func MoveModifierCoords8(start CoordInts, dir, mag int) CoordInts {
+	ender := start
+	switch dir {
+	case 0:
+		ender.Y -= mag
+	case 1:
+		ender.Y -= mag
+		ender.X += mag
+	case 2:
+		ender.X += mag
+	case 3:
+		ender.X += mag
+		ender.Y += mag
+	case 4:
+		ender.Y += mag
+	case 5:
+		ender.Y += mag
+		ender.X -= mag
+	case 6:
+		ender.X -= mag
+	case 7:
+		ender.Y -= mag
+		ender.X -= mag
+	}
+	return ender
+}
+func (igd *IntegerGridManager) MoveCursorFreely(dir int, speed int, walls []int) bool {
+	if igd.PFinder.IsFullyInitialized {
+		var tempCurs Cell = igd.PFinder.Cursor
+		tempPos := MoveModifierCoords(tempCurs.Position, dir, speed)
+		if igd.Imat.IsValid(tempPos) {
+			if !IntArrayContains(walls, igd.Imat.GetCoordVal(tempPos)) {
+				igd.PFinder.Cursor.Position = tempPos
+				igd.UpdateCursor()
+				return true
+			} else {
+				return false
+			}
+		}
+	}
+	return false
+}
+func (igd *IntegerGridManager) MoveCursorAroundPath(dir int, speed int, walls []int) {
+	if igd.PFinder.IsFullyInitialized {
+		var tempCurs Cell = igd.PFinder.Cursor
+		tempPos := MoveModifierCoords(tempCurs.Position, dir, speed)
+		if igd.Imat.IsValid(tempPos) {
+			if !IntArrayContains(walls, igd.Imat.GetCoordVal(tempPos)) {
+				igd.PFinder.Cursor.Position = tempPos
+				igd.UpdateCursor()
+
+			}
+		}
+	}
+
+}
+func (igd *IntegerGridManager) UpdateCursor() {
+	temp, temp2, _ := igd.Imat.GetNeighbors8(igd.PFinder.Cursor.Position)
+	igd.PFinder.Cursor.Neighbor_Values = temp2
+	igd.PFinder.Cursor.Neighbors = [8]CoordInts(temp)
+}
+func (igd *IntegerGridManager) DrawCursor(screen *ebiten.Image) {
+	igd.Imat.DrawAGridTile_With_Line(screen, igd.PFinder.Cursor.Position, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{200, 150, 0, 255}, color.Black, 2.0, false)
+	if igd.PFinder.Cursor.ShowNeighbors {
+		for i, a := range igd.PFinder.Cursor.Neighbors {
+			if igd.PFinder.Cursor.Neighbor_Values[i] == 1 {
+				igd.Imat.DrawAGridTile_With_Line(screen, a, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{200, 0, 150, 255}, color.Black, 2.0, false)
+			} else {
+				igd.Imat.DrawAGridTile_With_Line(screen, a, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{0, 150, 200, 255}, color.Black, 2.0, false)
+			}
+		}
+	}
+}
 
 func (igd *IntegerGridManager) MoveCursorAround(Vect CoordInts, walls []int) (int, bool) {
-	var tempCurs PF_Cursor = igd.PFinder.Cursor
+	var tempCurs Cell = igd.PFinder.Cursor
 	//step1;
 	var valer int
 	tempPos := MoveModifierCoords(tempCurs.Position, Vect.X, 0)
@@ -302,7 +355,7 @@ func (cord CoordInts) MoveCursorAlongSlope(target CoordInts, ticks int) CoordInt
 	return temp
 }
 func (igd *IntegerGridManager) SLOPEMOVE(ticks int, walls []int) {
-	var tempCurs PF_Cursor = igd.PFinder.Cursor
+	var tempCurs Cell = igd.PFinder.Cursor
 	tempPos := tempCurs.Position.MoveCursorAlongSlope(igd.PFinder.EndPos, ticks)
 	igd.PFinder.FalsePos = append(igd.PFinder.FalsePos, tempPos)
 
@@ -323,4 +376,132 @@ func (igd *IntegerGridManager) SLOPEMOVE(ticks int, walls []int) {
 
 	// igd.PFinder.HasFalsePos = true
 	igd.PFinder.HasFalsePos = true
+}
+
+// -------------------------------------------------------
+
+func (igd *IntegerGridManager) GetACirclePointsOnClick(Raw_Mouse_X, Raw_Mouse_Y int, Radius int, valueIs int) CoordList {
+	var center CoordInts
+	var is_OnPoint bool
+	center.X, center.Y, is_OnPoint = igd.Imat.GetCoordOfMouseEvent(Raw_Mouse_X, Raw_Mouse_Y, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y)
+	var temp CoordList
+	if is_OnPoint {
+		fmt.Printf("MIDPOINT CIRCLE\n\tCENTER (x,y): %3d,%3d\n\tRadius:%3d\n", center.X, center.Y, Radius)
+		//temp := center
+		P := 1 - Radius
+		x := Radius
+		y := 0
+		for x > y {
+			y++
+			if P <= 0 {
+				fmt.Printf("P is less than Or Equal to zero\n")
+				P = P + 2*y + 1
+			} else {
+				fmt.Printf("P is Greater than zero\n")
+				x--
+				P = P + 2*y - 2*x + 1
+			}
+			//output here
+			// x, y :=
+			temp2 := igd.GetACirclePointsWSub(x, y, valueIs, center)
+			temp = append(temp, temp2...)
+			// for _, a := range temp2 {
+
+			// }
+			if x < y {
+				break
+			}
+		}
+
+		temp_01A := center
+		temp_01A.X += Radius
+		// igd.Imat[temp_01A.Y][temp_01A.X] = valueIs
+		if igd.Imat.IsValid(temp_01A) {
+			// igd.Imat[temp_01A.Y][temp_01A.X] = valueIs
+			temp = append(temp, temp_01A)
+		}
+		temp_01B := center
+		temp_01B.X -= Radius
+		if igd.Imat.IsValid(temp_01B) {
+			// igd.Imat[temp_01B.Y][temp_01B.X] = valueIs
+			temp = append(temp, temp_01B)
+		}
+		temp_01C := center
+		temp_01C.Y -= Radius
+		if igd.Imat.IsValid(temp_01C) {
+			// igd.Imat[temp_01C.Y][temp_01C.X] = valueIs
+			temp = append(temp, temp_01C)
+		}
+		temp_01D := center
+		temp_01D.Y += Radius
+		if igd.Imat.IsValid(temp_01D) {
+			// igd.Imat[temp_01D.Y][temp_01D.X]
+			temp = append(temp, temp_01D)
+		}
+	}
+	return temp
+}
+func (igd *IntegerGridManager) GetACirclePointsWSub(x, y, valueIs int, center CoordInts) CoordList {
+
+	/*
+			cout << "(" << x + x_centre << ", " << y + y_centre << ") ";
+		        cout << "(" << -x + x_centre << ", " << y + y_centre << ") ";
+		        cout << "(" << x + x_centre << ", " << -y + y_centre << ") ";
+		        cout << "(" << -x + x_centre << ", " << -y + y_centre << ")\n";
+
+	*/
+	var temp CoordList
+	temp_01A := center
+	temp_01A.X += x
+	temp_01A.Y += y
+
+	temp_01B := center
+	temp_01B.X -= x
+	temp_01B.Y += y
+
+	temp_02A := center
+	temp_02B := center
+	temp_02A.X += x
+	temp_02A.Y -= y
+	temp_02B.X -= x
+	temp_02B.Y -= y
+	if igd.Imat.IsValid(center) {
+		igd.Imat[center.Y][center.X] = valueIs
+	}
+	if igd.Imat.IsValid(temp_01A) {
+		// igd.Imat[temp_01A.Y][temp_01A.X] = valueIs
+		igd.PFinder.FalsePos = append(igd.PFinder.FalsePos, temp_01A)
+	}
+	if igd.Imat.IsValid(temp_01B) {
+		// igd.Imat[temp_01B.Y][temp_01B.X] = valueIs
+		igd.PFinder.FalsePos = append(igd.PFinder.FalsePos, temp_01B)
+	}
+	if igd.Imat.IsValid(temp_02A) {
+		// igd.Imat[temp_02A.Y][temp_02A.X] = valueIs
+		igd.PFinder.FalsePos = append(igd.PFinder.FalsePos, temp_02A)
+	}
+	if igd.Imat.IsValid(temp_02B) {
+		// igd.Imat[temp_02B.Y][temp_02B.X] = valueIs
+		igd.PFinder.FalsePos = append(igd.PFinder.FalsePos, temp_02B)
+	}
+
+	if x != y {
+		if igd.Imat.IsValid(CoordInts{center.X + y, center.Y + x}) {
+			igd.PFinder.FalsePos = append(igd.PFinder.FalsePos, CoordInts{X: center.X + y, Y: center.Y + x})
+			// igd.Imat[center.Y+x][center.X+y] = valueIs
+		}
+		if igd.Imat.IsValid(CoordInts{center.X - y, center.Y + x}) {
+			// igd.Imat[center.Y+x][center.X-y] = valueIs
+			igd.PFinder.FalsePos = append(igd.PFinder.FalsePos, CoordInts{X: center.Y + x, Y: center.X - x})
+		}
+		if igd.Imat.IsValid(CoordInts{center.X + y, center.Y - x}) {
+			// igd.Imat[center.Y-x][center.X+y] = valueIs
+			igd.PFinder.FalsePos = append(igd.PFinder.FalsePos, CoordInts{X: center.Y - x, Y: center.X + x})
+		}
+		if igd.Imat.IsValid(CoordInts{center.X - y, center.Y - x}) {
+			// igd.Imat[center.Y-x][center.X-y] = valueIs
+			igd.PFinder.FalsePos = append(igd.PFinder.FalsePos, CoordInts{X: center.X - x, Y: center.X - y})
+		}
+	}
+	return temp
 }
