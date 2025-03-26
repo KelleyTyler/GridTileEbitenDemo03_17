@@ -14,6 +14,12 @@ func (cord CoordList) PushToReturn(coord CoordInts) CoordList {
 	temp := append(cord, coord)
 	return temp
 }
+func (cord CoordList) PushToFrontThenReturn(coord CoordInts) CoordList {
+	temp := make(CoordList, 0)
+	temp = append(temp, coord)
+	temp = append(temp, cord...)
+	return temp
+}
 func (cord CoordList) PopFromFront() (CoordInts, CoordList) {
 	temp := cord[0]
 	temp2 := cord.RemovePointFromList(0)

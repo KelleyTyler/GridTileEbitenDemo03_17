@@ -36,11 +36,11 @@ func (imat IntMatrix) DrawAGridTile(screen *ebiten.Image, coord CoordInts, Offse
 
 }
 
-func (imat IntMatrix) DrawAGridTile_With_Line(screen *ebiten.Image, coord CoordInts, OffsetX int, OffsetY int, tileW int, tileH int, GapX int, GapY int, clr0, clr1 color.Color, lineThick float32, aa bool) {
+func (imat IntMatrix) DrawAGridTile_With_Line(screen *ebiten.Image, coord CoordInts, OffsetX int, OffsetY int, tileW int, tileH int, GapX int, GapY int, clr0, clr1, clr2 color.Color, lineThick float32, aa bool) {
 	vector.DrawFilledRect(screen, float32((tileW*coord.X)+(GapX*coord.X)+OffsetX), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY), float32(tileW), float32(tileH), clr0, aa)
 	vector.StrokeRect(screen, float32((tileW*coord.X)+(GapX*coord.X)+OffsetX), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY), float32(tileW), float32(tileH), 2.0, color.Black, aa)
 	vector.StrokeLine(screen, float32((tileW*coord.X)+(GapX*coord.X)+OffsetX), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY), float32((tileW*coord.X)+(GapX*coord.X)+OffsetX+tileW), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY+tileH), lineThick, clr1, aa)
-	vector.StrokeLine(screen, float32((tileW*coord.X)+(GapX*coord.X)+OffsetX), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY+tileH), float32((tileW*coord.X)+(GapX*coord.X)+OffsetX+tileW), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY), lineThick, clr1, aa)
+	vector.StrokeLine(screen, float32((tileW*coord.X)+(GapX*coord.X)+OffsetX), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY+tileH), float32((tileW*coord.X)+(GapX*coord.X)+OffsetX+tileW), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY), lineThick, clr2, aa)
 	//vector.StrokeRect(screen, float32((tileW*coord.X)+(GapX*coord.X)+OffsetX), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY), float32(tileW), float32(tileH), 2.0, color.Black, aa)
 }
 

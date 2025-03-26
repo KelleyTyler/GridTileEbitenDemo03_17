@@ -62,3 +62,7 @@ func (coord1 CoordInts) GetDistance(coord2 CoordInts) float64 {
 	}
 	return (float64(y0) / float64(x0))
 }
+
+func (coord1 CoordInts) AddCoords(coord2 CoordInts) CoordInts {
+	return CoordInts{X: coord1.X + coord2.X, Y: coord1.Y + coord2.Y}
+}

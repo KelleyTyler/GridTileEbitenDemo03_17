@@ -30,7 +30,10 @@ type Pathfinding struct {
 
 func (pFndr *Pathfinding) ToString() string {
 	outstrng := "PATHFINDING:\n"
-	outstrng += fmt.Sprintf("\n START: %d, %d\n END: %d %d\n", pFndr.StartPos.X, pFndr.StartPos.Y, pFndr.EndPos.X, pFndr.EndPos.Y)
+	outstrng += fmt.Sprintf("\n %6s %3d, %3d %t\n %6s %3d, %3d %t\n", "START:", pFndr.StartPos.X, pFndr.StartPos.Y, pFndr.IsStartInit, "END:", pFndr.EndPos.X, pFndr.EndPos.Y, pFndr.IsEndInit)
+	outstrng += fmt.Sprintf("FULLY INIT: %t\n", pFndr.IsFullyInitialized)
+	outstrng += fmt.Sprintf("FalsePos: %t ,len: %d\n", pFndr.HasFalsePos, len(pFndr.FalsePos))
+	outstrng += fmt.Sprintf("MOVES:%d\n", len(pFndr.Moves))
 	return outstrng
 }
 func (pFndr *Pathfinding) PrintString() {
@@ -83,7 +86,32 @@ func (igd *IntegerGridManager) PFindr_DrawSlope() {
 		igd.PFinder.HasFalsePos = true
 	}
 }
+func (igd *IntegerGridManager) PFindr_DrawManhattan2(nums []int) {
+	if igd.PFinder.IsFullyInitialized {
+		var temper bool
+		if !igd.PFinder.HasFalsePos {
+			igd.PFinder.FalsePos, temper = ManhattanDistanceCulling(igd.PFinder.StartPos, igd.PFinder.EndPos, true, igd.Imat, nums)
+			igd.PFinder.HasFalsePos = true
+			if temper {
+				fmt.Printf("HAH HIT A WALL\n")
+			}
+		} else {
+			// igd.PFinder.Cursor.Position = igd.PFinder.FalsePos[igd.PFinder.Cursor.ticker]
+			temp := igd.PFinder.FalsePos[igd.PFinder.Cursor.ticker]
+			if a, c := IntArrayContains_giveMeWhat(nums, igd.Imat.GetCoordVal(temp)); a {
+				fmt.Printf("HAS WALL: %d at %d , %d\n", c, temp.X, temp.Y)
+			} else {
+				igd.PFinder.Cursor.Position = temp
+				igd.PFinder.Moves = append(igd.PFinder.Moves, temp)
+				if igd.PFinder.Cursor.ticker < len(igd.PFinder.FalsePos)-1 {
+					igd.PFinder.Cursor.ticker++
+				}
+			}
 
+		}
+	}
+
+}
 func (igd *IntegerGridManager) PFindr_DrawManhattan() {
 	if igd.PFinder.IsFullyInitialized {
 		yFirst := true
@@ -164,15 +192,19 @@ func (igd *IntegerGridManager) MoveCursorSteps(Vect CoordInts, steps int, walls 
 	return valer, true
 }
 
-func (igd *IntegerGridManager) PFindr_DrawBresenHamLine() {
+func (igd *IntegerGridManager) PFindr_DrawBresenHamLine(nums []int) {
 	if igd.PFinder.IsFullyInitialized {
+		var temper bool
 		if !igd.PFinder.HasFalsePos {
-			igd.PFinder.FalsePos = BresenhamLine(igd.PFinder.StartPos, igd.PFinder.EndPos)
+			igd.PFinder.FalsePos, temper = BresenhamLine_CullAfterImpact(igd.PFinder.StartPos, igd.PFinder.EndPos, igd.Imat, nums)
 			igd.PFinder.HasFalsePos = true
+			if temper {
+				fmt.Printf("HAH HIT A WALL\n")
+			}
 		} else {
 			// igd.PFinder.Cursor.Position = igd.PFinder.FalsePos[igd.PFinder.Cursor.ticker]
 			temp := igd.PFinder.FalsePos[igd.PFinder.Cursor.ticker]
-			if a, c := IntArrayContains_giveMeWhat([]int{0, 2, 3, 4}, igd.Imat.GetCoordVal(temp)); a {
+			if a, c := IntArrayContains_giveMeWhat(nums, igd.Imat.GetCoordVal(temp)); a {
 				fmt.Printf("HAS WALL: %d at %d , %d\n", c, temp.X, temp.Y)
 			} else {
 				igd.PFinder.Cursor.Position = temp
@@ -276,13 +308,13 @@ func (igd *IntegerGridManager) UpdateCursor() {
 	igd.PFinder.Cursor.Neighbors = [8]CoordInts(temp)
 }
 func (igd *IntegerGridManager) DrawCursor(screen *ebiten.Image) {
-	igd.Imat.DrawAGridTile_With_Line(screen, igd.PFinder.Cursor.Position, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{200, 150, 0, 255}, color.Black, 2.0, false)
+	igd.Imat.DrawAGridTile_With_Line(screen, igd.PFinder.Cursor.Position, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{200, 150, 0, 255}, color.Black, color.Black, 2.0, false)
 	if igd.PFinder.Cursor.ShowNeighbors {
 		for i, a := range igd.PFinder.Cursor.Neighbors {
 			if igd.PFinder.Cursor.Neighbor_Values[i] == 1 {
-				igd.Imat.DrawAGridTile_With_Line(screen, a, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{200, 0, 150, 255}, color.Black, 2.0, false)
+				igd.Imat.DrawAGridTile_With_Line(screen, a, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{200, 0, 150, 255}, color.Black, color.Black, 2.0, false)
 			} else {
-				igd.Imat.DrawAGridTile_With_Line(screen, a, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{0, 150, 200, 255}, color.Black, 2.0, false)
+				igd.Imat.DrawAGridTile_With_Line(screen, a, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{0, 150, 200, 255}, color.Black, color.Black, 2.0, false)
 			}
 		}
 	}
