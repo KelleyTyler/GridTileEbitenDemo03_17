@@ -2,7 +2,7 @@ package mypkgs
 
 import "fmt"
 
-func (igd *IntegerGridManager) FindPather(start, end CoordInts, num int, direct int, pathway CoordList) (CoordList, bool) {
+func (igd *IntegerGridManager) FindPather_BreadthFirst(start, end CoordInts, num int, direct int, pathway CoordList) (CoordList, bool) {
 	var directions = make(CoordList, 4)
 	// directions[0] = CoordInts{-1, 0}
 	// directions[1] = CoordInts{1, 0}
@@ -42,7 +42,7 @@ func (igd *IntegerGridManager) FindPather(start, end CoordInts, num int, direct 
 		return tempPath, false
 	}
 	if igd.Imat.GetCoordVal(start) == 0 || igd.Imat.GetCoordVal(start) == 3 || igd.Imat.GetCoordVal(start) == 4 {
-		fmt.Printf("IS ALSO Invalid, off the bat\n")
+		//fmt.Printf("IS ALSO Invalid, off the bat\n")
 		return tempPath, false
 	}
 	if start.IsEqualTo(end) {
@@ -55,7 +55,7 @@ func (igd *IntegerGridManager) FindPather(start, end CoordInts, num int, direct 
 	for i, d := range directions {
 		newNum := num + 1
 		newPoint := start.AddCoords(d)
-		tempPath2, isValid := igd.FindPather(newPoint, end, newNum, direct, tempPath)
+		tempPath2, isValid := igd.FindPather_BreadthFirst(newPoint, end, newNum, direct, tempPath)
 		if isValid {
 			fmt.Printf("IS VALID! %d %d %d\n", i, newPoint.X, newPoint.Y)
 			igd.Imat[start.Y][start.X] = 1
@@ -75,7 +75,7 @@ func (igd *IntegerGridManager) FindPath(n int) {
 		temp, isDone := make(CoordList, 0), false
 		// temp = append(temp, igd.PFinder.StartPos)
 		fmt.Printf("STARTING UP FINDPATH\n")
-		igd.PFinder.FalsePos, isDone = igd.FindPather(igd.PFinder.StartPos, igd.PFinder.EndPos, 0, n, temp)
+		igd.PFinder.FalsePos, isDone = igd.FindPather_BreadthFirst(igd.PFinder.StartPos, igd.PFinder.EndPos, 0, n, temp)
 		if isDone {
 			fmt.Printf("IS Truely DONE\n")
 			igd.PFinder.HasFalsePos = true

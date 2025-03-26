@@ -88,6 +88,12 @@ func (imat IntMatrix) IsCursorInBounds(OffsetX int, OffsetY int, tileW int, tile
 	return ((Raw_Mouse_X > OffsetX && Raw_Mouse_X < test1X-GapX) && (Raw_Mouse_Y > OffsetY && Raw_Mouse_Y < test1Y-GapY))
 }
 
+func (imat IntMatrix) GetCursorBounds(OffsetX int, OffsetY int, tileW int, tileH int, GapX int, GapY int) (int, int) {
+	test1X := ((len(imat[0]) * tileW) + (len(imat[0]) * GapX)) + OffsetX
+	test1Y := ((len(imat) * tileH) + (len(imat) * GapY)) + OffsetY
+	return test1X, test1Y
+}
+
 func (imat IntMatrix) ChangeValOnMouseEvent(Raw_Mouse_X int, Raw_Mouse_Y int, OffsetX int, OffsetY int, tileW int, tileH int, GapX int, GapY int, cycleStart int, cycleEnd int, makeChange bool) (int, int) {
 
 	test1X := ((len(imat[0]) * tileW) + (len(imat[0]) * GapX)) + OffsetX

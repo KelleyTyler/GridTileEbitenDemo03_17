@@ -93,9 +93,10 @@ func (g *Game) init() error {
 	g.numPanel04.Init("nums03", "", true, col0, block4+36+36, 32, 16, 0, 0, 10, 1)
 	g.numPanel05.Init("nums05", "FindPath", true, col1, block4+36+36, 32, 16, 0, 0, 3, 1)
 	g.numPanel06.Init("nums03", "", true, col0, block4+36+36+36, 32, 16, 0, 0, 10, 1)
-	g.numPanel07.Init("nums03", "", true, col1, block4+36+36+36, 32, 16, 0, 0, 10, 1)
+	g.numPanel07.Init("nums03", "SCALE", true, col1, block4+36+36+36, 32, 16, 1, 1, 4, 1)
 	g.coorAr = append(g.coorAr, mypkgs.CoordInts{X: 2, Y: 2})
-	g.IntGrid.Init(32, 32, 16, 16, 64, 8, 2, 2)
+	// g.IntGrid.Init(32, 32, 16, 16, 64, 8, 2, 2)
+	g.IntGrid.Init(64, 64, 8, 8, 64, 8, 2, 2, 4, 4)
 
 	return nil
 }
@@ -220,6 +221,9 @@ func (g *Game) Update() error {
 	g.numPanel05.Update()
 	g.numPanel06.Update()
 	g.numPanel07.Update()
+	if g.numPanel07.Btns[1].Update3() {
+		fmt.Printf("NPANEL 7  %d\n", g.numPanel07.CurValue)
+	}
 	if g.btn00.Update3() {
 		g.IntGrid.DEMO_COORDS_00(4, 0, 0) //igd.Coords.PrintCordArray()
 	}

@@ -14,6 +14,7 @@ type IntegerGridManager struct {
 	Coords           CoordList
 	Tile_Size        CoordInts
 	Margin           CoordInts
+	BoardMargin      CoordInts //internal margin; the margin within IMG where things are drawn.
 	Position         CoordInts
 	CycleStart       int
 	CycleEnd         int
@@ -29,6 +30,33 @@ type IntegerGridManager struct {
 	PFinderStartSelect bool
 	//--------------------------------
 	SelectPoints bool
+	//--------------
+	Img *ebiten.Image
+}
+
+func (igd *IntegerGridManager) Init(N_TilesX, N_TilesY int, TSizeX, TSizeY int, PosX, PosY int, MargX, MargY, iMargeX, iMargeY int) {
+	igd.Margin = CoordInts{X: MargX, Y: MargY}
+	igd.Position = CoordInts{X: PosX, Y: PosY}
+	igd.Tile_Size = CoordInts{X: TSizeX, Y: TSizeY}
+	igd.Colors = []color.Color{color.RGBA{255, 0, 0, 255}, color.RGBA{0, 0, 255, 255}, color.RGBA{0, 255, 0, 255},
+		color.RGBA{0, 255, 255, 255}, color.RGBA{255, 255, 0, 255}, color.RGBA{255, 255, 255, 255}, color.RGBA{75, 75, 75, 255}}
+	igd.Imat = igd.Imat.MakeIntMatrix(N_TilesX, N_TilesY)
+	igd.Imat.InitBlankMatrix(N_TilesX, N_TilesY, 0)
+	igd.FullColors = false
+	igd.CycleStart = 0
+	igd.CycleEnd = 4
+	igd.LastPoint = CoordInts{-1, -1}
+	igd.Fails = 0
+	igd.FailsMax = 30
+	igd.AlgorithmRunning = false
+	igd.PFinder = Pathfinding{IsActive: false, IsFullyInitialized: false, IsEndInit: false, HasFalsePos: false}
+	//--------
+	iX, iY := igd.Imat.GetCursorBounds(iMargeX+MargX, iMargeY+MargY, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y)
+	igd.Img = ebiten.NewImage(iX, iY)
+	igd.Img.Fill(color.White)
+
+	igd.BoardMargin = CoordInts{X: iMargeX, Y: iMargeY}
+	igd.Imat.DrawGridTiles(igd.Img, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors)
 }
 
 func (igd *IntegerGridManager) Draw(screen *ebiten.Image) {
@@ -38,7 +66,13 @@ func (igd *IntegerGridManager) Draw(screen *ebiten.Image) {
 	if igd.PFinder.IsEndInit {
 		igd.Imat[igd.PFinder.EndPos.Y][igd.PFinder.EndPos.X] = 6
 	}
-	igd.Imat.DrawGridTiles(screen, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors)
+	// go igd.Imat.DrawGridTiles(igd.Img, 4, 4, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors)
+	ops := ebiten.DrawImageOptions{}
+	ops.GeoM.Translate(float64(igd.Position.X-igd.BoardMargin.X), float64(igd.Position.Y-igd.BoardMargin.Y))
+
+	screen.DrawImage(igd.Img, &ops)
+
+	//igd.Imat.DrawGridTiles(screen, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors)
 	if igd.PFinder.IsStartInit {
 		igd.Imat.DrawAGridTile(screen, igd.PFinder.StartPos, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{250, 250, 250, 255}, true)
 	}
@@ -97,6 +131,7 @@ func (igd *IntegerGridManager) UpdateOnMouseEvent2() {
 	Raw_Mouse_X, Raw_Mouse_Y := ebiten.CursorPosition()
 	tempX, tempY := -1, -1
 	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButton(0)) {
+		go igd.Imat.DrawGridTiles(igd.Img, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors)
 		if igd.FullColors {
 			tempX, tempY = igd.Imat.ChangeValOnMouseEvent(Raw_Mouse_X, Raw_Mouse_Y, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.CycleStart, len(igd.Colors)-1, !(igd.PFinderStartSelect || igd.PFinderEndSelect))
 		} else {
@@ -248,23 +283,6 @@ func (igd *IntegerGridManager) circleDrawWSub(x, y, valueIs int, center CoordInt
 	}
 }
 
-func (igd *IntegerGridManager) Init(N_TilesX, N_TilesY int, TSizeX, TSizeY int, PosX, PosY int, MargX, MargY int) {
-	igd.Margin = CoordInts{X: MargX, Y: MargY}
-	igd.Position = CoordInts{X: PosX, Y: PosY}
-	igd.Tile_Size = CoordInts{X: TSizeX, Y: TSizeY}
-	igd.Colors = []color.Color{color.RGBA{255, 0, 0, 255}, color.RGBA{0, 0, 255, 255}, color.RGBA{0, 255, 0, 255},
-		color.RGBA{0, 255, 255, 255}, color.RGBA{255, 255, 0, 255}, color.RGBA{255, 255, 255, 255}, color.RGBA{75, 75, 75, 255}}
-	igd.Imat = igd.Imat.MakeIntMatrix(N_TilesX, N_TilesY)
-	igd.Imat.InitBlankMatrix(N_TilesX, N_TilesY, 0)
-	igd.FullColors = false
-	igd.CycleStart = 0
-	igd.CycleEnd = 4
-	igd.LastPoint = CoordInts{-1, -1}
-	igd.Fails = 0
-	igd.FailsMax = 30
-	igd.AlgorithmRunning = false
-	igd.PFinder = Pathfinding{IsActive: false, IsFullyInitialized: false, IsEndInit: false, HasFalsePos: false}
-}
 func (igd *IntegerGridManager) ToString() string {
 	strng := "INTEGER GRID MANAGER:\n"
 	strng += fmt.Sprintf("DIM %3d,%3d\n", len(igd.Imat), len(igd.Imat[0]))
