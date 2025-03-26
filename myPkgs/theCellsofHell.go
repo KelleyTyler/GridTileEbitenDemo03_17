@@ -96,9 +96,3 @@ func (cell *Cell) IsAt(cord CoordInts) bool {
 // 	temp:=cells[0]
 // 	temp2:=
 // }
-
-type Node struct {
-	Postion   CoordInts
-	ParentPTR *Node
-	ChildPTR  *Node
-}

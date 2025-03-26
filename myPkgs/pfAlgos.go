@@ -5,6 +5,25 @@ import (
 	"math"
 )
 
+/*	This returns only the points before the line (c1-c2) encounters an obstacle (a value in imat from nums)
+ */
+func BresenhamLine_CullAfterImpact(c1, c2 CoordInts, imat IntMatrix, nums []int) (CoordList, bool) {
+	var temp CoordList
+	temp0 := BresenhamLine(c1, c2)
+	EndedShort := false
+	for _, a := range temp0 {
+		if imat.IsValid(a) {
+			if IntArrayContains(nums, imat.GetCoordVal(a)) {
+				EndedShort = true
+				break
+			} else {
+				temp = append(temp, a)
+			}
+		}
+	}
+	return temp, EndedShort
+}
+
 func BresenhamLine(c1 CoordInts, c2 CoordInts) CoordList {
 	//outList := make(CoordList, 0)
 	var outList CoordList
@@ -26,6 +45,12 @@ func BresenhamLine(c1 CoordInts, c2 CoordInts) CoordList {
 			fmt.Printf("BRESENHAM:%16s \n", "High Regular")
 			outList = BresenHamLine_High(c1, c2)
 		}
+	}
+	if !outList[0].IsEqualTo(c1) {
+		outList = outList.PushToFrontThenReturn(c1)
+	}
+	if !outList[len(outList)-1].IsEqualTo(c2) {
+		outList = outList.PushToReturn(c2)
 	}
 	return outList
 }
@@ -81,4 +106,75 @@ func BresenHamLine_High(c1 CoordInts, c2 CoordInts) CoordList {
 	}
 	outList = append(outList, c2)
 	return outList
+}
+
+func ManhattanDistanceCulling(c1, c2 CoordInts, Y_Axis_First bool, imat IntMatrix, nums []int) (CoordList, bool) {
+	var Outlist CoordList
+	temp0 := ManhattanDistance_Basic(c1, c2, Y_Axis_First)
+	EndedShort := false
+	for _, a := range temp0 {
+		if imat.IsValid(a) {
+			if IntArrayContains(nums, imat.GetCoordVal(a)) {
+				EndedShort = true
+				break
+			} else {
+				Outlist = append(Outlist, a)
+			}
+		}
+	}
+	return Outlist, EndedShort
+}
+
+func ManhattanDistance_Basic(c1, c2 CoordInts, YFirst bool) CoordList {
+	var outList CoordList
+	if YFirst {
+		temp := GetAllAlongAxis(c1, c2, true)
+		outList = append(outList, temp...)
+		//Outlist.PrintCordArray()
+		temp = GetAllAlongAxis(outList[len(outList)-1], c2, false)
+		outList = append(outList, temp...)
+	} else {
+		temp := GetAllAlongAxis(c1, c2, false)
+		outList = append(outList, temp...)
+		temp = GetAllAlongAxis(outList[len(outList)-1], c2, true)
+		outList = append(outList, temp...)
+	}
+	if !outList[0].IsEqualTo(c1) {
+		outList = outList.PushToFrontThenReturn(c1)
+	}
+	if !outList[len(outList)-1].IsEqualTo(c2) {
+		outList = outList.PushToReturn(c2)
+	}
+	return outList
+}
+func GetAllAlongAxis(c1, c2 CoordInts, isYAxis bool) CoordList {
+	var Outlist CoordList
+	vX, vY := c1.GetDifferenceInInts(c2)
+	var tempCoord = c1
+	if isYAxis {
+		if c2.Y > c1.Y {
+			for i := 0; i < vY; i++ {
+				tempCoord.Y++
+				Outlist = append(Outlist, tempCoord)
+			}
+		} else {
+			for i := 0; i > vY; i-- {
+				tempCoord.Y--
+				Outlist = append(Outlist, tempCoord)
+			}
+		}
+	} else {
+		if c2.X > c1.X {
+			for i := 0; i < vX; i++ {
+				tempCoord.X++
+				Outlist = append(Outlist, tempCoord)
+			}
+		} else {
+			for i := 0; i > vX; i-- {
+				tempCoord.X--
+				Outlist = append(Outlist, tempCoord)
+			}
+		}
+	}
+	return Outlist
 }

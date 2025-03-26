@@ -51,7 +51,7 @@ func init() {
 	foregroundImg = ebiten.NewImage(Settings.ScreenResX, Settings.ScreenResY)
 	// foregroundImg = ebiten.NewImage(320, 240)
 	backgroundImg.Fill(backgroundColor)
-	foregroundImg.Fill(clearColor)
+	foregroundImg.Fill(backgroundColor)
 }
 
 func (g *Game) init() error {
@@ -80,18 +80,18 @@ func (g *Game) init() error {
 	g.btn15.InitButton("Btn15", "Pathfind\nINIT", 0, col1, block2+36, 64, 32, 0, 0)
 	block3 := 314
 	g.btn16.InitButton("Btn16", "Pathfind\nBRESENHAM", 0, col0, block3, 64, 32, 0, 0)
-	g.btn17.InitButton("Btn17", "Pathfind\nSLOPE", 0, col1, block3, 64, 32, 0, 0)
+	g.btn17.InitButton("Btn17", "Pathfind\nBreadth", 0, col1, block3, 64, 32, 0, 0)
 	g.btn18.InitButton("Btn18", "Pathfind\nManhattan", 0, col0, block3+36, 64, 32, 0, 0)
 	g.btn19.InitButton("Btn19", "Draw\nCircle", 2, col1, block3+36, 64, 32, 0, 0)
 	g.btn20.InitButton("Btn20", "", 0, col0, block3+72, 64, 32, 0, 0)
 	g.btn21.InitButton("Btn21", "", 0, col1, block3+72, 64, 32, 0, 0)
 	block4 := 444
-	g.numPanel00.Init("nums00", "", true, col0, block4, 32, 16, 0, 10, 20, 1)
-	g.numPanel01.Init("nums01", "", true, col1, block4, 32, 16, 0, 6, 20, 1)
-	g.numPanel02.Init("nums02", "", true, col0, block4+36, 32, 16, 1, 8, 16, 1)
+	g.numPanel00.Init("nums00", "Maze3Param", true, col0, block4, 32, 16, 0, 10, 20, 1)
+	g.numPanel01.Init("nums01", "Maze3Param", true, col1, block4, 32, 16, 0, 6, 20, 1)
+	g.numPanel02.Init("nums02", "Maze3Param", true, col0, block4+36, 32, 16, 1, 8, 16, 1)
 	g.numPanel03.Init("", "circ. Rad", true, col1, block4+36, 32, 16, 0, 0, 20, 1)
 	g.numPanel04.Init("nums03", "", true, col0, block4+36+36, 32, 16, 0, 0, 10, 1)
-	g.numPanel05.Init("nums02", "", true, col1, block4+36+36, 32, 16, 0, 0, 16, 1)
+	g.numPanel05.Init("nums05", "FindPath", true, col1, block4+36+36, 32, 16, 0, 0, 3, 1)
 	g.numPanel06.Init("nums03", "", true, col0, block4+36+36+36, 32, 16, 0, 0, 10, 1)
 	g.numPanel07.Init("nums03", "", true, col1, block4+36+36+36, 32, 16, 0, 0, 10, 1)
 	g.coorAr = append(g.coorAr, mypkgs.CoordInts{X: 2, Y: 2})
@@ -99,12 +99,12 @@ func (g *Game) init() error {
 
 	return nil
 }
-func (g *Game) PreDraw(screen *ebiten.Image) {
-	screen.Clear()
-	screen.DrawImage(backgroundImg, nil)
-	g.IntGrid.Draw(screen) //if made into a goroutine this needs to have some better way of streaming output;
-	//alternatively this perhaps is a great way to
-	// imatrix.DrawGridTile(screen, tile_offset_X, tile_offset_Y, tileW, tileH, tile_Margin_W, tile_Margin_H) //DrawGridTile(screen, 8, 8, 16, 16, 2, 2)
+
+func (g *Game) PreDrawGUI(screen *ebiten.Image) {
+	// mx, _ := ebiten.CursorPosition()
+	// if mx > Settings.ScreenResX-200 {
+
+	// }
 	g.btn00.DrawButton(screen)
 	g.btn01.DrawButton(screen)
 	g.btn02.DrawButton(screen)
@@ -139,6 +139,15 @@ func (g *Game) PreDraw(screen *ebiten.Image) {
 	g.numPanel05.Draw(screen)
 	g.numPanel06.Draw(screen)
 	g.numPanel07.Draw(screen)
+}
+
+func (g *Game) PreDraw(screen *ebiten.Image) {
+	screen.Clear()
+	screen.DrawImage(backgroundImg, nil)
+	g.IntGrid.Draw(screen) //if made into a goroutine this needs to have some better way of streaming output;
+	g.PreDrawGUI(screen)
+	//alternatively this perhaps is a great way to
+	// imatrix.DrawGridTile(screen, tile_offset_X, tile_offset_Y, tileW, tileH, tile_Margin_W, tile_Margin_H) //DrawGridTile(screen, 8, 8, 16, 16, 2, 2)
 	//screen.DrawImage()
 }
 
@@ -148,7 +157,7 @@ func (g *Game) Update() error {
 	}
 
 	mx, my := ebiten.CursorPosition()
-	go g.IntGrid.UpdateOnMouseEvent2()
+
 	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButton0) {
 		// g.IntGrid.UpdateOnMouseEvent(mx, my)
 		// g.btn00.Update(mx, my, true)
@@ -295,15 +304,18 @@ func (g *Game) Update() error {
 		g.IntGrid.PathfindingProcess()
 	}
 	if g.btn16.Update3() {
-		g.IntGrid.PFindr_DrawBresenHamLine()
+		g.IntGrid.PFindr_DrawBresenHamLine([]int{0, 2, 3, 4})
 		// go g.IntGrid.MoveCursorAround(mypkgs.CoordInts{X: 2, Y: 2}, []int{0, 2, 3, 4})
 	}
 	if g.btn17.Update3() {
-		g.IntGrid.PFindr_DrawSlope()
+		// g.IntGrid.PFindr_DrawSlope()
+		// g.IntGrid.PFindr_DrawManhattan()
+		g.IntGrid.FindPath(g.numPanel05.CurValue)
+		//mypkgs.FindPath(g.IntGrid.Imat,g.IntGrid.PFinder.StartPos,g.I)
 		//g.IntGrid.PFinder.HasFalsePos = !g.IntGrid.PFinder.HasFalsePos
 	}
 	if g.btn18.Update3() {
-		g.IntGrid.PFindr_DrawManhattan()
+		g.IntGrid.PFindr_DrawManhattan2([]int{0, 2, 3, 4})
 	}
 	if g.btn19.Update3() {
 
@@ -343,12 +355,15 @@ func (g *Game) Update() error {
 
 		// g.IntGrid.Position.X += 1
 	}
+
+	go g.IntGrid.UpdateOnMouseEvent2()
 	g.PreDraw(foregroundImg)
 	g.gameDebugMsg = fmt.Sprintf("FPS:%8.3f TPS:%8.3f\n", ebiten.ActualFPS(), ebiten.ActualTPS())
 	g.gameDebugMsg += fmt.Sprintf("%s\n", Settings.ToString())
 	//g.gameDebugMsg += fmt.Sprintf("BTN0: %2d btn01:%2d btn02:%2d\n", g.btn00.State, g.btn01.State, g.btn02.State)
 	g.gameDebugMsg += "------------------------\n"
-	g.gameDebugMsg += fmt.Sprintf("\tIS INIT?:\n\t\tSTART:%t\n\t\tSTOP:%t\n\t\tFULL:%t\n", g.IntGrid.PFinder.IsEndInit, g.IntGrid.PFinder.IsEndInit, g.IntGrid.PFinder.IsFullyInitialized)
+	g.gameDebugMsg += g.IntGrid.PFinder.ToString()
+	//g.gameDebugMsg += fmt.Sprintf("\tIS INIT?:\n\t\tSTART:%t\n\t\tSTOP:%t\n\t\tFULL:%t\n", g.IntGrid.PFinder.IsEndInit, g.IntGrid.PFinder.IsEndInit, g.IntGrid.PFinder.IsFullyInitialized)
 	// g.gameDebugMsg += fmt.Sprintf("\t")
 	g.gameDebugMsg += "------------------------\n"
 	g.gameDebugMsg += fmt.Sprintf("%s\n", g.IntGrid.ToString())
