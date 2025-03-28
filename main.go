@@ -74,8 +74,8 @@ func (g *Game) init() error {
 	g.btn10.InitButton("Btn10", "Clear\nArea", 0, col0, block00+108, 64, 32, 0, 0)
 	g.btn11.InitButton("Btn11", "Culling", 0, col1, block00+108, 64, 32, 0, 0)
 	block2 := 236
-	g.btn12.InitButton("Btn12", "Pathfind\nSet Start", 0, col0, block2, 64, 32, 0, 0)
-	g.btn13.InitButton("Btn13", "Pathfind\nSet Stop", 0, col1, block2, 64, 32, 0, 0)
+	g.btn12.InitButton("Btn12", "Pathfind\nSet Start", 2, col0, block2, 64, 32, 0, 0)
+	g.btn13.InitButton("Btn13", "Pathfind\nSet Stop", 2, col1, block2, 64, 32, 0, 0)
 	g.btn14.InitButton("Btn14", "Reset\nStart/Stop", 0, col0, block2+36, 64, 32, 0, 0)
 	g.btn15.InitButton("Btn15", "Pathfind\nINIT", 0, col1, block2+36, 64, 32, 0, 0)
 	block3 := 314
@@ -96,7 +96,7 @@ func (g *Game) init() error {
 	g.numPanel07.Init("nums03", "SCALE", true, col1, block4+36+36+36, 32, 16, 1, 1, 4, 1)
 	g.coorAr = append(g.coorAr, mypkgs.CoordInts{X: 2, Y: 2})
 	// g.IntGrid.Init(32, 32, 16, 16, 64, 8, 2, 2)
-	g.IntGrid.Init(64, 64, 8, 8, 64, 8, 2, 2, 4, 4)
+	g.IntGrid.Init(32, 32, 16, 16, 144, 8, 2, 2, 4, 4)
 
 	return nil
 }
@@ -160,57 +160,12 @@ func (g *Game) Update() error {
 	mx, my := ebiten.CursorPosition()
 
 	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButton0) {
-		// g.IntGrid.UpdateOnMouseEvent(mx, my)
-		// g.btn00.Update(mx, my, true)
-		// g.btn01.Update(mx, my, true)
-		// g.btn02.Update(mx, my, true)
-		// g.btn03.Update(mx, my, true)
-		// g.btn04.Update(mx, my, true)
-		// g.btn05.Update(mx, my, true)
-		// g.btn06.Update(mx, my, true)
-		// g.btn07.Update(mx, my, true)
-		// g.btn08.Update(mx, my, true)
-		// g.btn09.Update(mx, my, true)
-		// g.btn10.Update(mx, my, true)
-		// g.btn11.Update(mx, my, true)
-		// g.btn12.Update(mx, my, true)
-		// g.btn13.Update(mx, my, true)
-		// //g.btn14.Update(mx, my, true)
-		// g.btn15.Update(mx, my, true)
-		// g.btn16.Update(mx, my, true)
-		// g.btn17.Update(mx, my, true)
-		// g.btn18.Update(mx, my, true)
-		// g.btn19.Update(mx, my, true)
-		// g.btn20.Update(mx, my, true)
-
 		if g.btn19.IsToggled {
 			g.IntGrid.DrawACircleOnClick(mx, my, g.numPanel03.GetCurrValue(), 1)
 			//g.btn20.IsToggled = false
 		}
 		// 	//g.btn21.Update(mx, my, true)
 	} else {
-		// 	g.btn00.Update(mx, my, false)
-		// 	g.btn01.Update(mx, my, false)
-		// 	g.btn02.Update(mx, my, false)
-		// 	g.btn03.Update(mx, my, false)
-		// 	g.btn04.Update(mx, my, false)
-		// 	g.btn05.Update(mx, my, false)
-		// 	g.btn06.Update(mx, my, false)
-		// 	g.btn07.Update(mx, my, false)
-		// 	g.btn08.Update(mx, my, false)
-		// 	g.btn09.Update(mx, my, false)
-		// 	g.btn10.Update(mx, my, false)
-		// 	g.btn11.Update(mx, my, false)
-		// 	g.btn12.Update(mx, my, false)
-		// 	g.btn13.Update(mx, my, false)
-		// 	//g.btn14.Update(mx, my, false)
-		// 	g.btn15.Update(mx, my, false)
-		// 	g.btn16.Update(mx, my, false)
-		// 	g.btn17.Update(mx, my, false)
-		// 	g.btn18.Update(mx, my, false)
-		// 	g.btn19.Update(mx, my, false)
-		// 	g.btn20.Update(mx, my, false)
-		// 	// g.btn21.Update(mx, my, false)
 	}
 
 	g.numPanel00.Update()
@@ -279,10 +234,6 @@ func (g *Game) Update() error {
 			g.IntGrid.Process3c(50, g.numPanel00.CurValue, g.numPanel01.CurValue, []int{0, 2, 3}) //8,4 //, g.numPanel02.CurValue
 
 		}
-		// if !g.IntGrid.AlgorithmRunning {
-		// 	g.IntGrid.AlgorithmRunning = true
-		// }
-		// g.IntGrid.Process3c(50, g.numPanel00.CurValue, g.numPanel01.CurValue, []int{0, 2, 3})
 	}
 	if g.btn09.Update3() {
 		g.IntGrid.SelectPoints = true
@@ -296,10 +247,14 @@ func (g *Game) Update() error {
 		g.IntGrid.CullCoords(8, true, []int{0, 2})
 	}
 	if g.btn12.Update3() && !g.IntGrid.PFinder.IsStartInit {
-		g.IntGrid.PFinderStartSelect = !g.IntGrid.PFinderStartSelect
+		g.IntGrid.PFinderStartSelect = true
+	} else {
+		g.IntGrid.PFinderStartSelect = false
 	}
 	if g.btn13.Update3() && !g.IntGrid.PFinder.IsEndInit {
-		g.IntGrid.PFinderEndSelect = !g.IntGrid.PFinderEndSelect
+		g.IntGrid.PFinderEndSelect = true
+	} else {
+		g.IntGrid.PFinderEndSelect = false
 	}
 	if g.btn14.Update3() { //RESET
 		g.IntGrid.RESETPathfinder()
@@ -332,7 +287,7 @@ func (g *Game) Update() error {
 
 		//g.numPanel00.CurValue
 		if g.IntGrid.MoveCursorFreely(0, 1, []int{0, 2, 3, 4}) {
-			g.IntGrid.Position.Y += 18
+			//g.IntGrid.Position.Y += 18
 		}
 
 	}
@@ -340,7 +295,7 @@ func (g *Game) Update() error {
 		// g.IntGrid.Position.X -= 1
 
 		if g.IntGrid.MoveCursorFreely(3, 1, []int{0, 2, 3, 4}) {
-			g.IntGrid.Position.X += 18
+			//g.IntGrid.Position.X += 18
 		}
 
 	}
@@ -348,13 +303,13 @@ func (g *Game) Update() error {
 	if inpututil.IsKeyJustPressed(ebiten.KeyS) {
 		// g.IntGrid.Position.Y += 1
 		if g.IntGrid.MoveCursorFreely(2, 1, []int{0, 2, 3, 4}) {
-			g.IntGrid.Position.Y -= 18
+			//g.IntGrid.Position.Y -= 18
 		}
 
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyD) {
 		if g.IntGrid.MoveCursorFreely(1, 1, []int{0, 2, 3, 4}) {
-			g.IntGrid.Position.X -= 18
+			//g.IntGrid.Position.X -= 18
 		}
 
 		// g.IntGrid.Position.X += 1

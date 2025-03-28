@@ -31,7 +31,8 @@ type IntegerGridManager struct {
 	//--------------------------------
 	SelectPoints bool
 	//--------------
-	Img *ebiten.Image
+	Img   *ebiten.Image
+	Scale float64
 }
 
 func (igd *IntegerGridManager) Init(N_TilesX, N_TilesY int, TSizeX, TSizeY int, PosX, PosY int, MargX, MargY, iMargeX, iMargeY int) {
@@ -51,12 +52,13 @@ func (igd *IntegerGridManager) Init(N_TilesX, N_TilesY int, TSizeX, TSizeY int, 
 	igd.AlgorithmRunning = false
 	igd.PFinder = Pathfinding{IsActive: false, IsFullyInitialized: false, IsEndInit: false, HasFalsePos: false}
 	//--------
-	iX, iY := igd.Imat.GetCursorBounds(iMargeX+MargX, iMargeY+MargY, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y)
+	iX, iY := igd.Imat.GetCursorBounds(iMargeX+iMargeX-MargX, iMargeY+iMargeY-MargY, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y)
 	igd.Img = ebiten.NewImage(iX, iY)
-	igd.Img.Fill(color.White)
+	igd.Img.Fill(color.Black)
 
 	igd.BoardMargin = CoordInts{X: iMargeX, Y: iMargeY}
 	igd.Imat.DrawGridTiles(igd.Img, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors)
+	igd.Scale = 1.0
 }
 
 func (igd *IntegerGridManager) Draw(screen *ebiten.Image) {
@@ -69,7 +71,7 @@ func (igd *IntegerGridManager) Draw(screen *ebiten.Image) {
 	// go igd.Imat.DrawGridTiles(igd.Img, 4, 4, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors)
 	ops := ebiten.DrawImageOptions{}
 	ops.GeoM.Translate(float64(igd.Position.X-igd.BoardMargin.X), float64(igd.Position.Y-igd.BoardMargin.Y))
-
+	ops.GeoM.Scale(igd.Scale, igd.Scale)
 	screen.DrawImage(igd.Img, &ops)
 
 	//igd.Imat.DrawGridTiles(screen, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors)
@@ -130,15 +132,19 @@ func (igd *IntegerGridManager) UpdateOnMouseEvent(Raw_Mouse_X, Raw_Mouse_Y int) 
 func (igd *IntegerGridManager) UpdateOnMouseEvent2() {
 	Raw_Mouse_X, Raw_Mouse_Y := ebiten.CursorPosition()
 	tempX, tempY := -1, -1
+	isOnTile := false
 	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButton(0)) {
 		go igd.Imat.DrawGridTiles(igd.Img, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors)
+		tempX, tempY, isOnTile = igd.Imat.GetCoordOfMouseEvent(Raw_Mouse_X, Raw_Mouse_Y, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y)
 		if igd.FullColors {
-			tempX, tempY = igd.Imat.ChangeValOnMouseEvent(Raw_Mouse_X, Raw_Mouse_Y, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.CycleStart, len(igd.Colors)-1, !(igd.PFinderStartSelect || igd.PFinderEndSelect))
+
+			_, _ = igd.Imat.ChangeValOnMouseEvent(Raw_Mouse_X, Raw_Mouse_Y, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.CycleStart, len(igd.Colors)-1, !(igd.PFinderStartSelect || igd.PFinderEndSelect))
+
 		} else {
-			tempX, tempY = igd.Imat.ChangeValOnMouseEvent(Raw_Mouse_X, Raw_Mouse_Y, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.CycleStart, igd.CycleEnd, !(igd.PFinderStartSelect || igd.PFinderEndSelect))
+			_, _ = igd.Imat.ChangeValOnMouseEvent(Raw_Mouse_X, Raw_Mouse_Y, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.CycleStart, igd.CycleEnd, !(igd.PFinderStartSelect || igd.PFinderEndSelect))
 		}
 		if tempX != -1 && tempY != -1 {
-			if !igd.PFinderEndSelect && !igd.PFinderStartSelect && igd.SelectPoints {
+			if !igd.PFinderEndSelect && !igd.PFinderStartSelect && igd.SelectPoints && isOnTile {
 				igd.LastPoint = CoordInts{tempX, tempY}
 				if (!igd.LastPoint.IsEqualTo(CoordInts{-1, -1})) {
 					igd.Coords = igd.Coords.PushToReturn(igd.LastPoint)
@@ -558,6 +564,7 @@ func (igd *IntegerGridManager) Process3c(maxTicks int, lims int, lim2 int, nums 
 		if igd.Fails > igd.FailsMax {
 			fmt.Printf("FINISHED\n")
 			igd.CullCoords(8, true, nums) //8
+			go igd.Imat.DrawGridTiles(igd.Img, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors)
 			igd.AlgorithmRunning = false
 		}
 		// igd.CullCoords(2, false, []int{0, 2})

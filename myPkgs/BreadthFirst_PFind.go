@@ -37,7 +37,7 @@ func (igd *IntegerGridManager) FindPather_BreadthFirst(start, end CoordInts, num
 	}
 	tempPath := make(CoordList, len(pathway))
 	copy(tempPath, pathway)
-	if !igd.Imat.IsValid(start) || num > 256 {
+	if !igd.Imat.IsValid(start) || num > 512 {
 		fmt.Printf("IS Invalid!-----> straight away!! %d\n", num)
 		return tempPath, false
 	}
