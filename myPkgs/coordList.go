@@ -1,6 +1,8 @@
 package mypkgs
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type CoordList []CoordInts
 
@@ -116,7 +118,7 @@ CoordList.RemoveDuplicates
 this should be done;
 this will remove duplicates;
 */
-func (cord CoordList) RemoveDuplicates() CoordList {
+func (cord CoordList) RemoveDuplicates0() CoordList {
 	temp := make(CoordList, len(cord))
 	copy(temp, cord)
 	temp = temp.SortDescOnX()
@@ -130,6 +132,21 @@ func (cord CoordList) RemoveDuplicates() CoordList {
 	// for _, c := range cord {
 
 	// }
+	return temp
+}
+
+func (cord CoordList) RemoveDuplicates() CoordList {
+	temp := make(CoordList, 0)
+	//copy(temp, cord)
+	seen := make(map[CoordInts]bool)
+	if len(cord) > 0 {
+		for _, a := range cord {
+			if !seen[a] {
+				seen[a] = true
+				temp = append(temp, a)
+			}
+		}
+	}
 	return temp
 }
 

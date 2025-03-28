@@ -189,3 +189,14 @@ func (imat IntMatrix) ClearAnArea(c1_X, c1_Y, c2_X, c2_Y, val int) {
 	}
 
 }
+
+func (imat IntMatrix) DrawListAsTiles(screen *ebiten.Image, cord CoordList, offsetX, offsetY int, tileW, tileH int, gapX, gapY int, clr0 color.Color, aa bool) {
+	for _, a := range cord {
+		imat.DrawAGridTile(screen, a, offsetX, offsetY, tileW, tileH, gapX, gapY, clr0, aa)
+	}
+}
+func (imat IntMatrix) DrawListAsTiles_withLines(screen *ebiten.Image, cord CoordList, offsetX, offsetY int, tileW, tileH int, gapX, gapY int, clr0, clr1, clr2 color.Color, lineThick float32, aa bool) {
+	for _, a := range cord {
+		imat.DrawAGridTile_With_Line(screen, a, offsetX, offsetY, tileW, tileH, gapX, gapY, clr0, clr1, clr2, lineThick, aa)
+	}
+}

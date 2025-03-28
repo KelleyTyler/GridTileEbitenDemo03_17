@@ -24,7 +24,10 @@ type IntegerGridManager struct {
 	Fails            int
 	AlgorithmRunning bool
 	FailsMax         int
-	PFinder          Pathfinding
+	//----
+	MazeM MazeMaker
+	//--------------------------------
+	PFinder Pathfinding
 	//---------------------------------
 	PFinderEndSelect   bool
 	PFinderStartSelect bool
@@ -59,6 +62,8 @@ func (igd *IntegerGridManager) Init(N_TilesX, N_TilesY int, TSizeX, TSizeY int, 
 	igd.BoardMargin = CoordInts{X: iMargeX, Y: iMargeY}
 	igd.Imat.DrawGridTiles(igd.Img, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors)
 	igd.Scale = 1.0
+	fmt.Printf("MAZEM\n")
+	igd.MazeM.Init(&igd.Imat, 10)
 }
 
 func (igd *IntegerGridManager) Draw(screen *ebiten.Image) {
@@ -81,6 +86,11 @@ func (igd *IntegerGridManager) Draw(screen *ebiten.Image) {
 	if igd.PFinder.IsEndInit {
 		igd.Imat.DrawAGridTile(screen, igd.PFinder.EndPos, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{50, 50, 50, 255}, true)
 	}
+	if igd.MazeM.Cords0_IsVisible {
+		// igd.MazeM.DrawCoordLinesFromIGD(*igd, color.RGBA{100, 200, 200, 255})
+		igd.MazeM.Draw_CoordLines_raw(screen, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{150, 200, 150, 255})
+	}
+
 	if igd.PFinder.IsFullyInitialized {
 		//igd.Imat.DrawAGridTile(screen, igd.PFinder.Cursor.Position, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{50, 140, 50, 255}, false)
 
@@ -102,34 +112,7 @@ func (igd *IntegerGridManager) Draw(screen *ebiten.Image) {
 	}
 }
 
-func (igd *IntegerGridManager) UpdateOnMouseEvent(Raw_Mouse_X, Raw_Mouse_Y int) {
-	tempX, tempY := -1, -1
-	if igd.FullColors {
-		tempX, tempY = igd.Imat.ChangeValOnMouseEvent(Raw_Mouse_X, Raw_Mouse_Y, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.CycleStart, len(igd.Colors)-1, !(igd.PFinderStartSelect || igd.PFinderEndSelect))
-	} else {
-		tempX, tempY = igd.Imat.ChangeValOnMouseEvent(Raw_Mouse_X, Raw_Mouse_Y, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.CycleStart, igd.CycleEnd, !(igd.PFinderStartSelect || igd.PFinderEndSelect))
-	}
-	if tempX != -1 && tempY != -1 {
-		if !igd.PFinderEndSelect && !igd.PFinderStartSelect && igd.SelectPoints {
-			igd.LastPoint = CoordInts{tempX, tempY}
-			if (!igd.LastPoint.IsEqualTo(CoordInts{-1, -1})) {
-				igd.Coords = igd.Coords.PushToReturn(igd.LastPoint)
-			}
-		} else if igd.PFinderEndSelect {
-			igd.PFinder.EndPos = CoordInts{tempX, tempY}
-			//igd.Imat[tempY][tempX] = 5
-			igd.PFinder.IsEndInit = true
-			igd.PFinderEndSelect = false
-		} else if igd.PFinderStartSelect {
-			igd.PFinder.StartPos = CoordInts{tempX, tempY}
-			//igd.Imat[tempY][tempX] = 6
-			igd.PFinder.IsStartInit = true
-			igd.PFinderStartSelect = false
-		}
-	}
-}
-
-func (igd *IntegerGridManager) UpdateOnMouseEvent2() {
+func (igd *IntegerGridManager) UpdateOnMouseEvent() {
 	Raw_Mouse_X, Raw_Mouse_Y := ebiten.CursorPosition()
 	tempX, tempY := -1, -1
 	isOnTile := false
@@ -143,10 +126,16 @@ func (igd *IntegerGridManager) UpdateOnMouseEvent2() {
 		} else {
 			_, _ = igd.Imat.ChangeValOnMouseEvent(Raw_Mouse_X, Raw_Mouse_Y, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.CycleStart, igd.CycleEnd, !(igd.PFinderStartSelect || igd.PFinderEndSelect))
 		}
+		//
+		// // igd.MazeM.PrintString()
+		// igd.AddToCoords(tempX, tempY)
+		// igd.MazeM.Cords0 = igd.MazeM.Cords0.PushToReturn(igd.LastPoint)
+		// fmt.Printf("ADDED\n")
 		if tempX != -1 && tempY != -1 {
 			if !igd.PFinderEndSelect && !igd.PFinderStartSelect && igd.SelectPoints && isOnTile {
 				igd.LastPoint = CoordInts{tempX, tempY}
 				if (!igd.LastPoint.IsEqualTo(CoordInts{-1, -1})) {
+					igd.MazeM.AddToCoords(tempX, tempY)
 					igd.Coords = igd.Coords.PushToReturn(igd.LastPoint)
 				}
 			} else if igd.PFinderEndSelect {
@@ -295,6 +284,8 @@ func (igd *IntegerGridManager) ToString() string {
 	strng += fmt.Sprintf("Tiles: %3d,%3d\n", igd.Tile_Size.X, igd.Tile_Size.Y)
 	strng += igd.Coords.ToString()
 	strng += fmt.Sprintf("Last Point: %d,%d\nfails:%d\n", igd.LastPoint.X, igd.LastPoint.Y, igd.Fails)
+	strng += "-------------\n"
+	strng += igd.MazeM.ToString()
 	return strng
 }
 

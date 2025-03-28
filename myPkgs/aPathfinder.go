@@ -303,7 +303,7 @@ func (igd *IntegerGridManager) MoveCursorAroundPath(dir int, speed int, walls []
 
 }
 func (igd *IntegerGridManager) UpdateCursor() {
-	temp, temp2, _ := igd.Imat.GetNeighbors8(igd.PFinder.Cursor.Position)
+	temp, temp2, _ := igd.Imat.GetNeighbors8(igd.PFinder.Cursor.Position, [4]int{1, 2, 1, 2})
 	igd.PFinder.Cursor.Neighbor_Values = temp2
 	igd.PFinder.Cursor.Neighbors = [8]CoordInts(temp)
 }

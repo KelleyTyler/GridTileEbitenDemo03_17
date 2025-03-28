@@ -180,7 +180,8 @@ func (g *Game) Update() error {
 		fmt.Printf("NPANEL 7  %d\n", g.numPanel07.CurValue)
 	}
 	if g.btn00.Update3() {
-		g.IntGrid.DEMO_COORDS_00(4, 0, 0) //igd.Coords.PrintCordArray()
+		// g.IntGrid.DEMO_COORDS_00(4, 0, 0) //igd.Coords.PrintCordArray()
+		g.IntGrid.MazeM.Cords0_IsVisible = !g.IntGrid.MazeM.Cords0_IsVisible
 	}
 	if g.btn01.Update3() {
 		g.IntGrid.DEMO_COORDS_00(5, 0, 0) //igd.Coords.SortDescOnX()
@@ -218,11 +219,13 @@ func (g *Game) Update() error {
 		}
 	}
 	if g.btn06.Update3() {
-		go g.IntGrid.Process()
+		// go g.IntGrid.Process()
+		go g.IntGrid.MazeM.BasicDecayProcess([]int{1, 2, 3, 4, 5}, [4]int{1, 2, 2, 1})
 	}
 
 	if g.btn07.Update3() {
-		g.IntGrid.Process2b(5)
+		// g.IntGrid.Process2b(5)
+		go g.IntGrid.MazeM.MoreAdvancedDecay([]int{1, 2, 3, 4, 5}, [4]int{1, 2, 2, 1})
 	}
 	if g.btn08.Update3() {
 		if len(g.IntGrid.Coords) > 0 {
@@ -283,6 +286,7 @@ func (g *Game) Update() error {
 		g.IntGrid.PFinder.Cursor.ShowNeighbors = !g.IntGrid.PFinder.Cursor.ShowNeighbors
 	}
 	//inpututil.IsKeyJustPressed(ebiten.KeyW)
+
 	if inpututil.IsKeyJustPressed(ebiten.KeyW) {
 
 		//g.numPanel00.CurValue
@@ -315,7 +319,7 @@ func (g *Game) Update() error {
 		// g.IntGrid.Position.X += 1
 	}
 
-	go g.IntGrid.UpdateOnMouseEvent2()
+	go g.IntGrid.UpdateOnMouseEvent()
 	g.PreDraw(foregroundImg)
 	g.gameDebugMsg = fmt.Sprintf("FPS:%8.3f TPS:%8.3f\n", ebiten.ActualFPS(), ebiten.ActualTPS())
 	g.gameDebugMsg += fmt.Sprintf("%s\n", Settings.ToString())

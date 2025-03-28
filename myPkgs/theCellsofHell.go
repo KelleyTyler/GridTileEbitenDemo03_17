@@ -14,11 +14,24 @@ type Cell struct {
 	// Number          int
 }
 
+func (cell *Cell) Init0(StartPos CoordInts) {
+	// limit_X, limit_Y := imat.GetDimensions()
+
+	cell.Position = StartPos
+	// temp, temp2, _ := imat.GetNeighbors8(StartPos)
+	// cell.Neighbor_Values = temp2
+
+	// cell.Neighbors = [8]CoordInts(temp)
+	cell.ticker = 0
+	cell.ShowNeighbors = false
+	// cell.MCost_toStart = 0
+	// cell.MCost_toEnd = -1
+}
 func (cell *Cell) InitP(StartPos CoordInts, EndPos CoordInts, imat IntMatrix) {
 	// limit_X, limit_Y := imat.GetDimensions()
 
 	cell.Position = StartPos
-	temp, temp2, _ := imat.GetNeighbors8(StartPos)
+	temp, temp2, _ := imat.GetNeighbors8(StartPos, [4]int{1, 2, 2, 1})
 	cell.Neighbor_Values = temp2
 
 	cell.Neighbors = [8]CoordInts(temp)
@@ -43,7 +56,7 @@ func (cell *Cell) InitP(StartPos CoordInts, EndPos CoordInts, imat IntMatrix) {
 //		cell.MCost_toEnd = -1
 //	}
 func (cell *Cell) UpdateCell(Imat IntMatrix) {
-	temp, temp2, _ := Imat.GetNeighbors8(cell.Position)
+	temp, temp2, _ := Imat.GetNeighbors8(cell.Position, [4]int{1, 2, 2, 1})
 	cell.Neighbor_Values = temp2
 	cell.Neighbors = [8]CoordInts(temp)
 }
