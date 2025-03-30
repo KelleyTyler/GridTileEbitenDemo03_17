@@ -16,6 +16,7 @@ type IntegerGridManager struct {
 	Margin           CoordInts
 	BoardMargin      CoordInts //internal margin; the margin within IMG where things are drawn.
 	Position         CoordInts
+	BoardPosition    CoordInts
 	CycleStart       int
 	CycleEnd         int
 	Colors           []color.Color
@@ -34,17 +35,29 @@ type IntegerGridManager struct {
 	//--------------------------------
 	SelectPoints bool
 	//--------------
-	Img   *ebiten.Image
-	Scale float64
+	Img, BoardBuffer *ebiten.Image
+	Scale            float64
 }
 
+/* Muted Colors:
+[]color.Color{color.RGBA{55, 55, 75, 255}, color.RGBA{125, 125, 150, 255}, color.RGBA{0, 255, 0, 255},
+	color.RGBA{0, 255, 255, 255}, color.RGBA{65, 55, 55, 255}, color.RGBA{255, 255, 255, 255}, color.RGBA{75, 75, 75, 255}}
+
+*/
+
+/*
+//Vibrant Colors:
+[]color.Color{color.RGBA{255, 0, 0, 255}, color.RGBA{0, 0, 255, 255}, color.RGBA{0, 255, 0, 255},
+
+	color.RGBA{0, 255, 255, 255}, color.RGBA{255, 255, 0, 255}, color.RGBA{255, 255, 255, 255}, color.RGBA{75, 75, 75, 255}}
+*/
 func (igd *IntegerGridManager) Init(N_TilesX, N_TilesY int, TSizeX, TSizeY int, PosX, PosY int, MargX, MargY, iMargeX, iMargeY int) {
 	igd.Margin = CoordInts{X: MargX, Y: MargY}
 	igd.Position = CoordInts{X: PosX, Y: PosY}
 	igd.Tile_Size = CoordInts{X: TSizeX, Y: TSizeY}
 	igd.Colors = []color.Color{color.RGBA{255, 0, 0, 255}, color.RGBA{0, 0, 255, 255}, color.RGBA{0, 255, 0, 255},
 		color.RGBA{0, 255, 255, 255}, color.RGBA{255, 255, 0, 255}, color.RGBA{255, 255, 255, 255}, color.RGBA{75, 75, 75, 255}}
-	igd.Imat = igd.Imat.MakeIntMatrix(N_TilesX, N_TilesY)
+	igd.Imat = igd.Imat.MakeIntMatrix(N_TilesX, N_TilesY) //color.RGBA{255, 255, 0, 255}
 	igd.Imat.InitBlankMatrix(N_TilesX, N_TilesY, 0)
 	igd.FullColors = false
 	igd.CycleStart = 0
@@ -60,6 +73,7 @@ func (igd *IntegerGridManager) Init(N_TilesX, N_TilesY int, TSizeX, TSizeY int, 
 	igd.Img.Fill(color.Black)
 
 	igd.BoardMargin = CoordInts{X: iMargeX, Y: iMargeY}
+	igd.BoardPosition = CoordInts{X: iMargeX, Y: iMargeY}
 	igd.Imat.DrawGridTiles(igd.Img, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors)
 	igd.Scale = 1.0
 	fmt.Printf("MAZEM\n")
@@ -75,6 +89,7 @@ func (igd *IntegerGridManager) Draw(screen *ebiten.Image) {
 	}
 	// go igd.Imat.DrawGridTiles(igd.Img, 4, 4, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors)
 	ops := ebiten.DrawImageOptions{}
+	// ops.GeoM.Translate(float64(igd.Position.X-igd.BoardMargin.X), float64(igd.Position.Y-igd.BoardMargin.Y))
 	ops.GeoM.Translate(float64(igd.Position.X-igd.BoardMargin.X), float64(igd.Position.Y-igd.BoardMargin.Y))
 	ops.GeoM.Scale(igd.Scale, igd.Scale)
 	screen.DrawImage(igd.Img, &ops)
@@ -111,26 +126,32 @@ func (igd *IntegerGridManager) Draw(screen *ebiten.Image) {
 		// igd.Imat.DrawAGridTile(screen, igd.PFinder.Cursor.Position, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{255, 15, 0, 1}, false) //{255,15,0,1}
 	}
 }
-
+func (igd *IntegerGridManager) RedrawBoard() {
+	igd.Img.Fill(color.Black)
+	go igd.Imat.DrawGridTiles(igd.Img, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors)
+}
 func (igd *IntegerGridManager) UpdateOnMouseEvent() {
 	Raw_Mouse_X, Raw_Mouse_Y := ebiten.CursorPosition()
 	tempX, tempY := -1, -1
+	temp2X, temp2Y := -1, -1
 	isOnTile := false
 	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButton(0)) {
-		go igd.Imat.DrawGridTiles(igd.Img, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors)
+		igd.RedrawBoard()
 		tempX, tempY, isOnTile = igd.Imat.GetCoordOfMouseEvent(Raw_Mouse_X, Raw_Mouse_Y, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y)
+		temp2X, temp2Y, isOnTile = igd.Imat.GetCoordOfMouseEvent_Scalable(Raw_Mouse_X-igd.BoardPosition.X, Raw_Mouse_Y-igd.BoardPosition.Y, igd.Scale, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y)
 		if igd.FullColors {
 
-			_, _ = igd.Imat.ChangeValOnMouseEvent(Raw_Mouse_X, Raw_Mouse_Y, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.CycleStart, len(igd.Colors)-1, !(igd.PFinderStartSelect || igd.PFinderEndSelect))
+			_, _ = igd.Imat.ChangeValOnMouseEvent(Raw_Mouse_X-igd.BoardPosition.X, Raw_Mouse_Y-igd.BoardPosition.Y, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.CycleStart, len(igd.Colors)-1, !(igd.PFinderStartSelect || igd.PFinderEndSelect))
 
 		} else {
-			_, _ = igd.Imat.ChangeValOnMouseEvent(Raw_Mouse_X, Raw_Mouse_Y, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.CycleStart, igd.CycleEnd, !(igd.PFinderStartSelect || igd.PFinderEndSelect))
+			_, _ = igd.Imat.ChangeValOnMouseEvent(Raw_Mouse_X-igd.BoardPosition.X, Raw_Mouse_Y-igd.BoardPosition.Y, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.CycleStart, igd.CycleEnd, !(igd.PFinderStartSelect || igd.PFinderEndSelect))
 		}
 		//
 		// // igd.MazeM.PrintString()
 		// igd.AddToCoords(tempX, tempY)
 		// igd.MazeM.Cords0 = igd.MazeM.Cords0.PushToReturn(igd.LastPoint)
 		// fmt.Printf("ADDED\n")
+		fmt.Printf("%d %d %t\n", temp2X, temp2Y, isOnTile)
 		if tempX != -1 && tempY != -1 {
 			if !igd.PFinderEndSelect && !igd.PFinderStartSelect && igd.SelectPoints && isOnTile {
 				igd.LastPoint = CoordInts{tempX, tempY}
@@ -555,7 +576,7 @@ func (igd *IntegerGridManager) Process3c(maxTicks int, lims int, lim2 int, nums 
 		if igd.Fails > igd.FailsMax {
 			fmt.Printf("FINISHED\n")
 			igd.CullCoords(8, true, nums) //8
-			go igd.Imat.DrawGridTiles(igd.Img, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors)
+			go igd.Imat.DrawGridTiles(igd.Img, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors)
 			igd.AlgorithmRunning = false
 		}
 		// igd.CullCoords(2, false, []int{0, 2})

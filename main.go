@@ -96,7 +96,7 @@ func (g *Game) init() error {
 	g.numPanel07.Init("nums03", "SCALE", true, col1, block4+36+36+36, 32, 16, 1, 1, 4, 1)
 	g.coorAr = append(g.coorAr, mypkgs.CoordInts{X: 2, Y: 2})
 	// g.IntGrid.Init(32, 32, 16, 16, 64, 8, 2, 2)
-	g.IntGrid.Init(32, 32, 16, 16, 144, 8, 2, 2, 4, 4)
+	g.IntGrid.Init(16, 16, 16, 16, 64, 8, 3, 3, 4, 4)
 
 	return nil
 }
@@ -177,7 +177,7 @@ func (g *Game) Update() error {
 	g.numPanel06.Update()
 	g.numPanel07.Update()
 	if g.numPanel07.Btns[1].Update3() {
-		fmt.Printf("NPANEL 7  %d\n", g.numPanel07.CurValue)
+		fmt.Printf("NPANEL 7 SCALE  %d\n", g.numPanel07.CurValue)
 	}
 	if g.btn00.Update3() {
 		// g.IntGrid.DEMO_COORDS_00(4, 0, 0) //igd.Coords.PrintCordArray()
@@ -220,7 +220,7 @@ func (g *Game) Update() error {
 	}
 	if g.btn06.Update3() {
 		// go g.IntGrid.Process()
-		go g.IntGrid.MazeM.BasicDecayProcess([]int{1, 2, 3, 4, 5}, [4]int{1, 2, 2, 1})
+		go g.IntGrid.MazeM.BasicDecayProcess([]int{1, 2, 3, 4, 5}, [4]int{5, 6, 6, 5})
 	}
 
 	if g.btn07.Update3() {
@@ -285,8 +285,37 @@ func (g *Game) Update() error {
 	if g.btn20.Update3() {
 		g.IntGrid.PFinder.Cursor.ShowNeighbors = !g.IntGrid.PFinder.Cursor.ShowNeighbors
 	}
+	if inpututil.IsKeyJustPressed(ebiten.Key9) {
+		// backgroundImg.Fill(color.RGBA{150, 150, 150, 255})
+		g.IntGrid.Img.Fill(color.RGBA{150, 150, 150, 255})
+	}
+	if inpututil.IsKeyJustPressed(ebiten.Key8) {
+		backgroundImg.Fill(backgroundColor)
+	}
 	//inpututil.IsKeyJustPressed(ebiten.KeyW)
+	if inpututil.IsKeyJustPressed(ebiten.KeyArrowUp) {
+		g.IntGrid.BoardPosition.Y += 8
+		g.IntGrid.RedrawBoard()
+		// g.IntGrid.Img.Fill(color.RGBA{150, 150, 150, 255})
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyArrowDown) {
+		g.IntGrid.BoardPosition.Y -= 8
+		g.IntGrid.RedrawBoard()
 
+		//g.IntGrid.Img.Fill(color.RGBA{150, 150, 150, 255})
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft) {
+		g.IntGrid.BoardPosition.X -= 8
+		g.IntGrid.RedrawBoard()
+
+		//g.IntGrid.Img.Fill(color.RGBA{150, 150, 150, 255})
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyArrowRight) {
+		g.IntGrid.BoardPosition.X += 8
+		g.IntGrid.RedrawBoard()
+
+		//g.IntGrid.Img.Fill(color.RGBA{150, 150, 150, 255})
+	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyW) {
 
 		//g.numPanel00.CurValue

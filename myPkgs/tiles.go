@@ -74,13 +74,48 @@ func (imat IntMatrix) GetCoordOfMouseEvent(Raw_Mouse_X int, Raw_Mouse_Y int, Off
 
 		mXi_02 := (tileW * mXi) + (mXi * GapX) + tileW
 		mYi_02 := (tileH * mYi) + (mYi * GapY) + tileH
+		fmt.Printf("0-->%6d,%6d\t%6d,%6d\t rec start: %6d %6d\t %6d %6d \n", Raw_Mouse_X, Raw_Mouse_Y, mXo, mYo, mXi_01, mYi_01, mXi_02, mYi_02)
 		if (((mXo) > (mXi_01)) && (mXo) < mXi_02) && ((mYo) > (mYi_01) && mYo < mYi_02) {
 			isOnTile = true
 		}
 	}
 	return mXi, mYi, isOnTile
 }
+func (imat IntMatrix) GetCoordOfMouseEvent_Scalable(Raw_Mouse_X int, Raw_Mouse_Y int, scale float64, OffsetX int, OffsetY int, tileW int, tileH int, GapX int, GapY int) (int, int, bool) {
+	// test0X := scale * float64(OffsetY)
+	// test0Y := scale * float64(OffsetY)
+	test0X := scale * float64(OffsetY)
+	test0Y := scale * float64(OffsetY)
+	test1Xa := scale * float64(((len(imat[0])*tileW)+(len(imat[0])*GapX))+OffsetX)
+	test1Ya := scale * float64(((len(imat)*tileH)+(len(imat)*GapY))+OffsetY)
+	// test1X := ((len(imat[0]) * tileW) + (len(imat[0]) * GapX)) + OffsetX
+	// test1Y := ((len(imat) * tileH) + (len(imat) * GapY)) + OffsetY
+	var mXi = -1
+	var mYi = -1
+	var isOnTile = false
+	if (float64(Raw_Mouse_X) > test0X && float64(Raw_Mouse_X) < test1Xa-float64(GapX)) && (float64(Raw_Mouse_Y) > test0Y && float64(Raw_Mouse_Y) < test1Ya-float64(GapX)) {
+		// var mX = float32(Raw_Mouse_X-OffsetX) / float32(tileW+GapX) //float32(test1X)
+		// var mY = float32(Raw_Mouse_Y-OffsetY) / float32(tileH+GapY) //float32(test1Y)
+		var mX = (-float64(Raw_Mouse_X) + test1Xa) / (float64(tileW+GapX) * -scale) //float32(test1X)
+		var mY = (-float64(Raw_Mouse_Y) + test1Ya) / (float64(tileH+GapY) * -scale) //float32(test1Y)
 
+		mXi = int(mX) + len(imat[0]) - 1
+		mYi = int(mY) + len(imat) - 1
+		mXo, mYo := int((Raw_Mouse_X-OffsetX))/int(scale*scale), int((Raw_Mouse_Y-OffsetY))/int(scale*scale)
+		mXi_01 := int((tileW*mXi)+(mXi*GapX)) / int(scale)
+		mYi_01 := int((tileH*mYi)+(mYi*GapY)) / int(scale)
+		// fmt.Printf("--->%d, %d %f,%f\n", mXo, mYo, float64(mXo)-(float64(OffsetX)*scale), float64(mYo)-(float64(OffsetY)*scale))
+		//The scale is off; the cursor occassionally gets the wrong point;
+		// at the very least it's not working when it's
+		mXi_02 := ((tileW*mXi)*int(scale) + (mXi*GapX)*int(scale) + tileW*int(scale)) / int(scale)
+		mYi_02 := ((tileH*mYi)*int(scale) + (mYi*GapY)*int(scale) + tileH*int(scale)) / int(scale)
+		fmt.Printf("--->%6d,%6d\t%6.1d,%6.1d\t rec start: %6.d,%6.d \t %6d,%6d--\n", Raw_Mouse_X/int(scale), Raw_Mouse_Y/int(scale), mXo, mYo, mXi_01, mYi_01, mXi_02, mYi_02)
+		if (((mXo) > int(mXi_01)) && (mXo) < int(mXi_02)) && ((mYo) > int(mYi_01) && mYo < int(mYi_02)) { //float64(
+			isOnTile = true
+		}
+	}
+	return mXi, mYi, isOnTile
+}
 func (imat IntMatrix) IsCursorInBounds(OffsetX int, OffsetY int, tileW int, tileH int, GapX int, GapY int) bool {
 	Raw_Mouse_X, Raw_Mouse_Y := ebiten.CursorPosition()
 	test1X := ((len(imat[0]) * tileW) + (len(imat[0]) * GapX)) + OffsetX

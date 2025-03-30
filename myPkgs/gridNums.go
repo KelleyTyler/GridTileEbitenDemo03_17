@@ -189,12 +189,41 @@ func (iMat IntMatrix) CycleValAtCoord(coord CoordInts, min, max, iterator int, c
 	}
 }
 
-// func (iMat IntMatrix) MakeIntMatrixRowBlank(row int, numColumns int, fillWith int) {
-// 	var temp [40]int
-// 	for i := 0; i < numColumns; i++ {
-// 		temp[i] = 0
-// 	}
-// 	for j := 0; j < numColumns; j++ {
-// 		iMat[row][j] = temp[j]
-// 	}
-// }
+//	func (iMat IntMatrix) MakeIntMatrixRowBlank(row int, numColumns int, fillWith int) {
+//		var temp [40]int
+//		for i := 0; i < numColumns; i++ {
+//			temp[i] = 0
+//		}
+//		for j := 0; j < numColumns; j++ {
+//			iMat[row][j] = temp[j]
+//		}
+//	}
+
+/*
+	Function: ValidatePointAgainstArrayOfValues
+
+-This looks for the point described by 'coord' on the IntMatrix;
+-If that point is found it compares the value of that point to the values in the array 'num'
+-- if there is a match 'true' is returned; if there is no match false is returned;
+-If that value is not found/the point is out of the bounds of the Intmatrix it returs false;
+*/
+func (imat *IntMatrix) IsCoordValueInArrayOfValues(coord CoordInts, num []int) bool {
+	ret := false
+	if imat.IsValid(coord) {
+		x := imat.GetCoordVal(coord)
+		ret = IntArrayContains(num, x)
+	}
+	return ret
+}
+
+func (imat *IntMatrix) IsCoordValueInArrayOfValues_What_Exists(coord CoordInts, num []int) (bool, bool, int) {
+	exists := false
+	ret := false
+	y := -2
+	if imat.IsValid(coord) {
+		x := imat.GetCoordVal(coord)
+		exists = true
+		ret, y = IntArrayContains_giveMeWhat(num, x)
+	}
+	return exists, ret, y
+}
