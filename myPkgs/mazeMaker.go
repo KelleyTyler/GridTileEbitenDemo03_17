@@ -156,7 +156,7 @@ func (imat *IntMatrix) BasicDecayProcess(CordsIn CoordList, fails int, filterFor
 	return temp, fails_out
 }
 
-func (mazeM *MazeMaker) MoreAdvancedDecay(filterFor []int, buffer [4]int) {
+func (mazeM *MazeMaker) PrimLike_Maze_Algorithm00(filterFor []int, filter2 []int, buffer [4]int, cullDiags bool) {
 	temp := make(CoordList, len(mazeM.Cords0))
 	copy(temp, mazeM.Cords0)
 
@@ -194,11 +194,13 @@ func (mazeM *MazeMaker) MoreAdvancedDecay(filterFor []int, buffer [4]int) {
 				// temp, _ = temp.RemoveCoordFromList(c)
 				frustration = false
 			}
+			if cullDiags {
+				temp, _ = temp.RemoveCoordFromList(templist[1])
+				temp, _ = temp.RemoveCoordFromList(templist[3])
+				temp, _ = temp.RemoveCoordFromList(templist[5])
+				temp, _ = temp.RemoveCoordFromList(templist[7])
+			}
 
-			temp, _ = temp.RemoveCoordFromList(templist[1])
-			temp, _ = temp.RemoveCoordFromList(templist[3])
-			temp, _ = temp.RemoveCoordFromList(templist[5])
-			temp, _ = temp.RemoveCoordFromList(templist[7])
 		} else {
 			mazeM.Imat.SetValAtCoord(c, 4)
 			fmt.Printf("\nFAILURE AT %d, %d \n", c.X, c.Y)
@@ -236,9 +238,9 @@ Prim's Maze Generation Algorithm;
 ->add adjacent cells to frontier;
 ->select a cell randomly from frontier; add it to the maze; remove it from frontier
 */
-func (mazeM *MazeMaker) PrimsMazeAlgorithm() {
+// func (mazeM *MazeMaker) PrimsMazeAlgorithm() {
 
-}
+// }
 
 /*
 -'Additions to maze' that will be banned: (center is where cord is)

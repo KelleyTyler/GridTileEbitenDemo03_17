@@ -307,7 +307,7 @@ func (igd *IntegerGridManager) UpdateCursor() {
 	igd.PFinder.Cursor.Neighbor_Values = temp2
 	igd.PFinder.Cursor.Neighbors = [8]CoordInts(temp)
 }
-func (igd *IntegerGridManager) DrawCursor(screen *ebiten.Image) {
+func (igd *IntegerGridManager) DrawCursor_00(screen *ebiten.Image) {
 	igd.Imat.DrawAGridTile_With_Line(screen, igd.PFinder.Cursor.Position, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{200, 150, 0, 255}, color.Black, color.Black, 2.0, false)
 	if igd.PFinder.Cursor.ShowNeighbors {
 		for i, a := range igd.PFinder.Cursor.Neighbors {
@@ -319,7 +319,18 @@ func (igd *IntegerGridManager) DrawCursor(screen *ebiten.Image) {
 		}
 	}
 }
-
+func (igd *IntegerGridManager) DrawCursor(screen *ebiten.Image) {
+	igd.Imat.DrawAGridTile_With_Line(screen, igd.PFinder.Cursor.Position, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{200, 150, 0, 255}, color.Black, color.Black, 2.0, false)
+	if igd.PFinder.Cursor.ShowNeighbors {
+		for i, a := range igd.PFinder.Cursor.Neighbors {
+			if igd.PFinder.Cursor.Neighbor_Values[i] == 1 {
+				igd.Imat.DrawAGridTile_With_Line(screen, a, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{200, 0, 150, 255}, color.Black, color.Black, 2.0, false)
+			} else {
+				igd.Imat.DrawAGridTile_With_Line(screen, a, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{0, 150, 200, 255}, color.Black, color.Black, 2.0, false)
+			}
+		}
+	}
+}
 func (igd *IntegerGridManager) MoveCursorAround(Vect CoordInts, walls []int) (int, bool) {
 	var tempCurs Cell = igd.PFinder.Cursor
 	//step1;

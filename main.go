@@ -96,7 +96,7 @@ func (g *Game) init() error {
 	g.numPanel07.Init("nums03", "SCALE", true, col1, block4+36+36+36, 32, 16, 1, 1, 4, 1)
 	g.coorAr = append(g.coorAr, mypkgs.CoordInts{X: 2, Y: 2})
 	// g.IntGrid.Init(32, 32, 16, 16, 64, 8, 2, 2)
-	g.IntGrid.Init(16, 16, 16, 16, 64, 8, 3, 3, 4, 4)
+	g.IntGrid.Init(32, 32, 16, 16, 64, 8, 4, 4, 4, 4)
 
 	return nil
 }
@@ -145,7 +145,9 @@ func (g *Game) PreDrawGUI(screen *ebiten.Image) {
 func (g *Game) PreDraw(screen *ebiten.Image) {
 	screen.Clear()
 	screen.DrawImage(backgroundImg, nil)
+	// g.IntGrid.RedrawBoard()
 	g.IntGrid.Draw(screen) //if made into a goroutine this needs to have some better way of streaming output;
+
 	g.PreDrawGUI(screen)
 	//alternatively this perhaps is a great way to
 	// imatrix.DrawGridTile(screen, tile_offset_X, tile_offset_Y, tileW, tileH, tile_Margin_W, tile_Margin_H) //DrawGridTile(screen, 8, 8, 16, 16, 2, 2)
@@ -225,7 +227,9 @@ func (g *Game) Update() error {
 
 	if g.btn07.Update3() {
 		// g.IntGrid.Process2b(5)
-		go g.IntGrid.MazeM.MoreAdvancedDecay([]int{1, 2, 3, 4, 5}, [4]int{1, 2, 2, 1})
+		// go g.IntGrid.MazeM.MoreAdvancedDecay([]int{1, 2, 3, 4, 5}, [4]int{1, 2, 2, 1})
+		g.IntGrid.MazeM.PrimLike_Maze_Algorithm00([]int{1, 2, 3, 4, 5}, []int{-1, 1, 2, 4}, [4]int{1, 2, 2, 1}, false)
+
 	}
 	if g.btn08.Update3() {
 		if len(g.IntGrid.Coords) > 0 {
