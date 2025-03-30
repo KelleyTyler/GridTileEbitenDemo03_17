@@ -42,6 +42,9 @@ func (mazeM *MazeMaker) Update() {
 func (mazeM *MazeMaker) Draw_CoordLines_raw(screen *ebiten.Image, offsetX, offsetY, tileW, tileH, gapX, gapY int, clr0 color.Color) {
 	mazeM.Imat.DrawListAsTiles_withLines(screen, mazeM.Cords0, offsetX, offsetY, tileW, tileH, gapX, gapY, clr0, color.Black, color.Black, 2.0, true)
 }
+func (mazeM *MazeMaker) ClearCords0() {
+	mazeM.Cords0 = make(CoordList, 0)
+}
 
 func (mazeM *MazeMaker) DrawCoordLinesFromIGD(igd IntegerGridManager, clr0 color.Color) {
 	mazeM.Imat.DrawListAsTiles_withLines(igd.Img, mazeM.Cords0, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, clr0, color.Black, color.Black, 2.0, true)
@@ -203,7 +206,7 @@ func (mazeM *MazeMaker) PrimLike_Maze_Algorithm00(filterFor []int, filter2 []int
 
 		} else {
 			mazeM.Imat.SetValAtCoord(c, 4)
-			fmt.Printf("\nFAILURE AT %d, %d \n", c.X, c.Y)
+			//fmt.Printf("\nFAILURE AT %d, %d \n", c.X, c.Y)
 			temp, _ = temp.RemoveCoordFromList(c)
 		}
 

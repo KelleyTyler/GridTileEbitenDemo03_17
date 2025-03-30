@@ -18,9 +18,9 @@ type IntMatrix [][]int
 
 func (iMat *IntMatrix) MakeIntMatrix(numColumns int, numRows int) IntMatrix {
 
-	TempMatrix := make(IntMatrix, numColumns)
+	TempMatrix := make(IntMatrix, numRows)
 	for row := range TempMatrix {
-		TempMatrix[row] = make([]int, numRows)
+		TempMatrix[row] = make([]int, numColumns)
 	}
 	return TempMatrix
 }

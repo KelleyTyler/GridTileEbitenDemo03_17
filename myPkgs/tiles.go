@@ -50,7 +50,9 @@ func (imat IntMatrix) DrawGridTiles(screen *ebiten.Image, OffsetX int, OffsetY i
 	for y, _ := range imat {
 		for x, b := range imat[y] {
 			vector.DrawFilledRect(screen, float32((tileW*x)+(GapX*x)+OffsetX), float32((tileH*y)+(GapY*y)+OffsetY), float32(tileW), float32(tileH), colors[b], false)
-			vector.StrokeRect(screen, float32((tileW*x)+(GapX*x)+OffsetX), float32((tileH*y)+(GapY*y)+OffsetY), float32(tileW), float32(tileH), 2.0, color.Black, false)
+
+			color0 := color.RGBA{12, 12, 12, 100} //color.Black
+			vector.StrokeRect(screen, float32((tileW*x)+(GapX*x)+OffsetX), float32((tileH*y)+(GapY*y)+OffsetY), float32(tileW), float32(tileH), 0, color0, false)
 		}
 	}
 	//vector.StrokeRect(screen, float32(OffsetX-0), float32(OffsetY-0), float32(test1X-0), float32(test1Y+0), 2.0, color.RGBA{210, 153, 100, 255}, true) //0, 179, 100, 255
