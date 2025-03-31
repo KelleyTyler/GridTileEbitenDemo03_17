@@ -87,13 +87,13 @@ func (g *Game) init() error {
 	g.btn17.InitButton("Btn17", "Pathfind\nBreadth", 0, col1, block3, 64, 32, 0, 0)
 	g.btn18.InitButton("Btn18", "Pathfind\nManhattan", 0, col0, block3+36, 64, 32, 0, 0)
 	g.btn19.InitButton("Btn19", "Draw\nCircle", 2, col1, block3+36, 64, 32, 0, 0)
-	g.btn20.InitButton("Btn20", "", 0, col0, block3+72, 64, 32, 0, 0)
-	g.btn21.InitButton("Btn21", "", 0, col1, block3+72, 64, 32, 0, 0)
+	g.btn20.InitButton("Btn20", "ShowCursr\nneighbors", 0, col0, block3+72, 64, 32, 0, 0)
+	g.btn21.InitButton("Btn21", "AddCirc\ntoMazeGen", 2, col1, block3+72, 64, 32, 0, 0)
 	block4 := 444
 	g.numPanel00.Init("nums00", "Maze3Param", true, col0, block4, 32, 16, 0, 10, 20, 1)
 	g.numPanel01.Init("nums01", "Maze3Param", true, col1, block4, 32, 16, 0, 6, 20, 1)
 	g.numPanel02.Init("nums02", "Maze3Param", true, col0, block4+36, 32, 16, 1, 8, 16, 1)
-	g.numPanel03.Init("", "circ. Rad", true, col1, block4+36, 32, 16, 0, 0, 20, 1)
+	g.numPanel03.Init("circRadPanel", "circ. Rad", true, col1, block4+36, 32, 16, 0, 0, 20, 1)
 	g.numPanel04.Init("nums03", "", true, col0, block4+36+36, 32, 16, 0, 0, 10, 1)
 	g.numPanel05.Init("nums05", "FindPath", true, col1, block4+36+36, 32, 16, 0, 0, 3, 1)
 	//=----------
@@ -335,6 +335,7 @@ func (g *Game) Update() error {
 	if g.btn20.Update3() {
 		g.IntGrid.PFinder.Cursor.ShowNeighbors = !g.IntGrid.PFinder.Cursor.ShowNeighbors
 	}
+
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 		// backgroundImg.Fill(color.RGBA{150, 150, 150, 255})
 		// g.IntGrid.Img.Fill(color.RGBA{150, 150, 150, 255})

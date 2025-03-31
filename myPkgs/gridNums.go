@@ -51,6 +51,31 @@ func (iMat IntMatrix) GetDimensions() (int, int) {
 	return sizeX, sizeY
 }
 
+func (imat IntMatrix) GetCoordVal(cord CoordInts) int {
+	//fmt.Printf("GET COORD VAL %d %d\n\n", cord.X, cord.Y)
+	return imat[cord.Y][cord.X]
+
+}
+
+func (imat IntMatrix) IsValid(cord CoordInts) bool {
+	if (cord.X > -1 && cord.X < len(imat[0])) && (cord.Y > -1 && cord.Y < len(imat)) {
+		return true
+	}
+	return false
+}
+func (imat IntMatrix) IsValid_With_Constant_Buffer(cord CoordInts, buffer int) bool {
+	if (cord.X > -1+buffer && cord.X < len(imat[0])-buffer) && (cord.Y > -1+buffer && cord.Y < len(imat)-buffer) {
+		return true
+	}
+	return false
+}
+func (imat IntMatrix) IsValid_WithDir_Buffer(cord CoordInts, buffer [4]int) bool {
+	if (cord.X > -1+buffer[3] && cord.X < len(imat[0])-buffer[1]) && (cord.Y > -1+buffer[0] && cord.Y < len(imat)-buffer[2]) {
+		return true
+	}
+	return false
+}
+
 func (iMat IntMatrix) GetNeighbors4(coordPoint CoordInts, buffer [4]int) (CoordList, [4]int, int) {
 	outList := make(CoordList, 4)
 	var outAr [4]int
