@@ -328,3 +328,21 @@ func (mazeM *MazeMaker) PrimMazeGenCell_CheckingRules(cord CoordInts, filter []i
 	//fmt.Printf("\n")
 	return true
 }
+
+/*
+	Idea is to make a stippling pattern:
+	before:    after:
+	|0 0 0 0 0|0 0 0 0 0| the point selected
+	|0 0 0 0 0|0 1 0 1 0| here is (1,1)
+	|0 0 0 0 0|0 0 0 0 0| with a cell size of 3
+	|0 0 0 0 0|0 1 0 1 0|
+	|0 0 0 0 0|0 0 0 0 0|
+*/
+
+// func (mazeM *MazeMaker) Stippling(cell_size CoordInts) {
+// 	if !mazeM.ProcessOngoing {
+// 		if len(mazeM.Cords0) > 1 {
+// 			mazeM.Cords0
+// 		}
+// 	}
+// }
