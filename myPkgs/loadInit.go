@@ -57,10 +57,10 @@ func (sets *GameSettings) ToString() string {
 func GetSettingsFromBakedIn() GameSettings {
 	var gSets GameSettings = GameSettings{
 		VersionID:   "0.0.08",
-		WindowSizeX: 892, //860
-		WindowSizeY: 660,
-		ScreenResX:  892, //860
-		ScreenResY:  660,
+		WindowSizeX: 960, //860//892
+		WindowSizeY: 640, //660 //720
+		ScreenResX:  960, //860 //892
+		ScreenResY:  640,
 	}
 	return gSets
 }

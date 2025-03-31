@@ -6,7 +6,10 @@ The goals of which are to produce information on the nature of working with ebit
 
 
 ## Compiling to WebAssembly:
-    
+    ```
+    go run github.com/hajimehoshi/wasmserve@latest
+    ```
+
     I'm writing this mostly for my future self
     in Windows Powershell enter the code/script below:
     ```

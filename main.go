@@ -97,11 +97,11 @@ func (g *Game) init() error {
 	g.numPanel04.Init("nums03", "", true, col0, block4+36+36, 32, 16, 0, 0, 10, 1)
 	g.numPanel05.Init("nums05", "FindPath", true, col1, block4+36+36, 32, 16, 0, 0, 3, 1)
 	//=----------
-	g.TileMargin.Init("nums03", "Tile Margin", true, col0, block4+36+36+36, 32, 16, 0, 0, 10, 1)
-	g.ScaleNumPad.Init("nums03", "SCALE", true, col1, block4+36+36+36, 32, 16, 1, 4, 16, 1)
+	g.TileMargin.Init("TileMargin_Selector", "TileMargin", true, col0, block4+36+36+36, 32, 16, 0, 4, 16, 1)
+	g.ScaleNumPad.Init("Scale_Selector", "SCALE", true, col1, block4+36+36+36, 32, 16, 1, 4, 32, 1)
 	g.coorAr = append(g.coorAr, mypkgs.CoordInts{X: 2, Y: 2})
 	// g.IntGrid.Init(32, 32, 16, 16, 64, 8, 2, 2)
-	g.IntGrid.Init(64, 64, 8, 8, 96, 8, 0, 0, 4, 4)
+	g.IntGrid.Init(64, 64, 8, 8, 168, 8, 0, 0, 4, 4)
 	// g.IntGrid.Init(96, 96, 8, 8, 64, 8, 0, 0, 4, 4)
 	g.MouseDragStartingPoint = mypkgs.CoordInts{X: 0, Y: 0}
 	g.MouseIsDragging = false
@@ -281,19 +281,11 @@ func (g *Game) Update() error {
 	if g.btn07.Update3() {
 		// g.IntGrid.Process2b(5)
 		// go g.IntGrid.MazeM.MoreAdvancedDecay([]int{1, 2, 3, 4, 5}, [4]int{1, 2, 2, 1})
-		g.IntGrid.MazeM.PrimLike_Maze_Algorithm00([]int{1, 2, 3, 4, 5}, []int{-1, 1, 2, 4}, [4]int{1, 2, 2, 1}, false)
+		g.IntGrid.MazeM.PrimLike_Maze_Algorithm00([]int{1, 2, 3, 4, 5}, []int{-1, 1, 2, 4}, [4]int{1, 2, 2, 1}, true)
 
 	}
 	if g.btn08.Update3() {
-		// if len(g.IntGrid.Coords) > 0 {
-		// 	if !g.IntGrid.AlgorithmRunning {
-		// 		g.IntGrid.AlgorithmRunning = true
-		// 	}
-		// 	// g.IntGrid.Process3c(50, 10, 6, []int{0, 2, 3}) //8,4
-		// 	// g.IntGrid.Process3c(50, g.numPanel00.CurValue, g.numPanel01.CurValue, g.numPanel02.CurValue, g.numPanel03.CurValue, g.numPanel04.CurValue, []int{0, 2, 3}) //8,4
-		// 	g.IntGrid.Process3c(50, g.numPanel00.CurValue, g.numPanel01.CurValue, []int{0, 2, 3}) //8,4 //, g.numPanel02.CurValue
 
-		// }
 	}
 
 	if g.btn09.Update3() {
@@ -305,7 +297,7 @@ func (g *Game) Update() error {
 		g.IntGrid.Imat.ClearAnArea(3, 3, 29, 29, 1)
 	}
 	if g.btn11.Update3() {
-		g.IntGrid.CullCoords(8, true, []int{0, 2})
+
 	}
 	if g.btn12.Update3() && !g.IntGrid.PFinder.IsStartInit {
 		g.IntGrid.PFinderStartSelect = true
@@ -437,7 +429,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 func main() {
 
 	ebiten.SetWindowSize(Settings.WindowSizeX, Settings.WindowSizeY)
-	ebiten.SetWindowTitle("Hello, World!")
+	ebiten.SetWindowTitle("Grid Tile Ebitengine Demo")
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		log.Fatal(err)
 	}

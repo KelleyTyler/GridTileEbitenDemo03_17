@@ -22,14 +22,14 @@ type MazeMaker struct {
 }
 
 func (mazeM *MazeMaker) Init(imat *IntMatrix, failLimit int) {
-	fmt.Printf("MAZEMaker INitalizing\n")
+	// fmt.Printf("MAZEMaker Initalizing\n")
 	mazeM.Imat = imat
 	mazeM.Cords0 = make(CoordList, 0)
 	mazeM.Cursor.Init0(CoordInts{X: -1, Y: -1})
 	mazeM.Fails = 0
 	mazeM.FailLimit = failLimit + 5
 	mazeM.Cords0_IsVisible = false
-	fmt.Printf("MAZEMaker INitalized\n")
+	// fmt.Printf("MAZEMaker Initialized\n")
 }
 
 func (mazeM *MazeMaker) Update() {
@@ -64,14 +64,26 @@ func (mazeM *MazeMaker) ProcessStart() {
 
 }
 func (mazeM *MazeMaker) AddToCoords(xx, yy int) {
-	fmt.Printf("THIS IS DOING SOMETHING\n")
+	// fmt.Printf("THIS IS DOING SOMETHING\n")
 	// mazeM.Cords0 = mazeM.Cords0.PushToReturn(CoordInts{X: xx, Y: yy})
 	mazeM.Cords0 = append(mazeM.Cords0, CoordInts{X: xx, Y: yy})
 
 }
 
 func (mazeM *MazeMaker) BasicDecayWrapper(Imat IntMatrix, filterFor []int, buffer [4]int, nSteps int) {
+	if mazeM.ProcessOngoing {
+		isDone := false
 
+		if len(mazeM.Cords0) > 0 {
+			mazeM.Cords0, mazeM.Fails, isDone = mazeM.Imat.BasicDecayProcess(nSteps, 1, mazeM.Fails, mazeM.FailLimit, mazeM.Cords0, filterFor, buffer)
+		}
+		if isDone {
+			mazeM.ProcessEnd = true
+			mazeM.ProcessOngoing = false
+		}
+	}
+}
+func (mazeM *MazeMaker) BasicDecayWrapper00(Imat IntMatrix, filterFor []int, buffer [4]int, nSteps int) {
 	if mazeM.ProcessOngoing {
 		if len(mazeM.Cords0) > 0 {
 			for range nSteps {
@@ -120,46 +132,32 @@ func (mazeM *MazeMaker) BasicDecayProcess(filterFor []int, buffer [4]int) {
 	temp = temp.RemoveDuplicates()
 	mazeM.Cords0 = temp
 }
-func (imat *IntMatrix) BasicDecayProcess(CordsIn CoordList, fails int, filterFor []int, buffer [4]int) (CoordList, int) {
-	temp := make(CoordList, len(CordsIn))
-	copy(temp, CordsIn)
-	fails_out := fails
-	// var frustration bool = true
-	for _, c := range CordsIn {
-		imat.SetValAtCoord(c, 1)
-		frustration := true
-		templist, tempar, _ := imat.GetNeighborsButFiltered(c, filterFor, buffer) //[]int{1, 2, 3, 4}, [4]int{1, 2, 2, 1}
-		if tempar[0] != -1 && tempar[0] != 1 {
-			temp = temp.PushToReturn(templist[0])
-			// temp, _ = temp.RemoveCoordFromList(c)
-			frustration = false
-		}
-		if tempar[1] != -1 && tempar[1] != 1 {
-			temp = temp.PushToReturn(templist[1])
-			// temp, _ = temp.RemoveCoordFromList(c)
-			frustration = false
-		}
-		if tempar[2] != -1 && tempar[2] != 1 {
-			temp = temp.PushToReturn(templist[2])
-			// temp, _ = temp.RemoveCoordFromList(c)
-			frustration = false
-		}
-		if tempar[3] != -1 && tempar[3] != 1 {
-			temp = temp.PushToReturn(templist[3])
-			// temp, _ = temp.RemoveCoordFromList(c)
-			frustration = false
-		}
-		if !frustration {
-			temp, _ = temp.RemoveCoordFromList(c)
-		} else {
-			fails_out++
-		}
-	}
-	temp = temp.RemoveDuplicates()
-	return temp, fails_out
-}
 
 func (mazeM *MazeMaker) PrimLike_Maze_Algorithm00(filterFor []int, filter2 []int, buffer [4]int, cullDiags bool) {
+
+	temp := make(CoordList, len(mazeM.Cords0))
+	copy(temp, mazeM.Cords0)
+	var failsOut = mazeM.Fails
+
+	if len(mazeM.Cords0) > 0 {
+		randInt := rand.Intn(len(mazeM.Cords0))
+		temp, failsOut = mazeM.Imat.PrimLike_Maze_Algorithm_Step(randInt, failsOut, mazeM.FailLimit, temp, filterFor, filter2, buffer, cullDiags)
+	}
+
+	mazeM.Cords0 = temp
+	mazeM.Fails = failsOut
+}
+func (mazeM *MazeMaker) PrimLike_Maze_Algorithm00_Looper(filterFor []int, filter2 []int, buffer [4]int, cullDiags bool) {
+	temp := make(CoordList, len(mazeM.Cords0))
+	copy(temp, mazeM.Cords0)
+	var failsOut = mazeM.Fails
+	for i := 0; i < len(temp); i++ {
+		temp, failsOut = mazeM.Imat.PrimLike_Maze_Algorithm_Step(i, failsOut, mazeM.FailLimit, temp, filterFor, filter2, buffer, cullDiags)
+	}
+	mazeM.Cords0 = temp
+	mazeM.Fails = failsOut
+}
+func (mazeM *MazeMaker) PrimLike_Maze_Algorithm03(filterFor []int, filter2 []int, buffer [4]int, cullDiags bool) {
 	temp := make(CoordList, len(mazeM.Cords0))
 	copy(temp, mazeM.Cords0)
 

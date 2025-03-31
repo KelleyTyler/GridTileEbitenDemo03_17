@@ -227,3 +227,182 @@ func (imat *IntMatrix) IsCoordValueInArrayOfValues_What_Exists(coord CoordInts, 
 	}
 	return exists, ret, y
 }
+
+/*
+IntMatrix.BasicDecayStep()
+This function takes a List of CoordInts, which form the 'frontier' of this cascading effect; it will move outwards towards
+*/
+func (imat *IntMatrix) BasicDecayStep(Value_To_Set_As, fails int, FrontCoordList CoordList, filterFor []int, buffer [4]int) (CoordList, int) {
+	temp := make(CoordList, len(FrontCoordList))
+	copy(temp, FrontCoordList)
+	fails_out := fails
+	// var frustration bool = true
+	for _, c := range FrontCoordList {
+		imat.SetValAtCoord(c, Value_To_Set_As)
+		frustration := true
+		templist, tempar, _ := imat.GetNeighborsButFiltered(c, filterFor, buffer) //[]int{1, 2, 3, 4}, [4]int{1, 2, 2, 1}
+		if tempar[0] != -1 && tempar[0] != 1 {
+			temp = temp.PushToReturn(templist[0])
+			// temp, _ = temp.RemoveCoordFromList(c)
+			frustration = false
+		}
+		if tempar[1] != -1 && tempar[1] != 1 {
+			temp = temp.PushToReturn(templist[1])
+			// temp, _ = temp.RemoveCoordFromList(c)
+			frustration = false
+		}
+		if tempar[2] != -1 && tempar[2] != 1 {
+			temp = temp.PushToReturn(templist[2])
+			// temp, _ = temp.RemoveCoordFromList(c)
+			frustration = false
+		}
+		if tempar[3] != -1 && tempar[3] != 1 {
+			temp = temp.PushToReturn(templist[3])
+			// temp, _ = temp.RemoveCoordFromList(c)
+			frustration = false
+		}
+		if !frustration {
+			temp, _ = temp.RemoveCoordFromList(c)
+		} else {
+			fails_out++
+		}
+	}
+	temp = temp.RemoveDuplicates()
+
+	return temp, fails_out
+}
+func (imat *IntMatrix) BasicDecayProcess(nsteps, Value_To_Set_As, current_fails, max_fails int, FrontCoordList CoordList, filterFor []int, buffer [4]int) (CoordList, int, bool) {
+	temp := make(CoordList, len(FrontCoordList))
+	copy(temp, FrontCoordList)
+	IsComplete := false
+	fails_out := current_fails
+	for range nsteps {
+		temp, fails_out = imat.BasicDecayStep(Value_To_Set_As, fails_out, temp, filterFor, buffer)
+		if fails_out > max_fails {
+			IsComplete = true //For better or worse this is the only way I think I can really test to see if this is complete;
+		}
+	}
+	temp = temp.RemoveDuplicates()
+	return temp, fails_out, IsComplete
+}
+
+//ValFloorAs, ValWallAs,
+
+func (imat *IntMatrix) PrimLike_Maze_Algorithm_Step(FCLNum, fails, max_fails int, FrontCoordList CoordList, filterFor, filter1 []int, buffer [4]int, cullDiags bool) (CoordList, int) {
+	temp := make(CoordList, len(FrontCoordList))
+	copy(temp, FrontCoordList)
+	fails_out := fails
+	if len(temp) > 0 {
+		//randInt := rand.Intn(len(mazeM.Cords0))
+		// c := mazeM.Cords0[randInt]
+		c := temp[FCLNum]
+		frustration := true //mazeM.DiagonalChecking(c, filterFor, [4]int{2, 3, 3, 2})
+		templist, tempar, _ := imat.GetNeighbors8(c, [4]int{2, 3, 3, 2})
+		if imat.PrimMazeGenCell_CheckingRules(c, filterFor, buffer) {
+
+			nEBool := !IntArrayContains([]int{-1, 1, 4}, tempar[1])
+			sEBool := !IntArrayContains([]int{-1, 1, 4}, tempar[3])
+			sWBool := !IntArrayContains([]int{-1, 1, 4}, tempar[5])
+			nWBool := !IntArrayContains([]int{-1, 1, 4}, tempar[7])
+
+			if tempar[0] != -1 && tempar[0] != 1 && tempar[0] != 4 && nEBool && nWBool {
+				temp = temp.PushToReturn(templist[0])
+
+				frustration = false
+			}
+			if tempar[2] != -1 && tempar[2] != 1 && tempar[2] != 4 && nEBool && sEBool {
+				temp = temp.PushToReturn(templist[2])
+
+				frustration = false
+			}
+			if tempar[4] != -1 && tempar[4] != 1 && tempar[4] != 4 && sEBool && sWBool {
+				temp = temp.PushToReturn(templist[4])
+				// temp, _ = temp.RemoveCoordFromList(c)
+				frustration = false
+			}
+			if tempar[6] != -1 && tempar[6] != 1 && tempar[6] != 4 && nWBool && sWBool {
+				temp = temp.PushToReturn(templist[6])
+				// temp, _ = temp.RemoveCoordFromList(c)
+				frustration = false
+			}
+			if cullDiags {
+				temp, _ = temp.RemoveCoordFromList(templist[1])
+				temp, _ = temp.RemoveCoordFromList(templist[3])
+				temp, _ = temp.RemoveCoordFromList(templist[5])
+				temp, _ = temp.RemoveCoordFromList(templist[7])
+			}
+
+		} else {
+			imat.SetValAtCoord(c, 4)
+			//fmt.Printf("\nFAILURE AT %d, %d \n", c.X, c.Y)
+			temp, _ = temp.RemoveCoordFromList(c)
+		}
+
+		if !frustration {
+			temp, _ = temp.RemoveCoordFromList(c)
+			imat.SetValAtCoord(c, 1)
+			fails_out = 0
+
+		} else {
+			// temp, _ = temp.RemoveCoordFromList(templist[1])
+			// temp, _ = temp.RemoveCoordFromList(templist[3])
+			// temp, _ = temp.RemoveCoordFromList(templist[5])
+			// temp, _ = temp.RemoveCoordFromList(templist[7])
+			// temp, _ = temp.RemoveCoordFromList(c)
+			fails_out++
+			if fails_out > max_fails {
+				temp, _ = temp.RemoveCoordFromList(c)
+				// mazeM.Imat.SetValAtCoord(c, 4)
+			}
+		}
+	}
+	temp = temp.RemoveDuplicates()
+	return temp, fails_out
+}
+func (imat *IntMatrix) PrimMazeGenCell_CheckingRules(cord CoordInts, filter []int, buffer [4]int) bool {
+	_, tempAr, _ := imat.GetNeighbors8(cord, buffer)
+	//fmt.Printf("AT %2d, %2d --->", cord.X, cord.Y)
+	//---------------------
+	nn := !IntArrayContains([]int{-1, 1, 4}, tempAr[0])
+	ne := !IntArrayContains([]int{-1, 1, 4}, tempAr[1])
+	ee := !IntArrayContains([]int{-1, 1, 4}, tempAr[2])
+	se := !IntArrayContains([]int{-1, 1, 4}, tempAr[3])
+	ss := !IntArrayContains([]int{-1, 1, 4}, tempAr[4])
+	sw := !IntArrayContains([]int{-1, 1, 4}, tempAr[5])
+	ww := !IntArrayContains([]int{-1, 1, 4}, tempAr[6])
+	nw := !IntArrayContains([]int{-1, 1, 4}, tempAr[7])
+	// if !ww && !ee && !nn && !ss {
+	// 	fmt.Printf("no Cardinals_ \n")
+	// 	return true
+	// }
+	// if (!ww && !ee && nn && ss) || (ww && ee && !nn && !ss) {
+	// 	fmt.Printf("not enough Cardinals_ \n")
+	// 	return false
+	// }
+	// if !nw && !sw && !se && !ne {
+	// 	fmt.Printf("no intercardinals \n")
+	// 	return true
+	// }
+	// if (!nw && !sw && !se && ne) || (nw && !sw && !se && !ne) || (!nw && sw && !se && !ne) || (!nw && !sw && se && !ne) {
+	// 	fmt.Printf("not enough intercardinals \n")
+	// 	return false
+	// }
+	if (!nn) && ((se && !sw) || (!se && sw)) {
+		//fmt.Printf("VeryStarange 2 N\n")
+		return false
+	}
+	if (!ee) && ((!sw && nw) || (sw && !nw)) {
+		//fmt.Printf("VeryStarange 2 E\n")
+		return false
+	}
+	if (!ww) && ((!se && ne) || (!ne && se)) {
+		//fmt.Printf("VeryStarange 2 W\n")
+		return false
+	}
+	if (!ss) && ((!ne && nw) || (ne && !nw)) { //(nn && ee && ww && !ss) && ((!ne && se && sw && nw) || (ne && se && sw && !nw))
+		//fmt.Printf("VeryStarange 2 S\n")
+		return false
+	}
+	//fmt.Printf("\n")
+	return true
+}

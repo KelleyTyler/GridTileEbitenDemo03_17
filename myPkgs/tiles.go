@@ -76,7 +76,7 @@ func (imat IntMatrix) GetCoordOfMouseEvent(Raw_Mouse_X int, Raw_Mouse_Y int, Off
 
 		mXi_02 := (tileW * mXi) + (mXi * GapX) + tileW
 		mYi_02 := (tileH * mYi) + (mYi * GapY) + tileH
-		fmt.Printf("0-->%6d,%6d\t%6d,%6d\t rec start: %6d %6d\t %6d %6d \n", Raw_Mouse_X, Raw_Mouse_Y, mXo, mYo, mXi_01, mYi_01, mXi_02, mYi_02)
+		//fmt.Printf("0-->%6d,%6d\t%6d,%6d\t rec start: %6d %6d\t %6d %6d \n", Raw_Mouse_X, Raw_Mouse_Y, mXo, mYo, mXi_01, mYi_01, mXi_02, mYi_02)
 		if (((mXo) > (mXi_01)) && (mXo) < mXi_02) && ((mYo) > (mYi_01) && mYo < mYi_02) {
 			isOnTile = true
 		}
@@ -217,14 +217,30 @@ func (imat IntMatrix) IsValid_WithDir_Buffer(cord CoordInts, buffer [4]int) bool
 	return false
 }
 
-func (imat IntMatrix) ClearAnArea(c1_X, c1_Y, c2_X, c2_Y, val int) {
+// func (imat IntMatrix) ClearAnArea(c1_X, c1_Y, c2_X, c2_Y, val int) {
 
-	for i := c1_Y; i < c2_Y; i++ {
-		for j := c1_X; j < c2_X; j++ {
-			imat[i][j] = val
+// 	if c1_Y < len(imat) && c1_Y > -1 {
+// 		if c2_Y > -1 && c2_Y < len(imat) {
+// 			for i := c1_Y; i < c2_Y; i++ {
+// 				for j := c1_X; j < c2_X; j++ {
+// 					imat[i][j] = val
+// 				}
+// 			}
+// 		}
+// 	}
+// }
+
+func (imat IntMatrix) ClearAnArea(c0_X, c0_Y, c1_X, c1_Y, val int) {
+
+	if c0_Y < len(imat) && c0_Y > -1 {
+		if c1_Y > -1 && c1_Y < len(imat) {
+			for i := c0_Y; i < c1_Y; i++ {
+				for j := c0_X; j < c1_X; j++ {
+					imat[i][j] = val
+				}
+			}
 		}
 	}
-
 }
 
 func (imat IntMatrix) DrawListAsTiles(screen *ebiten.Image, cord CoordList, offsetX, offsetY int, tileW, tileH int, gapX, gapY int, clr0 color.Color, aa bool) {
