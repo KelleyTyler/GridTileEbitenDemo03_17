@@ -132,7 +132,13 @@ func (mazeM *MazeMaker) BasicDecayProcess(filterFor []int, buffer [4]int) {
 	temp = temp.RemoveDuplicates()
 	mazeM.Cords0 = temp
 }
-
+func (mazeM *MazeMaker) PrimeLike_Wrapper(nums int, filterFor []int, filter2 []int, buffer [4]int, cullDiags bool) {
+	if len(mazeM.Cords0) > 0 {
+		for i := 0; i < nums; i++ {
+			mazeM.PrimLike_Maze_Algorithm00(filterFor, filter2, buffer, cullDiags)
+		}
+	}
+}
 func (mazeM *MazeMaker) PrimLike_Maze_Algorithm00(filterFor []int, filter2 []int, buffer [4]int, cullDiags bool) {
 
 	temp := make(CoordList, len(mazeM.Cords0))

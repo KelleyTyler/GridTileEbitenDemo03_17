@@ -19,7 +19,8 @@ type Pathfinding struct {
 	Color              color.Color
 	SpriteDim          CoordInts
 	Cursor             Cell
-	FalsePos           CoordList
+	FalsePos           CoordList //open list
+	ClosedList         CoordList //closed list
 	Moves              CoordList
 	HasFalsePos        bool
 }
@@ -306,6 +307,14 @@ func (igd *IntegerGridManager) UpdateCursor() {
 	temp, temp2, _ := igd.Imat.GetNeighbors8(igd.PFinder.Cursor.Position, [4]int{1, 2, 1, 2})
 	igd.PFinder.Cursor.Neighbor_Values = temp2
 	igd.PFinder.Cursor.Neighbors = [8]CoordInts(temp)
+
+	igd.FindPath(0)
+}
+func (igd *IntegerGridManager) UpdateCursor2() {
+	temp, temp2, _ := igd.Imat.GetNeighbors8(igd.PFinder.Cursor.Position, [4]int{1, 2, 1, 2})
+	igd.PFinder.Cursor.Neighbor_Values = temp2
+	igd.PFinder.Cursor.Neighbors = [8]CoordInts(temp)
+	igd.FindPath(0)
 }
 func (igd *IntegerGridManager) DrawCursor_00(screen *ebiten.Image) {
 	igd.Imat.DrawAGridTile_With_Line(screen, igd.PFinder.Cursor.Position, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{200, 150, 0, 255}, color.Black, color.Black, 2.0, false)

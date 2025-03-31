@@ -281,7 +281,8 @@ func (g *Game) Update() error {
 	if g.btn07.Update3() {
 		// g.IntGrid.Process2b(5)
 		// go g.IntGrid.MazeM.MoreAdvancedDecay([]int{1, 2, 3, 4, 5}, [4]int{1, 2, 2, 1})
-		g.IntGrid.MazeM.PrimLike_Maze_Algorithm00([]int{1, 2, 3, 4, 5}, []int{-1, 1, 2, 4}, [4]int{1, 2, 2, 1}, true)
+		// g.IntGrid.MazeM.PrimLike_Maze_Algorithm00_Looper([]int{1, 2, 3, 4, 5}, []int{-1, 1, 2, 4}, [4]int{1, 2, 2, 1}, true)
+		g.IntGrid.MazeM.PrimeLike_Wrapper(5, []int{1, 2, 3, 4, 5}, []int{-1, 1, 2, 4}, [4]int{1, 2, 2, 1}, true)
 
 	}
 	if g.btn08.Update3() {
