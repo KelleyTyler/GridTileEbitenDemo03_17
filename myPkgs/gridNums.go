@@ -446,10 +446,8 @@ func (imat *IntMatrix) GetACirclePointsFromCenter(center CoordInts, radius int) 
 			x--
 			P = P + 2*y - 2*x + 1
 		}
-		tempList = append(tempList, CoordInts{X: center.X + y, Y: center.Y + x})
-		tempList = append(tempList, CoordInts{X: center.Y + x, Y: center.X - x})
-		tempList = append(tempList, CoordInts{X: center.Y - x, Y: center.X + x})
-		tempList = append(tempList, CoordInts{X: center.X - x, Y: center.X - y})
+
+		tempList = append(tempList, imat.GetACirclePointsSUB(center, x, y, radius)...)
 		if x < y {
 			break
 		}
@@ -462,7 +460,7 @@ func (imat *IntMatrix) GetACirclePointsFromCenter(center CoordInts, radius int) 
 	return tempList
 }
 
-func (imat *IntMatrix) GetACirclePointsSUB(center CoordInts, x, y, radius int) {
+func (imat *IntMatrix) GetACirclePointsSUB(center CoordInts, x, y, radius int) CoordList {
 	tempList := make(CoordList, 0)
 	temp_01A := center
 	temp_01A.X += x
@@ -476,8 +474,10 @@ func (imat *IntMatrix) GetACirclePointsSUB(center CoordInts, x, y, radius int) {
 	temp_02B := center
 	temp_02A.X += x
 	temp_02A.Y -= y
+	//-----------------
 	temp_02B.X -= x
 	temp_02B.Y -= y
+	//----------------------
 	tempList = append(tempList, temp_01A)
 	tempList = append(tempList, temp_01B)
 	tempList = append(tempList, temp_02A)
@@ -485,9 +485,13 @@ func (imat *IntMatrix) GetACirclePointsSUB(center CoordInts, x, y, radius int) {
 
 	if x != y { //
 		tempList = append(tempList, CoordInts{X: center.X + y, Y: center.Y + x})
-		tempList = append(tempList, CoordInts{X: center.Y + x, Y: center.X - x})
-		tempList = append(tempList, CoordInts{X: center.Y - x, Y: center.X + x})
-		tempList = append(tempList, CoordInts{X: center.X - x, Y: center.X - y})
+		tempList = append(tempList, CoordInts{X: center.X - y, Y: center.Y + x})
+		tempList = append(tempList, CoordInts{X: center.X + y, Y: center.Y - x})
+		tempList = append(tempList, CoordInts{X: center.X - y, Y: center.Y - x})
+		// tempList = append(tempList, CoordInts{X: center.Y - x, Y: center.X + x})
+		// tempList = append(tempList, CoordInts{X: center.X - x, Y: center.X - y})
+		// tempList = append(tempList, CoordInts{X: center.Y + x, Y: center.X - x})
 
 	}
+	return tempList
 }

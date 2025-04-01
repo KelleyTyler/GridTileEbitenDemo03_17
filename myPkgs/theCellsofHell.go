@@ -1,5 +1,7 @@
 package mypkgs
 
+import "fmt"
+
 type Cell struct {
 	Position        CoordInts
 	Neighbors       [8]CoordInts
@@ -11,6 +13,10 @@ type Cell struct {
 	ShowCircle   bool
 	CirclePoints CoordList
 	CircleValues []int
+
+	//----------------------
+
+	circRad int
 	// MCost_Sum       int //equal to the sum of G and H
 	// MCost_toStart   int //Movement Cost from StartNode to Positon
 	// MCost_toEnd     int //Movement Cost from Position to End// will be -1 while not working
@@ -42,6 +48,10 @@ func (cell *Cell) InitP(StartPos CoordInts, EndPos CoordInts, imat IntMatrix) {
 	cell.Neighbors = [8]CoordInts(temp)
 	cell.ticker = 0
 	cell.ShowNeighbors = false
+
+	cell.circRad = 3
+	cell.CirclePoints, cell.CircleValues = cell.GetCircle(cell.circRad, imat)
+
 	// cell.MCost_toStart = 0
 	// cell.MCost_toEnd = -1
 }
@@ -64,21 +74,27 @@ func (cell *Cell) UpdateCell(Imat IntMatrix) {
 	temp, temp2, _ := Imat.GetNeighbors8(cell.Position, [4]int{1, 2, 2, 1})
 	cell.Neighbor_Values = temp2
 	cell.Neighbors = [8]CoordInts(temp)
-	cell.AddCircle(5, Imat)
+	cell.CirclePoints, cell.CircleValues = cell.GetCircle(cell.circRad, Imat)
 }
 func (cell *Cell) IsAt(cord CoordInts) bool {
 	return cell.Position.IsEqualTo(cord)
 }
 
-func (cell *Cell) AddCircle(radius int, imat IntMatrix) {
-	cell.CirclePoints = imat.GetACirclePointsFromCenter(cell.Position, radius)
-	for _, p := range cell.CirclePoints {
+func (cell *Cell) GetCircle(radius int, imat IntMatrix) (CoordList, []int) {
+	fmt.Printf("ADD CIRCLE\n")
+	tempPoints := imat.GetACirclePointsFromCenter(cell.Position, radius)
+	var tempNums []int
+	for _, p := range tempPoints {
 		if imat.IsValid(p) {
-			cell.CircleValues = append(cell.CircleValues, imat.GetCoordVal(p))
+			tempNums = append(tempNums, imat.GetCoordVal(p))
 		} else {
-			cell.CircleValues = append(cell.CircleValues, -1)
+			tempNums = append(tempNums, -1)
 		}
 	}
+	return tempPoints, tempNums
+}
+func (cell *Cell) AddCircle(radius int, imat IntMatrix) {
+	cell.CirclePoints, cell.CircleValues = cell.GetCircle(cell.circRad, imat)
 }
 
 // type Cells []Cell

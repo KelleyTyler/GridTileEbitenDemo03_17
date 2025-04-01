@@ -32,6 +32,7 @@ var (
 
 type Game struct {
 	initCalled                                      bool
+	isQuit                                          bool
 	gameDebugMsg                                    string
 	btn00, btn01, btn02, btn03, btn04, btn05, btn06 mypkgs.Button
 	btn07, btn08, btn09, btn10, btn11, btn12, btn13 mypkgs.Button
@@ -430,10 +431,10 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 }
 
 func main() {
-
+	game := &Game{}
 	ebiten.SetWindowSize(Settings.WindowSizeX, Settings.WindowSizeY)
 	ebiten.SetWindowTitle("Grid Tile Ebitengine Demo")
-	if err := ebiten.RunGame(&Game{}); err != nil {
+	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal(err)
 	}
 }

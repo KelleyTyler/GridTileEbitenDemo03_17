@@ -307,7 +307,9 @@ func (igd *IntegerGridManager) UpdateCursor() {
 	temp, temp2, _ := igd.Imat.GetNeighbors8(igd.PFinder.Cursor.Position, [4]int{1, 2, 1, 2})
 	igd.PFinder.Cursor.Neighbor_Values = temp2
 	igd.PFinder.Cursor.Neighbors = [8]CoordInts(temp)
-
+	temp3, temp4 := igd.PFinder.Cursor.GetCircle(igd.PFinder.Cursor.circRad, igd.Imat)
+	igd.PFinder.Cursor.CirclePoints = temp3
+	igd.PFinder.Cursor.CircleValues = temp4
 	igd.FindPath(0)
 }
 func (igd *IntegerGridManager) UpdateCursor2() {
@@ -340,9 +342,11 @@ func (igd *IntegerGridManager) DrawCursor(screen *ebiten.Image) {
 		}
 	}
 	if igd.PFinder.Cursor.ShowCircle {
+		// fmt.Printf("CURSOR %3d/%3d\n", 0, len(igd.PFinder.Cursor.CircleValues))
 		for i, a := range igd.PFinder.Cursor.CirclePoints {
 			if igd.PFinder.Cursor.CircleValues[i] == 1 {
-				igd.Imat.DrawAGridTile_With_Line(screen, a, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{200, 0, 150, 255}, color.Black, color.Black, 2.0, false)
+				//fmt.Printf("CURSOR %3d/%3d\n", i, len(igd.PFinder.Cursor.CircleValues))
+				igd.Imat.DrawAGridTile_With_Line(screen, a, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{0, 200, 150, 255}, color.Black, color.Black, 2.0, false)
 			} else {
 				igd.Imat.DrawAGridTile_With_Line(screen, a, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{0, 150, 200, 255}, color.Black, color.Black, 2.0, false)
 			}
