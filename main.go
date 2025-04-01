@@ -229,11 +229,12 @@ func (g *Game) Update() error {
 
 	if g.btn00.Update3() {
 		// g.IntGrid.DEMO_COORDS_00(4, 0, 0) //igd.Coords.PrintCordArray()
-		if g.IntGrid.Tile_Size.X == 16 {
-			g.IntGrid.Rescale(32, 32, 4, 4)
-		} else {
-			g.IntGrid.Rescale(16, 16, 2, 2)
-		}
+		// if g.IntGrid.Tile_Size.X == 16 {
+		// 	g.IntGrid.Rescale(32, 32, 4, 4)
+		// } else {
+		// 	g.IntGrid.Rescale(16, 16, 2, 2)
+		// }
+		g.IntGrid.PFinder.Cursor.ShowCircle = !g.IntGrid.PFinder.Cursor.ShowCircle
 	}
 	if g.btn01.Update3() {
 		g.IntGrid.DEMO_COORDS_00(5, 0, 0) //igd.Coords.SortDescOnX()

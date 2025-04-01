@@ -339,7 +339,21 @@ func (igd *IntegerGridManager) DrawCursor(screen *ebiten.Image) {
 			}
 		}
 	}
+	if igd.PFinder.Cursor.ShowCircle {
+		for i, a := range igd.PFinder.Cursor.CirclePoints {
+			if igd.PFinder.Cursor.CircleValues[i] == 1 {
+				igd.Imat.DrawAGridTile_With_Line(screen, a, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{200, 0, 150, 255}, color.Black, color.Black, 2.0, false)
+			} else {
+				igd.Imat.DrawAGridTile_With_Line(screen, a, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{0, 150, 200, 255}, color.Black, color.Black, 2.0, false)
+			}
+		}
+	}
 }
+
+func (igd *IntegerGridManager) MoveCamToCursor() {
+
+}
+
 func (igd *IntegerGridManager) MoveCursorAround(Vect CoordInts, walls []int) (int, bool) {
 	var tempCurs Cell = igd.PFinder.Cursor
 	//step1;

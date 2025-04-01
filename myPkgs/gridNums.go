@@ -431,3 +431,63 @@ func (imat *IntMatrix) PrimMazeGenCell_CheckingRules(cord CoordInts, filter []in
 	//fmt.Printf("\n")
 	return true
 }
+
+func (imat *IntMatrix) GetACirclePointsFromCenter(center CoordInts, radius int) CoordList {
+	tempList := make(CoordList, 0)
+	P := 1 - radius
+	x := radius
+	y := 0
+
+	for x > y {
+		y++
+		if P <= 0 {
+			P = P + 2*y + 1
+		} else {
+			x--
+			P = P + 2*y - 2*x + 1
+		}
+		tempList = append(tempList, CoordInts{X: center.X + y, Y: center.Y + x})
+		tempList = append(tempList, CoordInts{X: center.Y + x, Y: center.X - x})
+		tempList = append(tempList, CoordInts{X: center.Y - x, Y: center.X + x})
+		tempList = append(tempList, CoordInts{X: center.X - x, Y: center.X - y})
+		if x < y {
+			break
+		}
+	}
+	tempList = append(tempList, CoordInts{X: center.X + radius, Y: center.Y})
+	tempList = append(tempList, CoordInts{X: center.X, Y: center.Y + radius})
+	tempList = append(tempList, CoordInts{X: center.X - radius, Y: center.Y})
+	tempList = append(tempList, CoordInts{X: center.X, Y: center.Y - radius})
+	tempList = tempList.RemoveDuplicates()
+	return tempList
+}
+
+func (imat *IntMatrix) GetACirclePointsSUB(center CoordInts, x, y, radius int) {
+	tempList := make(CoordList, 0)
+	temp_01A := center
+	temp_01A.X += x
+	temp_01A.Y += y
+
+	temp_01B := center
+	temp_01B.X -= x
+	temp_01B.Y += y
+
+	temp_02A := center
+	temp_02B := center
+	temp_02A.X += x
+	temp_02A.Y -= y
+	temp_02B.X -= x
+	temp_02B.Y -= y
+	tempList = append(tempList, temp_01A)
+	tempList = append(tempList, temp_01B)
+	tempList = append(tempList, temp_02A)
+	tempList = append(tempList, temp_02B)
+
+	if x != y { //
+		tempList = append(tempList, CoordInts{X: center.X + y, Y: center.Y + x})
+		tempList = append(tempList, CoordInts{X: center.Y + x, Y: center.X - x})
+		tempList = append(tempList, CoordInts{X: center.Y - x, Y: center.X + x})
+		tempList = append(tempList, CoordInts{X: center.X - x, Y: center.X - y})
+
+	}
+}

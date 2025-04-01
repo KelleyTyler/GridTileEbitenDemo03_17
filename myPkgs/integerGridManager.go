@@ -155,17 +155,19 @@ func (igd *IntegerGridManager) Draw(screen *ebiten.Image) {
 
 		if igd.PFinder.HasFalsePos {
 			// igd.Imat.DrawAGridTile(screen, igd.PFinder.FalsePos, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{140, 50, 50, 255}, false)
+			igd.Imat.DrawListAsTiles(igd.Img, igd.PFinder.FalsePos, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{140, 50, 50, 255}, false)
+			// for _, j := range igd.PFinder.FalsePos { //igd.BoardPosition.X, igd.BoardPosition.Y
+			// 	// igd.Imat.DrawAGridTile(screen, j, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{140, 50, 50, 255}, false)
+			// 	igd.Imat.DrawAGridTile(igd.Img, j, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{140, 50, 50, 255}, false)
 
-			for _, j := range igd.PFinder.FalsePos { //igd.BoardPosition.X, igd.BoardPosition.Y
-				// igd.Imat.DrawAGridTile(screen, j, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{140, 50, 50, 255}, false)
-				igd.Imat.DrawAGridTile(igd.Img, j, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{140, 50, 50, 255}, false)
+			// }
+			igd.Imat.DrawListAsTiles(igd.Img, igd.PFinder.Moves, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{140, 50, 50, 255}, false)
 
-			}
-			for _, x := range igd.PFinder.Moves {
-				// igd.Imat.DrawAGridTile(screen, x, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{50, 125, 125, 255}, false)
-				igd.Imat.DrawAGridTile(igd.Img, x, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{50, 125, 125, 255}, false)
+			// for _, x := range igd.PFinder.Moves {
+			// 	// igd.Imat.DrawAGridTile(screen, x, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{50, 125, 125, 255}, false)
+			// 	igd.Imat.DrawAGridTile(igd.Img, x, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{50, 125, 125, 255}, false)
 
-			}
+			// }
 
 		}
 		igd.DrawCursor(igd.Img)
