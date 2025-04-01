@@ -10,13 +10,14 @@ import (
 )
 
 type IntegerGridManager struct {
-	Imat             IntMatrix
-	Coords           CoordList
-	Tile_Size        CoordInts
-	Margin           CoordInts
-	BoardMargin      CoordInts //internal margin; the margin within IMG where things are drawn.
-	Position         CoordInts
-	BoardPosition    CoordInts
+	Imat          IntMatrix
+	Coords        CoordList
+	Tile_Size     CoordInts
+	Margin        CoordInts
+	BoardMargin   CoordInts //internal margin; the margin within IMG where things are drawn.
+	Position      CoordInts
+	BoardPosition CoordInts
+	//--------------------------------------------------------------
 	CycleStart       int
 	CycleEnd         int
 	Colors           []color.Color
@@ -65,16 +66,18 @@ func (igd *IntegerGridManager) Init(N_TilesX, N_TilesY int, TSizeX, TSizeY int, 
 	igd.Tile_Size = CoordInts{X: TSizeX, Y: TSizeY}
 	igd.Colors = []color.Color{color.RGBA{55, 55, 75, 255}, color.RGBA{125, 125, 150, 255}, color.RGBA{80, 180, 80, 255},
 		color.RGBA{0, 150, 150, 255}, color.RGBA{55, 65, 95, 255}, color.RGBA{255, 255, 255, 255}, color.RGBA{75, 75, 75, 255}}
-
+	//-------------------------------
 	igd.Imat = igd.Imat.MakeIntMatrix(N_TilesX, N_TilesY) //color.RGBA{255, 255, 0, 255}
 	igd.Imat.InitBlankMatrix(N_TilesX, N_TilesY, 0)
+	//-----------------------------------------------------------------------------------
 	igd.FullColors = false
 	igd.CycleStart = 0
-	igd.CycleEnd = 4
-	igd.LastPoint = CoordInts{-1, -1}
-	igd.Fails = 0
-	igd.FailsMax = 30
-	igd.AlgorithmRunning = false
+	igd.CycleEnd = 4                  //depricated
+	igd.LastPoint = CoordInts{-1, -1} //depricated
+	igd.Fails = 0                     //depricated
+	igd.FailsMax = 30                 //depricated
+	igd.AlgorithmRunning = false      //depricated
+	//-------
 	igd.PFinder = Pathfinding{IsActive: false, IsFullyInitialized: false, IsEndInit: false, HasFalsePos: false}
 	//--------
 	iX, iY := igd.Imat.GetCursorBounds(iMargeX+iMargeX-MargX, iMargeY+iMargeY-MargY, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y)
@@ -111,8 +114,11 @@ func (igd *IntegerGridManager) Draw(screen *ebiten.Image) {
 	// if igd.PFinder.IsEndInit {
 	// 	igd.Imat[igd.PFinder.EndPos.Y][igd.PFinder.EndPos.X] = 6
 	// }
+
+	ops := ebiten.DrawImageOptions{}
 	if igd.ScreenTicker > igd.ScreenTicker_max {
 		igd.RedrawBoard()
+		igd.RedrawBoardOverlay()
 		igd.ScreenTicker = 0
 	} else {
 		igd.ScreenTicker++
@@ -133,6 +139,20 @@ func (igd *IntegerGridManager) Draw(screen *ebiten.Image) {
 
 	// xx, yy := igd.BoardPosition.X-igd.BoardMargin.X, igd.BoardPosition.Y-igd.BoardMargin.Y //adjusted positions for the buffered area;
 	//igd.Imat.DrawGridTiles(screen, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors)
+
+	// ops.GeoM.Translate(float64(igd.BoardPosition.X), float64(igd.BoardPosition.Y))
+	// ops.GeoM.Scale(igd.Scale, igd.Scale)
+	// igd.Img.DrawImage(igd.BoardOverlayLayer, nil)
+	// ops := ebiten.DrawImageOptions{}
+	ops.GeoM.Translate(float64(igd.Position.X-igd.BoardMargin.X), float64(igd.Position.Y-igd.BoardMargin.Y))
+	ops.GeoM.Scale(igd.Scale, igd.Scale)
+	screen.DrawImage(igd.Img, &ops)
+}
+func (igd *IntegerGridManager) RedrawBoard() { //color.RGBA{20, 20, 20, 255} //color.RGBA{50, 50, 50, 255}
+	igd.Img.Fill(color.RGBA{20, 20, 20, 255})
+	igd.Imat.DrawGridTiles(igd.Img, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors)
+}
+func (igd *IntegerGridManager) RedrawBoardOverlay() {
 	if igd.PFinder.IsStartInit {
 		// igd.Imat.DrawAGridTile(screen, igd.PFinder.StartPos, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{250, 250, 250, 255}, true)
 		igd.Imat.DrawAGridTile(igd.Img, igd.PFinder.StartPos, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{250, 250, 250, 255}, true)
@@ -174,17 +194,6 @@ func (igd *IntegerGridManager) Draw(screen *ebiten.Image) {
 		// igd.Imat.DrawAGridTile_With_Line(screen, igd.PFinder.Cursor.Position, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{200, 150, 0, 255}, color.Black, 2.0, false)
 		// igd.Imat.DrawAGridTile(screen, igd.PFinder.Cursor.Position, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{255, 15, 0, 1}, false) //{255,15,0,1}
 	}
-	// ops.GeoM.Translate(float64(igd.BoardPosition.X), float64(igd.BoardPosition.Y))
-	// ops.GeoM.Scale(igd.Scale, igd.Scale)
-	// igd.Img.DrawImage(igd.BoardOverlayLayer, nil)
-	ops := ebiten.DrawImageOptions{}
-	ops.GeoM.Translate(float64(igd.Position.X-igd.BoardMargin.X), float64(igd.Position.Y-igd.BoardMargin.Y))
-	ops.GeoM.Scale(igd.Scale, igd.Scale)
-	screen.DrawImage(igd.Img, &ops)
-}
-func (igd *IntegerGridManager) RedrawBoard() { //color.RGBA{20, 20, 20, 255} //color.RGBA{50, 50, 50, 255}
-	igd.Img.Fill(color.RGBA{20, 20, 20, 255})
-	igd.Imat.DrawGridTiles(igd.Img, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors)
 }
 
 func (igd *IntegerGridManager) ResetCoordPosition() {

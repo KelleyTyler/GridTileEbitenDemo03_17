@@ -46,6 +46,8 @@ type Game struct {
 
 	MouseDragStartingPoint mypkgs.CoordInts
 	MouseIsDragging        bool
+
+	SoundThing mypkgs.AudioThing
 }
 
 func init() {
@@ -106,6 +108,8 @@ func (g *Game) init() error {
 	// g.IntGrid.Init(96, 96, 8, 8, 64, 8, 0, 0, 4, 4)
 	g.MouseDragStartingPoint = mypkgs.CoordInts{X: 0, Y: 0}
 	g.MouseIsDragging = false
+
+	g.SoundThing.Init01(4800, 220, 35, 110)
 	return nil
 }
 
@@ -288,7 +292,8 @@ func (g *Game) Update() error {
 
 	}
 	if g.btn08.Update3() {
-
+		g.SoundThing.PlayThing(0)
+		// fmt.Printf("%s", g.SoundThing.ToString())
 	}
 
 	if g.btn09.Update3() {
