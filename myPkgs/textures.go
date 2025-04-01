@@ -3,6 +3,7 @@ package mypkgs
 import (
 	//"fmt"
 	"image"
+	"image/color"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -51,4 +52,32 @@ func GetArrayOfImagesFromArray(imgs []ebiten.Image, start int, end int) []ebiten
 	}
 
 	return temp
+}
+
+func giveMeAColor_strng(colorRequested string) color.Color {
+	switch colorRequested {
+	case "Red":
+		return color.RGBA{255, 0, 0, 255}
+	case "Orange":
+		return color.RGBA{255, 130, 0, 255}
+	case "Yellow":
+		return color.RGBA{255, 255, 0, 255}
+	case "Lime Green":
+		return color.RGBA{130, 255, 0, 255}
+	case "Green":
+		return color.RGBA{0, 255, 0, 255}
+	case "Cyan":
+		return color.RGBA{0, 255, 255, 255}
+	case "Light Blue":
+		return color.RGBA{0, 130, 255, 255}
+	case "Blue":
+		return color.RGBA{0, 0, 255, 255}
+	case "Purple":
+		return color.RGBA{130, 0, 255, 255}
+	case "Magenta":
+		return color.RGBA{255, 0, 255, 255}
+	case "Pink":
+		return color.RGBA{255, 0, 130, 255}
+	}
+	return color.RGBA{0, 0, 0, 0}
 }
