@@ -451,17 +451,18 @@ func (igd *IntegerGridManager) ClearImat() {
 
 func (igd *IntegerGridManager) SaveFile() {
 	fmt.Printf("Saving Matrix\n")
-	err := igd.Imat.SaveIntMatrixToFile("MatrixSave00")
+	err := igd.Imat.SaveIntMatrixToFile("IntGrids/MatrixSave00")
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func (igd *IntegerGridManager) LoadFile() {
+func (igd *IntegerGridManager) LoadFile() error {
 	fmt.Printf("Loading Matrix\n")
-	temp, err := igd.Imat.LoadIntMatrixFromFile("MatrixSave00")
+	temp, err := igd.Imat.LoadIntMatrixFromFile("IntGrids/MatrixSave00")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	igd.Imat = temp
+	return nil
 }
