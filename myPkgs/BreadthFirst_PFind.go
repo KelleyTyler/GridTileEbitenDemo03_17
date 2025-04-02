@@ -53,11 +53,11 @@ func (igd *IntegerGridManager) FindPather_BreadthFirst(start, end CoordInts, num
 			}
 		} else if yy == 0 {
 			dire = 5
-		} else if yy < 0 {
+		} else if yy < 0 { //north and west?
 			if xx < yy {
-				dire = 4
-			} else {
 				dire = 3
+			} else {
+				dire = 4
 			}
 		}
 	}
@@ -187,4 +187,52 @@ func (igd *IntegerGridManager) FindPath2(n int) {
 			igd.PFinder.HasFalsePos = true
 		}
 	}
+}
+
+func GetDiffer(c1, c2 CoordInts) int {
+	xx, yy := c1.GetDifferenceInInts(c2)
+	var dire int = 0
+	if xx > 0 {
+		if yy > 0 {
+			if xx < yy {
+				dire = 6
+			} else {
+				dire = 1
+			}
+
+		} else if yy == 0 {
+			dire = 7
+		} else if yy < 0 {
+			if (yy * -1) < xx {
+				dire = 7
+			} else {
+				dire = 0
+			}
+		}
+	} else if xx == 0 {
+		if yy > 0 {
+			dire = 6
+		} else if yy == 0 {
+			dire = 0 //??
+		} else if yy < 0 {
+			dire = 0
+		}
+	} else if xx < 0 {
+		if yy > 0 {
+			if (xx * -1) < yy {
+				dire = 2
+			} else {
+				dire = 5
+			}
+		} else if yy == 0 {
+			dire = 5
+		} else if yy < 0 { //north and west?
+			if xx < yy {
+				dire = 3
+			} else {
+				dire = 4
+			}
+		}
+	}
+	return dire
 }

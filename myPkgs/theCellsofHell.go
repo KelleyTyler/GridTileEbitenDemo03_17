@@ -1,7 +1,5 @@
 package mypkgs
 
-import "fmt"
-
 type Cell struct {
 	Position        CoordInts
 	Neighbors       [8]CoordInts
@@ -81,7 +79,7 @@ func (cell *Cell) IsAt(cord CoordInts) bool {
 }
 
 func (cell *Cell) GetCircle(radius int, imat IntMatrix) (CoordList, []int) {
-	fmt.Printf("ADD CIRCLE\n")
+	// fmt.Printf("ADD CIRCLE\n")
 	tempPoints := imat.GetACirclePointsFromCenter(cell.Position, radius)
 	var tempNums []int
 	for _, p := range tempPoints {

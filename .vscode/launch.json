@@ -10,7 +10,16 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${fileDirname}"
-        }
+            "program": "${fileDirname}",
+            "args":[]
+        },
+        {
+            "name": "DEBUG FILE",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}",
+            "args":[],
+        },
     ]
 }

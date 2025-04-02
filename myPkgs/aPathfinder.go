@@ -33,6 +33,12 @@ func (pFndr *Pathfinding) ToString() string {
 	outstrng := "PATHFINDING:\n"
 	outstrng += fmt.Sprintf("\n %6s %3d, %3d %t\n %6s %3d, %3d %t\n", "START:", pFndr.StartPos.X, pFndr.StartPos.Y, pFndr.IsStartInit, "END:", pFndr.EndPos.X, pFndr.EndPos.Y, pFndr.IsEndInit)
 	outstrng += fmt.Sprintf("FULLY INIT: %t\n", pFndr.IsFullyInitialized)
+	if pFndr.HasFalsePos {
+		outstrng += fmt.Sprintf("%7s: %3d,%3d\n", "CURSOR", pFndr.Cursor.Position.X, pFndr.Cursor.Position.Y)
+		outstrng += fmt.Sprintf("%7s: %3d,%3d\n", "END", pFndr.EndPos.X, pFndr.EndPos.Y)
+		xx, yy := pFndr.Cursor.Position.GetDifferenceInInts(pFndr.EndPos)
+		outstrng += fmt.Sprintf("%7s: %3d,%3d %d\n", "DIF.", xx, yy, GetDiffer(pFndr.Cursor.Position, pFndr.EndPos))
+	}
 	outstrng += fmt.Sprintf("FalsePos: %t ,len: %d\n", pFndr.HasFalsePos, len(pFndr.FalsePos))
 	outstrng += fmt.Sprintf("MOVES:%d\n", len(pFndr.Moves))
 	return outstrng

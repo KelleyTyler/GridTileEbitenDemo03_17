@@ -31,26 +31,29 @@ var (
 )
 
 type Game struct {
-	initCalled                                      bool
-	isQuit                                          bool
-	gameDebugMsg                                    string
-	btn00, btn01, btn02, btn03, btn04, btn05, btn06 mypkgs.Button
-	btn07, btn08, btn09, btn10, btn11, btn12, btn13 mypkgs.Button
-	btn14, btn15, btn16, btn17, btn18, btn19, btn20 mypkgs.Button //btn21, btn22, btn23, btn24, btn25, btn26, btn27 mypkgs.Button
-	btn21                                           mypkgs.Button
-	coorAr                                          mypkgs.CoordList
-	numPanel00, numPanel01, numPanel02, numPanel03  mypkgs.NumSelect_Button
-	numPanel04, numPanel05, TileMargin, ScaleNumPad mypkgs.NumSelect_Button
-	isRunning                                       bool
-	IntGrid                                         mypkgs.IntegerGridManager
+	initCalled                                             bool
+	isQuit                                                 bool
+	gameDebugMsg                                           string
+	btn00, btn01, btn02, btn03, btn04, btn05, btn06        mypkgs.Button
+	btn07, btn08, btn09, btn10, btn11, btn12, btn13        mypkgs.Button
+	btn14, btn15, btn16, btn17, btn18, btn19, btn20        mypkgs.Button //btn21, btn22, btn23, btn24, btn25, btn26, btn27 mypkgs.Button
+	btn21                                                  mypkgs.Button
+	coorAr                                                 mypkgs.CoordList
+	numPanel00, numPanel01, numPanel02, numPanel03         mypkgs.NumSelect_Button
+	audioTestNumPanel, numPanel05, TileMargin, ScaleNumPad mypkgs.NumSelect_Button
+	isRunning                                              bool
+	IntGrid                                                mypkgs.IntegerGridManager
 
 	MouseDragStartingPoint mypkgs.CoordInts
 	MouseIsDragging        bool
+
+	SoundThing mypkgs.AudioThing
+	UIHelp     mypkgs.UI_Helper
 }
 
 func init() {
-	// Settings = mypkgs.GetSettingsFromJSON()
-	Settings = mypkgs.GetSettingsFromBakedIn()
+	Settings = mypkgs.GetSettingsFromJSON()
+	// Settings = mypkgs.GetSettingsFromBakedIn()
 	fmt.Printf("DONE INIT\n")
 	backgroundImg = ebiten.NewImage(Settings.ScreenResX, Settings.ScreenResY)
 	foregroundImg = ebiten.NewImage(Settings.ScreenResX, Settings.ScreenResY)
@@ -63,46 +66,50 @@ func (g *Game) init() error {
 	defer func() {
 		g.initCalled = true
 	}()
+	g.SoundThing.Init01(&Settings, 3200, 220) //4800, 220, -15, 20
+	g.UIHelp.Init_Default(&g.SoundThing)
 	col0 := Settings.ScreenResX - 140
 	col1 := Settings.ScreenResX - 72
-	g.btn00.InitButton("btn00", "PrintCordArray", 0, col0, 8, 64, 32, 0, 0)
-	g.btn01.InitButton("btn01", "SortDescOnX", 0, col1, 8, 64, 32, 0, 0)
-	g.btn02.InitButton("btn02", "remove\nduplicates", 0, col0, 44, 64, 32, 0, 0)
-	g.btn03.InitButton("btn03", "Clear\nInt Matrix", 0, col1, 44, 64, 32, 0, 0)
+	g.btn00.InitButton("btn00", "PrintCordArray", &g.UIHelp, 0, col0, 8, 64, 32, 0, 0)
+	g.btn01.InitButton("btn01", "SortDescOnX", &g.UIHelp, 0, col1, 8, 64, 32, 0, 0)
+	g.btn02.InitButton("btn02", "remove\nduplicates", &g.UIHelp, 0, col0, 44, 64, 32, 0, 0)
+	g.btn03.InitButton("btn03", "Clear\nInt Matrix", &g.UIHelp, 0, col1, 44, 64, 32, 0, 0)
 	block00 := 86
-	g.btn04.InitButton("btn04", "HL Select\nPoints", 2, col0, block00, 64, 32, 0, 0)
-	g.btn05.InitButton("btn05", "AUTO:OFF", 2, col1, block00, 64, 32, 0, 0)
-	g.btn06.InitButton("btn06", "Simple\nDecay", 0, col0, block00+36, 64, 32, 0, 0)
-	g.btn07.InitButton("btn07", "Primlike\nMaze Gen", 0, col1, block00+36, 64, 32, 0, 0)
-	g.btn08.InitButton("btn08", "MazeGen\n3c", 0, col0, block00+72, 64, 32, 0, 0)
-	g.btn09.InitButton("btn09", "Select\nPoints", 2, col1, block00+72, 64, 32, 0, 0)
-	g.btn10.InitButton("Btn10", "Clear\nArea", 0, col0, block00+108, 64, 32, 0, 0)
-	g.btn11.InitButton("Btn11", "Culling", 0, col1, block00+108, 64, 32, 0, 0)
+	g.btn04.InitButton("btn04", "HL Select\nPoints", &g.UIHelp, 2, col0, block00, 64, 32, 0, 0)
+	g.btn05.InitButton("btn05", "AUTO:OFF", &g.UIHelp, 2, col1, block00, 64, 32, 0, 0)
+	g.btn06.InitButton("btn06", "Simple\nDecay", &g.UIHelp, 0, col0, block00+36, 64, 32, 0, 0)
+	g.btn07.InitButton("btn07", "Primlike\nMaze Gen", &g.UIHelp, 0, col1, block00+36, 64, 32, 0, 0)
+	g.btn08.InitButton("btn08", "MazeGen\n3c", &g.UIHelp, 0, col0, block00+72, 64, 32, 0, 0)
+	g.btn09.InitButton("btn09", "Select\nPoints", &g.UIHelp, 2, col1, block00+72, 64, 32, 0, 0)
+	g.btn10.InitButton("Btn10", "Clear\nArea", &g.UIHelp, 0, col0, block00+108, 64, 32, 0, 0)
+	g.btn11.InitButton("Btn11", "Culling", &g.UIHelp, 0, col1, block00+108, 64, 32, 0, 0)
 	block2 := 236
-	g.btn12.InitButton("Btn12", "Pathfind\nSet Start", 2, col0, block2, 64, 32, 0, 0)
-	g.btn13.InitButton("Btn13", "Pathfind\nSet Stop", 2, col1, block2, 64, 32, 0, 0)
-	g.btn14.InitButton("Btn14", "Reset\nStart/Stop", 0, col0, block2+36, 64, 32, 0, 0)
-	g.btn15.InitButton("Btn15", "Pathfind\nINIT", 0, col1, block2+36, 64, 32, 0, 0)
+	g.btn12.InitButton("Btn12", "Pathfind\nSet Start", &g.UIHelp, 2, col0, block2, 64, 32, 0, 0)
+	g.btn13.InitButton("Btn13", "Pathfind\nSet Stop", &g.UIHelp, 2, col1, block2, 64, 32, 0, 0)
+	g.btn14.InitButton("Btn14", "Reset\nStart/Stop", &g.UIHelp, 0, col0, block2+36, 64, 32, 0, 0)
+	g.btn15.InitButton("Btn15", "Pathfind\nINIT", &g.UIHelp, 0, col1, block2+36, 64, 32, 0, 0)
 	block3 := 314
-	g.btn16.InitButton("Btn16", "Pathfind\nBRESENHAM", 0, col0, block3, 64, 32, 0, 0)
-	g.btn17.InitButton("Btn17", "Pathfind\nBreadth", 0, col1, block3, 64, 32, 0, 0)
-	g.btn18.InitButton("Btn18", "Pathfind\nManhattan", 0, col0, block3+36, 64, 32, 0, 0)
-	g.btn19.InitButton("Btn19", "Draw\nCircle", 2, col1, block3+36, 64, 32, 0, 0)
-	g.btn20.InitButton("Btn20", "ShowCursr\nneighbors", 0, col0, block3+72, 64, 32, 0, 0)
-	g.btn21.InitButton("Btn21", "AddCirc\ntoMazeGen", 2, col1, block3+72, 64, 32, 0, 0)
+	g.btn16.InitButton("Btn16", "Pathfind\nBRESENHAM", &g.UIHelp, 0, col0, block3, 64, 32, 0, 0)
+	g.btn17.InitButton("Btn17", "Pathfind\nBreadth", &g.UIHelp, 0, col1, block3, 64, 32, 0, 0)
+	g.btn18.InitButton("Btn18", "Pathfind\nManhattan", &g.UIHelp, 0, col0, block3+36, 64, 32, 0, 0)
+	g.btn19.InitButton("Btn19", "Draw\nCircle", &g.UIHelp, 2, col1, block3+36, 64, 32, 0, 0)
+	g.btn20.InitButton("Btn20", "ShowCursr\nneighbors", &g.UIHelp, 0, col0, block3+72, 64, 32, 0, 0)
+	g.btn21.InitButton("Btn21", "AddCirc\ntoMazeGen", &g.UIHelp, 2, col1, block3+72, 64, 32, 0, 0)
 	block4 := 444
-	g.numPanel00.Init("nums00", "Maze3Param", true, col0, block4, 32, 16, 0, 10, 20, 1)
-	g.numPanel01.Init("nums01", "Maze3Param", true, col1, block4, 32, 16, 0, 6, 20, 1)
-	g.numPanel02.Init("nums02", "Maze3Param", true, col0, block4+36, 32, 16, 1, 8, 16, 1)
-	g.numPanel03.Init("circRadPanel", "circ. Rad", true, col1, block4+36, 32, 16, 0, 0, 20, 1)
-	g.numPanel04.Init("nums03", "", true, col0, block4+36+36, 32, 16, 0, 0, 10, 1)
-	g.numPanel05.Init("nums05", "FindPath", true, col1, block4+36+36, 32, 16, 0, 0, 3, 1)
+	g.numPanel00.Init("nums00", "Maze3Param", &g.UIHelp, true, col0, block4, 32, 16, 0, 10, 20, 1)
+	g.numPanel01.Init("nums01", "Maze3Param", &g.UIHelp, true, col1, block4, 32, 16, 0, 6, 20, 1)
+	g.numPanel02.Init("nums02", "Maze3Param", &g.UIHelp, true, col0, block4+36, 32, 16, 1, 8, 16, 1)
+	g.numPanel03.Init("circRadPanel", "circ. Rad", &g.UIHelp, true, col1, block4+36, 32, 16, 0, 0, 20, 1)
+	// g.audioTestNumPanel.Init("AudioTest", "AudioTest", true, col0, block4+36+36, 32, 16, 0, 0, 3, 1)
+	g.numPanel05.Init("nums05", "FindPath", &g.UIHelp, true, col1, block4+36+36, 32, 16, 0, 0, 3, 1)
+
+	g.audioTestNumPanel.Init("AudioTest", "AudioTest", &g.UIHelp, true, col0, block4+36+36, 32, 16, 0, 0, 5, 1)
 	//=----------
-	g.TileMargin.Init("TileMargin_Selector", "TileMargin", true, col0, block4+36+36+36, 32, 16, 0, 4, 16, 1)
-	g.ScaleNumPad.Init("Scale_Selector", "SCALE", true, col1, block4+36+36+36, 32, 16, 1, 4, 32, 1)
+	g.TileMargin.Init("TileMargin_Selector", "TileMargin", &g.UIHelp, true, col0, block4+36+36+36, 32, 16, 0, 4, 16, 1)
+	g.ScaleNumPad.Init("Scale_Selector", "SCALE", &g.UIHelp, true, col1, block4+36+36+36, 32, 16, 1, 4, 32, 1)
 	g.coorAr = append(g.coorAr, mypkgs.CoordInts{X: 2, Y: 2})
 	// g.IntGrid.Init(32, 32, 16, 16, 64, 8, 2, 2)
-	g.IntGrid.Init(64, 64, 8, 8, 168, 8, 0, 0, 4, 4)
+	g.IntGrid.Init(&g.UIHelp, 64, 64, 8, 8, 168, 8, 0, 0, 4, 4)
 	// g.IntGrid.Init(96, 96, 8, 8, 64, 8, 0, 0, 4, 4)
 	g.MouseDragStartingPoint = mypkgs.CoordInts{X: 0, Y: 0}
 	g.MouseIsDragging = false
@@ -144,7 +151,7 @@ func (g *Game) PreDrawGUI(screen *ebiten.Image) {
 	g.numPanel01.Draw(screen)
 	g.numPanel02.Draw(screen)
 	g.numPanel03.Draw(screen)
-	g.numPanel04.Draw(screen)
+	g.audioTestNumPanel.Draw(screen)
 	g.numPanel05.Draw(screen)
 	g.TileMargin.Draw(screen)
 	g.ScaleNumPad.Draw(screen)
@@ -225,7 +232,12 @@ func (g *Game) Update() error {
 	g.numPanel01.Update()
 	g.numPanel02.Update()
 	g.numPanel03.Update()
-	g.numPanel04.Update()
+	g.audioTestNumPanel.Update()
+	if g.audioTestNumPanel.Btns[1].Update3() {
+		g.UIHelp.PlaySound(g.audioTestNumPanel.CurValue)
+		// g.SoundThing.PlayThing(g.audioTestNumPanel.CurValue)
+		// fmt.Printf("%s\n\n", g.UIHelp.ToString())
+	}
 	g.numPanel05.Update()
 
 	if g.btn00.Update3() {
@@ -289,6 +301,7 @@ func (g *Game) Update() error {
 	}
 	if g.btn08.Update3() {
 
+		// fmt.Printf("%s", g.SoundThing.ToString())
 	}
 
 	if g.btn09.Update3() {
