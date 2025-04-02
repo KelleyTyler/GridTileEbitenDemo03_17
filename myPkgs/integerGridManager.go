@@ -3,7 +3,6 @@ package mypkgs
 import (
 	"fmt"
 	"image/color"
-	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -449,18 +448,21 @@ func (igd *IntegerGridManager) ClearImat() {
 // 	}
 // }
 
-func (igd *IntegerGridManager) SaveFile() {
+func (igd *IntegerGridManager) SaveFile() error {
 	fmt.Printf("Saving Matrix\n")
 	err := igd.Imat.SaveIntMatrixToFile("IntGrids/MatrixSave00")
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("Saving FAILED\n")
+		return err
 	}
+	return nil
 }
 
 func (igd *IntegerGridManager) LoadFile() error {
 	fmt.Printf("Loading Matrix\n")
 	temp, err := igd.Imat.LoadIntMatrixFromFile("IntGrids/MatrixSave00")
 	if err != nil {
+		fmt.Printf("Loading FAILED\n")
 		return err
 	}
 	igd.Imat = temp
