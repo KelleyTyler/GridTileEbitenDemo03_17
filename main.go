@@ -70,8 +70,8 @@ func (g *Game) init() error {
 	g.UIHelp.Init_Default(&g.SoundThing)
 	col0 := Settings.ScreenResX - 140
 	col1 := Settings.ScreenResX - 72
-	g.btn00.InitButton("btn00", "PrintCordArray", &g.UIHelp, 0, col0, 8, 64, 32, 0, 0)
-	g.btn01.InitButton("btn01", "SortDescOnX", &g.UIHelp, 0, col1, 8, 64, 32, 0, 0)
+	g.btn00.InitButton("btn00", "Save", &g.UIHelp, 0, col0, 8, 64, 32, 0, 0)
+	g.btn01.InitButton("btn01", "Load", &g.UIHelp, 0, col1, 8, 64, 32, 0, 0)
 	g.btn02.InitButton("btn02", "remove\nduplicates", &g.UIHelp, 0, col0, 44, 64, 32, 0, 0)
 	g.btn03.InitButton("btn03", "Clear\nInt Matrix", &g.UIHelp, 0, col1, 44, 64, 32, 0, 0)
 	block00 := 86
@@ -247,10 +247,12 @@ func (g *Game) Update() error {
 		// } else {
 		// 	g.IntGrid.Rescale(16, 16, 2, 2)
 		// }
-		g.IntGrid.PFinder.Cursor.ShowCircle = !g.IntGrid.PFinder.Cursor.ShowCircle
+		//g.IntGrid.PFinder.Cursor.ShowCircle = !g.IntGrid.PFinder.Cursor.ShowCircle
+		g.IntGrid.SaveFile()
 	}
 	if g.btn01.Update3() {
-		g.IntGrid.DEMO_COORDS_00(5, 0, 0) //igd.Coords.SortDescOnX()
+		g.IntGrid.LoadFile()
+		//g.IntGrid.DEMO_COORDS_00(5, 0, 0) //igd.Coords.SortDescOnX()
 	}
 	if g.btn02.Update3() {
 		g.IntGrid.DEMO_COORDS_00(6, 0, 0) //remove duplicates
