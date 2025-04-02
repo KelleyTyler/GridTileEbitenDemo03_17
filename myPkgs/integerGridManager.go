@@ -36,7 +36,8 @@ type IntegerGridManager struct {
 	//--------------------------------
 	SelectPoints bool
 	//--------------
-	Img *ebiten.Image
+	Img    *ebiten.Image
+	Helper *UI_Helper
 
 	Scale                          float64
 	ScreenTicker                   int
@@ -60,7 +61,7 @@ type IntegerGridManager struct {
 	[]color.Color{color.RGBA{255, 0, 0, 255}, color.RGBA{0, 0, 255, 255}, color.RGBA{0, 255, 0, 255},
 		color.RGBA{0, 255, 255, 255}, color.RGBA{255, 255, 0, 255}, color.RGBA{255, 255, 255, 255}, color.RGBA{75, 75, 75, 255}}
 */
-func (igd *IntegerGridManager) Init(N_TilesX, N_TilesY int, TSizeX, TSizeY int, PosX, PosY int, MargX, MargY, iMargeX, iMargeY int) {
+func (igd *IntegerGridManager) Init(uHelp *UI_Helper, N_TilesX, N_TilesY int, TSizeX, TSizeY int, PosX, PosY int, MargX, MargY, iMargeX, iMargeY int) {
 	igd.Margin = CoordInts{X: MargX, Y: MargY}
 	igd.Position = CoordInts{X: PosX, Y: PosY}
 	igd.Tile_Size = CoordInts{X: TSizeX, Y: TSizeY}
@@ -95,6 +96,7 @@ func (igd *IntegerGridManager) Init(N_TilesX, N_TilesY int, TSizeX, TSizeY int, 
 	igd.MazeM.Init(&igd.Imat, 10)
 	igd.ScreenTicker_max = 6
 	igd.ScreenTicker = 0
+	igd.Helper = uHelp
 }
 
 func (igd *IntegerGridManager) Rescale(TSizeX, TSizeY, margX, margY int) {
@@ -223,6 +225,10 @@ func (igd *IntegerGridManager) UpdateOnMouseEvent() {
 		// temp2X, temp2Y, isOnTile2 = igd.Imat.GetCoordOfMouseEvent_Scalable(Raw_Mouse_X-xx, Raw_Mouse_Y-yy, igd.Scale, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y)
 
 		if !igd.PFinderEndSelect && !igd.PFinderStartSelect && !igd.SelectPoints {
+			if isOnTile {
+				igd.Helper.PlaySound(4)
+
+			}
 			if igd.FullColors {
 
 				_, _ = igd.Imat.ChangeValOnMouseEvent(Raw_Mouse_X-xx, Raw_Mouse_Y-yy, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.CycleStart, len(igd.Colors)-1, !(igd.PFinderStartSelect || igd.PFinderEndSelect))
@@ -231,6 +237,7 @@ func (igd *IntegerGridManager) UpdateOnMouseEvent() {
 				_, _ = igd.Imat.ChangeValOnMouseEvent(Raw_Mouse_X-xx, Raw_Mouse_Y-yy, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.CycleStart, igd.CycleEnd, !(igd.PFinderStartSelect || igd.PFinderEndSelect))
 			}
 		}
+
 		//
 		// // igd.MazeM.PrintString()
 		// igd.AddToCoords(tempX, tempY)
@@ -245,12 +252,14 @@ func (igd *IntegerGridManager) UpdateOnMouseEvent() {
 					igd.MazeM.AddToCoords(tempX, tempY)
 					//igd.Coords = igd.Coords.PushToReturn(igd.LastPoint)
 				}
-			} else if igd.PFinderEndSelect {
+			} else if igd.PFinderEndSelect && isOnTile {
+				igd.Helper.PlaySound(3)
 				igd.PFinder.EndPos = CoordInts{tempX, tempY}
 				// igd.Imat[tempY][tempX] = 5
 				igd.PFinder.IsEndInit = true
 				igd.PFinderEndSelect = false
-			} else if igd.PFinderStartSelect {
+			} else if igd.PFinderStartSelect && isOnTile {
+				igd.Helper.PlaySound(3)
 				igd.PFinder.StartPos = CoordInts{tempX, tempY}
 				// igd.Imat[tempY][tempX] = 6
 				igd.PFinder.IsStartInit = true

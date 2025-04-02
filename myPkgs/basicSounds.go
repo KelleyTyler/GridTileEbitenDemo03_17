@@ -67,8 +67,8 @@ func (aud *AudioThing) PlayByte(b []byte) {
 	p := aud.AudContext.NewPlayerF32FromBytes(b)
 	p.SetVolume(float64(aud.Settings.UIAudioVolume) / 100)
 	p.Play()
-	fmt.Printf("PLAY THING %d --- %5.2f -----\n", len(b), p.Volume())
-	fmt.Printf("%v %v %v %v %v %v %v \n", b[0], b[500], b[1000], b[1500], b[2000], b[2500], b[3000])
+	// fmt.Printf("PLAY THING %d --- %5.2f -----\n", len(b), p.Volume())
+	// fmt.Printf("%v %v %v %v %v %v %v \n", b[0], b[500], b[1000], b[1500], b[2000], b[2500], b[3000])
 }
 
 func (aud *AudioThing) Init_Sub(q, refFreq int, decayAmp, decayX []float32) []byte {

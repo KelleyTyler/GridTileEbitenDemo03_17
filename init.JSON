@@ -1,8 +1,8 @@
 {
-    "versionID": "0.0.04",
-    "window_size_x": 892,
-    "window_size_y": 660,
-    "screen_res_x": 860,
-    "screen_res_y": 660,
+    "versionID": "0.0.09",
+    "window_size_x": 960,
+    "window_size_y": 640,
+    "screen_res_x": 960,
+    "screen_res_y": 640,
     "ui_audio_volume": 100
 }

@@ -10,6 +10,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"golang.org/x/image/font/gofont/gomono"
+	"golang.org/x/image/font/gofont/goregular"
 
 	//"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 
@@ -44,12 +45,13 @@ UI_Helper:
 The
 */
 type UI_Helper struct {
-	IsInitialized bool
-	Button_Colors []color.Color
-	Btn_Sounds    [][]byte
-	Btn_TextSrc   *text.GoTextFaceSource
-	Btn_Text      text.Face
-	SoundSys      *AudioThing
+	IsInitialized               bool
+	Button_Colors               []color.Color
+	Btn_Sounds                  [][]byte
+	Btn_TextSrc                 *text.GoTextFaceSource
+	Btn_Text_Mono, Btn_Text_Reg text.Face
+
+	SoundSys *AudioThing
 }
 
 // func (ui_Helper *UI_Helper) Init_Default(sound *AudioThing) error {
@@ -64,7 +66,15 @@ func (ui_Helper *UI_Helper) Init_Default(sound *AudioThing) error {
 	if err != nil {
 		log.Fatal("err: ", err)
 	}
-	ui_Helper.Btn_Text = &text.GoTextFace{
+	ui_Helper.Btn_Text_Mono = &text.GoTextFace{
+		Source: ui_Helper.Btn_TextSrc,
+		Size:   20,
+	}
+	ui_Helper.Btn_TextSrc, err = text.NewGoTextFaceSource(bytes.NewReader(goregular.TTF))
+	if err != nil {
+		log.Fatal("err: ", err)
+	}
+	ui_Helper.Btn_Text_Reg = &text.GoTextFace{
 		Source: ui_Helper.Btn_TextSrc,
 		Size:   20,
 	}
@@ -80,13 +90,13 @@ func (ui_Helper *UI_Helper) PlaySound(sound_num int) {
 	}
 }
 
-func (ui_Helper *UI_Helper) InitSounds() {
-	ui_Helper.Btn_Sounds = append(ui_Helper.Btn_Sounds, Soundwave_CreateSound(1200, 220, 0, 110, []float32{1.0}, []float32{0.0750000}))
-	ui_Helper.Btn_Sounds = append(ui_Helper.Btn_Sounds, Soundwave_CreateSound(1200, 220, 10, 110, []float32{1.0}, []float32{0.0750000}))
-	ui_Helper.Btn_Sounds = append(ui_Helper.Btn_Sounds, Soundwave_CreateSound(1200, 220, 15, 110, []float32{1.0}, []float32{0.0750000}))
-	ui_Helper.Btn_Sounds = append(ui_Helper.Btn_Sounds, Soundwave_CreateSound(1200, 220, 20, 110, []float32{1.0}, []float32{0.0750000}))
-	ui_Helper.Btn_Sounds = append(ui_Helper.Btn_Sounds, Soundwave_CreateSound(1200, 220, 25, 110, []float32{1.0}, []float32{0.0750000}))
-	ui_Helper.Btn_Sounds = append(ui_Helper.Btn_Sounds, Soundwave_CreateSound(1200, 220, 25, 110, []float32{1.0}, []float32{0.0750000}))
+func (ui_Helper *UI_Helper) InitSounds() { //1200
+	ui_Helper.Btn_Sounds = append(ui_Helper.Btn_Sounds, Soundwave_CreateSound(3200, 220, 0, 110, []float32{1.0}, []float32{0.0750000}))
+	ui_Helper.Btn_Sounds = append(ui_Helper.Btn_Sounds, Soundwave_CreateSound(3200, 220, 10, 110, []float32{1.0}, []float32{0.0750000}))
+	ui_Helper.Btn_Sounds = append(ui_Helper.Btn_Sounds, Soundwave_CreateSound(3200, 220, 15, 110, []float32{1.0}, []float32{0.0750000}))
+	ui_Helper.Btn_Sounds = append(ui_Helper.Btn_Sounds, Soundwave_CreateSound(3200, 220, 20, 110, []float32{1.0}, []float32{0.0750000}))
+	ui_Helper.Btn_Sounds = append(ui_Helper.Btn_Sounds, Soundwave_CreateSound(3200, 220, 25, 110, []float32{1.0}, []float32{0.0750000}))
+	ui_Helper.Btn_Sounds = append(ui_Helper.Btn_Sounds, Soundwave_CreateSound(3200, 220, 25, 110, []float32{1.0}, []float32{0.0750000}))
 }
 
 func (ui_Helper *UI_Helper) ToString() string {
@@ -103,16 +113,18 @@ func IsMouseOverPos(adj_x, adj_y int, position, size CoordInts) bool {
 		return false
 	}
 }
-func (btn *Button) InitButton_00(name, label string, uiHelpr *UI_Helper, bType int, Pos_X, Pos_Y, BtnWidth, BtnHeight, OffsetX, OffsetY int) {
+func (btn *Button) InitButton(name, label string, uiHelpr *UI_Helper, bType int, Pos_X, Pos_Y, BtnWidth, BtnHeight, OffsetX, OffsetY int) {
 	btn.Name, btn.Label = name, label
 	btn.Offset.X, btn.Offset.Y, btn.Size.X, btn.Size.Y = OffsetX, OffsetY, BtnWidth, BtnHeight
 	btn.Coords.X, btn.Coords.Y = Pos_X, Pos_Y
 	btn.IsEnabled = true
 	btn.IsToggled = false
 	btn.isHovered = false
+	btn.Helper = uiHelpr
 	btn.BType = bType
-	btn.Color = []color.Color{color.RGBA{75, 150, 75, 255}, color.RGBA{120, 220, 75, 255}, color.RGBA{140, 240, 100, 255},
-		color.RGBA{150, 75, 75, 255}, color.RGBA{220, 120, 75, 255}, color.RGBA{240, 140, 90, 255}}
+	// btn.Color = []color.Color{color.RGBA{75, 150, 75, 255}, color.RGBA{120, 220, 75, 255}, color.RGBA{140, 240, 100, 255},
+	// color.RGBA{150, 75, 75, 255}, color.RGBA{220, 120, 75, 255}, color.RGBA{240, 140, 90, 255}}
+	btn.Color = btn.Helper.Button_Colors
 }
 
 type Button struct {
@@ -130,6 +142,8 @@ type Button struct {
 	IsToggled bool
 
 	// PointingBool *bool
+
+	Helper *UI_Helper
 }
 
 func (btn *Button) ToString() string {
@@ -153,9 +167,11 @@ func (btn *Button) Update3() bool { //no clue if this works;
 		//fmt.Printf("TICK TICK TICK\n")
 		if btn.BType == 2 {
 			btn.IsToggled = !btn.IsToggled
+			btn.Helper.PlaySound(3)
 			//fmt.Printf("TICK 2 2\n")
 			return btn.IsToggled
 		} else {
+			btn.Helper.PlaySound(2)
 			btn.State = 2
 			return true
 		}
@@ -217,6 +233,18 @@ func (btn *Button) Update(Raw_Mouse_X, Raw_Mouse_Y int, isTriggered bool) {
 	}
 
 }
+
+func (btn *Button) InitButton_deprecated(name, label string, bType int, Pos_X, Pos_Y, BtnWidth, BtnHeight, OffsetX, OffsetY int) {
+	btn.Name, btn.Label = name, label
+	btn.Offset.X, btn.Offset.Y, btn.Size.X, btn.Size.Y = OffsetX, OffsetY, BtnWidth, BtnHeight
+	btn.Coords.X, btn.Coords.Y = Pos_X, Pos_Y
+	btn.IsEnabled = true
+	btn.IsToggled = false
+	btn.isHovered = false
+	btn.BType = bType
+	btn.Color = []color.Color{color.RGBA{75, 150, 75, 255}, color.RGBA{120, 220, 75, 255}, color.RGBA{140, 240, 100, 255},
+		color.RGBA{150, 75, 75, 255}, color.RGBA{220, 120, 75, 255}, color.RGBA{240, 140, 90, 255}}
+}
 func (btn *Button) UpdateTwo() bool {
 	if btn.IsEnabled {
 		if btn.BType == 2 {
@@ -259,18 +287,6 @@ func (btn *Button) GetColor() color.Color {
 	}
 }
 
-func (btn *Button) InitButton(name, label string, bType int, Pos_X, Pos_Y, BtnWidth, BtnHeight, OffsetX, OffsetY int) {
-	btn.Name, btn.Label = name, label
-	btn.Offset.X, btn.Offset.Y, btn.Size.X, btn.Size.Y = OffsetX, OffsetY, BtnWidth, BtnHeight
-	btn.Coords.X, btn.Coords.Y = Pos_X, Pos_Y
-	btn.IsEnabled = true
-	btn.IsToggled = false
-	btn.isHovered = false
-	btn.BType = bType
-	btn.Color = []color.Color{color.RGBA{75, 150, 75, 255}, color.RGBA{120, 220, 75, 255}, color.RGBA{140, 240, 100, 255},
-		color.RGBA{150, 75, 75, 255}, color.RGBA{220, 120, 75, 255}, color.RGBA{240, 140, 90, 255}}
-}
-
 func (btn *Button) ChangeLabel(strng string) {
 	btn.Label = strng
 }
@@ -278,6 +294,7 @@ func (btn *Button) DrawButton(screen *ebiten.Image) {
 
 	// w := btn.Size.X
 	// h := btn.Size.Y
+	scaler := 2.0
 	// var opts ebiten.DrawImageOptions
 	// opts.GeoM.Translate(-float64(w)/2.0, -float64(h)/2.0)
 	// opts.GeoM.Rotate(2 * math.Pi * float64(btn.Angle) / float64(180))
@@ -290,8 +307,15 @@ func (btn *Button) DrawButton(screen *ebiten.Image) {
 	out := fmt.Sprintf("%s\n", btn.Label)
 	// if btn.PointingBool != nil {
 	// 	out += fmt.Sprintf("%t\n", *btn.PointingBool)
-	// }
-	ebitenutil.DebugPrintAt(screen, out, btn.Coords.X, btn.Coords.Y)
+	// }	btn.Helper.Btn_Text.
+	tops := &text.DrawOptions{}
+
+	tops.GeoM.Translate(float64(btn.Coords.X+4)*scaler, float64(btn.Coords.Y+4)*scaler)
+	tops.GeoM.Scale(1/scaler, 1/scaler)
+	tops.ColorScale.ScaleWithColor(color.White)
+	tops.LineSpacing = float64(20)
+	text.Draw(screen, out, btn.Helper.Btn_Text_Reg, tops)
+	//ebitenutil.DebugPrintAt(screen, out, btn.Coords.X, btn.Coords.Y)
 	// if sprt.showSimg {
 	// 	screen.DrawImage(sprt.animars.GetCurrFrame(), &g.op)
 	// 	//screen.DrawImage(&sprt.Simg[sprt.imgArrCurrent], &g.op)
@@ -332,18 +356,28 @@ type TextPanel struct {
 	Size     CoordInts
 	Label    string
 	Color    color.Color
+	Helper   *UI_Helper
 }
 
 func (txtPnl *TextPanel) Draw(screen *ebiten.Image) {
 	vector.DrawFilledRect(screen, float32(txtPnl.Position.X), float32(txtPnl.Position.Y), float32(txtPnl.Size.X), float32(txtPnl.Size.Y), txtPnl.Color, true)
 	vector.StrokeRect(screen, float32(txtPnl.Position.X), float32(txtPnl.Position.Y), float32(txtPnl.Size.X), float32(txtPnl.Size.Y), 2.0, color.Black, true)
-	ebitenutil.DebugPrintAt(screen, txtPnl.Label, txtPnl.Position.X, txtPnl.Position.Y)
+	scaler := 2.0
+	tops := &text.DrawOptions{}
+
+	tops.GeoM.Translate(float64(txtPnl.Position.X+4)*scaler, float64(txtPnl.Position.Y)*scaler)
+	tops.GeoM.Scale(1/scaler, 1/scaler)
+	tops.ColorScale.ScaleWithColor(color.White)
+	tops.LineSpacing = float64(20)
+	text.Draw(screen, txtPnl.Label, txtPnl.Helper.Btn_Text_Reg, tops)
+	// ebitenutil.DebugPrintAt(screen, txtPnl.Label, txtPnl.Position.X, txtPnl.Position.Y)
 }
-func (txtPnl *TextPanel) Init(label string, position, size CoordInts, color color.Color) {
+func (txtPnl *TextPanel) Init(label string, uiHelper *UI_Helper, position, size CoordInts, color color.Color) {
 	txtPnl.Position = position
 	txtPnl.Size = size
 	txtPnl.Label = label
 	txtPnl.Color = color
+	txtPnl.Helper = uiHelper
 }
 
 type NumSelect_Button struct {
@@ -363,18 +397,18 @@ type NumSelect_Button struct {
 // 	nsel.Size = CoordInts{X: BtnWidth, Y: BtnHeight}
 
 // }
-func (nsel *NumSelect_Button) Init(name, label string, showlbl bool, Pos_X, Pos_Y, PWidth, PHeight, mintVal, startVal, maxVal, iterate int) {
+func (nsel *NumSelect_Button) Init(name, label string, helpr *UI_Helper, showlbl bool, Pos_X, Pos_Y, PWidth, PHeight, mintVal, startVal, maxVal, iterate int) {
 	nsel.Position = CoordInts{X: Pos_X, Y: Pos_Y}
 	nsel.Size = CoordInts{X: 64, Y: PHeight}
-	nsel.Btns[0].InitButton("LButton", " -", 0, Pos_X, Pos_Y, 16, PHeight, 0, 0)
-	nsel.Btns[1].InitButton("DButton", "", 0, Pos_X+16, Pos_Y, 32, PHeight, 0, 0)
-	nsel.Btns[2].InitButton("RButton", " +", 0, Pos_X+48, Pos_Y, 16, PHeight, 0, 0)
+	nsel.Btns[0].InitButton("LButton", " -", helpr, 0, Pos_X, Pos_Y, 16, PHeight, 0, 0)
+	nsel.Btns[1].InitButton("DButton", "", helpr, 0, Pos_X+16, Pos_Y, 32, PHeight, 0, 0)
+	nsel.Btns[2].InitButton("RButton", " +", helpr, 0, Pos_X+48, Pos_Y, 16, PHeight, 0, 0)
 	nsel.MinValue = mintVal
 	nsel.CurValue = startVal
 	nsel.MaxValue = maxVal
 	nsel.iterator = iterate
 	// nsel.Label = label
-	nsel.Label.Init(label, CoordInts{X: Pos_X, Y: Pos_Y - 16}, CoordInts{X: 64, Y: 16}, color.RGBA{75, 150, 75, 255})
+	nsel.Label.Init(label, helpr, CoordInts{X: Pos_X, Y: Pos_Y - 16}, CoordInts{X: 64, Y: 16}, color.RGBA{75, 150, 75, 255})
 	nsel.ShowLbl = showlbl
 }
 func (nsel *NumSelect_Button) Draw(screen *ebiten.Image) {
@@ -456,14 +490,14 @@ func (btnPnl *ButtonPanel) Draw(screen *ebiten.Image) {
 	}
 }
 
-func (btnPnl *ButtonPanel) InitBtns(cols int, size CoordInts) {
+func (btnPnl *ButtonPanel) InitBtns(cols int, helper *UI_Helper, size CoordInts) {
 	// xx_re, yy_re := btnPnl.BorderMargin, btnPnl.BorderMargin
 	xx_i, yy_i := 0, 0
 	for i, _ := range btnPnl.Buttons {
 		xx_re := btnPnl.BorderMargin + (size.X+btnPnl.Button_Buffer)*xx_i
 		yy_re := btnPnl.BorderMargin + (size.Y+btnPnl.Button_Buffer)*yy_i
 		strng := fmt.Sprintf("Btn%02d", i)
-		btnPnl.Buttons[i].InitButton(strng, strng, 0, xx_re, yy_re, size.X, size.Y, 0, 0)
+		btnPnl.Buttons[i].InitButton(strng, strng, helper, 0, xx_re, yy_re, size.X, size.Y, 0, 0)
 		if xx_i > cols {
 			xx_i = 0
 			yy_i++
