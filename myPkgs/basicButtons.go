@@ -1,12 +1,15 @@
 package mypkgs
 
 import (
+	"bytes"
 	"fmt"
 	"image/color"
+	"log"
 
 	//"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"golang.org/x/image/font/gofont/gomono"
 
 	//"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 
@@ -14,6 +17,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"github.com/hajimehoshi/ebiten/v2/text/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
@@ -34,12 +38,81 @@ import (
 //	BtnTypeToggle    ButtonType = 1
 //
 // )
+
+/*
+UI_Helper:
+The
+*/
+type UI_Helper struct {
+	IsInitialized bool
+	Button_Colors []color.Color
+	Btn_Sounds    [][]byte
+	Btn_TextSrc   *text.GoTextFaceSource
+	Btn_Text      text.Face
+	SoundSys      *AudioThing
+}
+
+// func (ui_Helper *UI_Helper) Init_Default(sound *AudioThing) error {
+
+func (ui_Helper *UI_Helper) Init_Default(sound *AudioThing) error {
+	ui_Helper.Button_Colors = []color.Color{color.RGBA{75, 150, 75, 255}, color.RGBA{120, 220, 75, 255}, color.RGBA{140, 240, 100, 255},
+		color.RGBA{150, 75, 75, 255}, color.RGBA{220, 120, 75, 255}, color.RGBA{240, 140, 90, 255}}
+
+	ui_Helper.IsInitialized = true
+	var err error
+	ui_Helper.Btn_TextSrc, err = text.NewGoTextFaceSource(bytes.NewReader(gomono.TTF))
+	if err != nil {
+		log.Fatal("err: ", err)
+	}
+	ui_Helper.Btn_Text = &text.GoTextFace{
+		Source: ui_Helper.Btn_TextSrc,
+		Size:   20,
+	}
+
+	ui_Helper.SoundSys = sound
+	ui_Helper.InitSounds()
+	return nil
+}
+
+func (ui_Helper *UI_Helper) PlaySound(sound_num int) {
+	if sound_num < int(len(ui_Helper.Btn_Sounds)) {
+		ui_Helper.SoundSys.PlayByte(ui_Helper.Btn_Sounds[sound_num])
+	}
+}
+
+func (ui_Helper *UI_Helper) InitSounds() {
+	ui_Helper.Btn_Sounds = append(ui_Helper.Btn_Sounds, Soundwave_CreateSound(1200, 220, 0, 110, []float32{1.0}, []float32{0.0750000}))
+	ui_Helper.Btn_Sounds = append(ui_Helper.Btn_Sounds, Soundwave_CreateSound(1200, 220, 10, 110, []float32{1.0}, []float32{0.0750000}))
+	ui_Helper.Btn_Sounds = append(ui_Helper.Btn_Sounds, Soundwave_CreateSound(1200, 220, 15, 110, []float32{1.0}, []float32{0.0750000}))
+	ui_Helper.Btn_Sounds = append(ui_Helper.Btn_Sounds, Soundwave_CreateSound(1200, 220, 20, 110, []float32{1.0}, []float32{0.0750000}))
+	ui_Helper.Btn_Sounds = append(ui_Helper.Btn_Sounds, Soundwave_CreateSound(1200, 220, 25, 110, []float32{1.0}, []float32{0.0750000}))
+	ui_Helper.Btn_Sounds = append(ui_Helper.Btn_Sounds, Soundwave_CreateSound(1200, 220, 25, 110, []float32{1.0}, []float32{0.0750000}))
+}
+
+func (ui_Helper *UI_Helper) ToString() string {
+	outstrng := fmt.Sprintf("UI HELPER: sounds %d\n", len(ui_Helper.Btn_Sounds))
+	return outstrng
+}
+
+/*
+ */
 func IsMouseOverPos(adj_x, adj_y int, position, size CoordInts) bool {
 	if mx, my := ebiten.CursorPosition(); (mx > position.X+adj_x && mx < position.X+size.X+adj_x) && (my > position.Y+adj_y && my < position.Y+size.Y+adj_y) {
 		return true
 	} else {
 		return false
 	}
+}
+func (btn *Button) InitButton_00(name, label string, uiHelpr *UI_Helper, bType int, Pos_X, Pos_Y, BtnWidth, BtnHeight, OffsetX, OffsetY int) {
+	btn.Name, btn.Label = name, label
+	btn.Offset.X, btn.Offset.Y, btn.Size.X, btn.Size.Y = OffsetX, OffsetY, BtnWidth, BtnHeight
+	btn.Coords.X, btn.Coords.Y = Pos_X, Pos_Y
+	btn.IsEnabled = true
+	btn.IsToggled = false
+	btn.isHovered = false
+	btn.BType = bType
+	btn.Color = []color.Color{color.RGBA{75, 150, 75, 255}, color.RGBA{120, 220, 75, 255}, color.RGBA{140, 240, 100, 255},
+		color.RGBA{150, 75, 75, 255}, color.RGBA{220, 120, 75, 255}, color.RGBA{240, 140, 90, 255}}
 }
 
 type Button struct {
@@ -197,6 +270,7 @@ func (btn *Button) InitButton(name, label string, bType int, Pos_X, Pos_Y, BtnWi
 	btn.Color = []color.Color{color.RGBA{75, 150, 75, 255}, color.RGBA{120, 220, 75, 255}, color.RGBA{140, 240, 100, 255},
 		color.RGBA{150, 75, 75, 255}, color.RGBA{220, 120, 75, 255}, color.RGBA{240, 140, 90, 255}}
 }
+
 func (btn *Button) ChangeLabel(strng string) {
 	btn.Label = strng
 }

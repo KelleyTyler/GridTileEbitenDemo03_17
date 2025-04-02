@@ -3,5 +3,6 @@
     "window_size_x": 892,
     "window_size_y": 660,
     "screen_res_x": 860,
-    "screen_res_y": 660
+    "screen_res_y": 660,
+    "ui_audio_volume": 100
 }

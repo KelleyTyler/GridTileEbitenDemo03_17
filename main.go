@@ -31,23 +31,24 @@ var (
 )
 
 type Game struct {
-	initCalled                                      bool
-	isQuit                                          bool
-	gameDebugMsg                                    string
-	btn00, btn01, btn02, btn03, btn04, btn05, btn06 mypkgs.Button
-	btn07, btn08, btn09, btn10, btn11, btn12, btn13 mypkgs.Button
-	btn14, btn15, btn16, btn17, btn18, btn19, btn20 mypkgs.Button //btn21, btn22, btn23, btn24, btn25, btn26, btn27 mypkgs.Button
-	btn21                                           mypkgs.Button
-	coorAr                                          mypkgs.CoordList
-	numPanel00, numPanel01, numPanel02, numPanel03  mypkgs.NumSelect_Button
-	numPanel04, numPanel05, TileMargin, ScaleNumPad mypkgs.NumSelect_Button
-	isRunning                                       bool
-	IntGrid                                         mypkgs.IntegerGridManager
+	initCalled                                             bool
+	isQuit                                                 bool
+	gameDebugMsg                                           string
+	btn00, btn01, btn02, btn03, btn04, btn05, btn06        mypkgs.Button
+	btn07, btn08, btn09, btn10, btn11, btn12, btn13        mypkgs.Button
+	btn14, btn15, btn16, btn17, btn18, btn19, btn20        mypkgs.Button //btn21, btn22, btn23, btn24, btn25, btn26, btn27 mypkgs.Button
+	btn21                                                  mypkgs.Button
+	coorAr                                                 mypkgs.CoordList
+	numPanel00, numPanel01, numPanel02, numPanel03         mypkgs.NumSelect_Button
+	audioTestNumPanel, numPanel05, TileMargin, ScaleNumPad mypkgs.NumSelect_Button
+	isRunning                                              bool
+	IntGrid                                                mypkgs.IntegerGridManager
 
 	MouseDragStartingPoint mypkgs.CoordInts
 	MouseIsDragging        bool
 
 	SoundThing mypkgs.AudioThing
+	UIHelp     mypkgs.UI_Helper
 }
 
 func init() {
@@ -97,8 +98,10 @@ func (g *Game) init() error {
 	g.numPanel01.Init("nums01", "Maze3Param", true, col1, block4, 32, 16, 0, 6, 20, 1)
 	g.numPanel02.Init("nums02", "Maze3Param", true, col0, block4+36, 32, 16, 1, 8, 16, 1)
 	g.numPanel03.Init("circRadPanel", "circ. Rad", true, col1, block4+36, 32, 16, 0, 0, 20, 1)
-	g.numPanel04.Init("nums03", "", true, col0, block4+36+36, 32, 16, 0, 0, 10, 1)
+	// g.audioTestNumPanel.Init("AudioTest", "AudioTest", true, col0, block4+36+36, 32, 16, 0, 0, 3, 1)
 	g.numPanel05.Init("nums05", "FindPath", true, col1, block4+36+36, 32, 16, 0, 0, 3, 1)
+
+	g.audioTestNumPanel.Init("AudioTest", "AudioTest", true, col0, block4+36+36, 32, 16, 0, 0, 5, 1)
 	//=----------
 	g.TileMargin.Init("TileMargin_Selector", "TileMargin", true, col0, block4+36+36+36, 32, 16, 0, 4, 16, 1)
 	g.ScaleNumPad.Init("Scale_Selector", "SCALE", true, col1, block4+36+36+36, 32, 16, 1, 4, 32, 1)
@@ -109,7 +112,14 @@ func (g *Game) init() error {
 	g.MouseDragStartingPoint = mypkgs.CoordInts{X: 0, Y: 0}
 	g.MouseIsDragging = false
 
-	g.SoundThing.Init01(4800, 220, 35, 110)
+	g.SoundThing.Init01(&Settings, 1200, 220, 0, 110) //4800, 220, -15, 20
+	g.UIHelp.Init_Default(&g.SoundThing)
+
+	g.SoundThing.AddToAudioThing(10, 110) //01
+	g.SoundThing.AddToAudioThing(15, 110) //02
+	g.SoundThing.AddToAudioThing(20, 110) //03
+	g.SoundThing.AddToAudioThing(25, 110) //04
+	g.SoundThing.AddToAudioThing(25, 110) //05
 	return nil
 }
 
@@ -148,7 +158,7 @@ func (g *Game) PreDrawGUI(screen *ebiten.Image) {
 	g.numPanel01.Draw(screen)
 	g.numPanel02.Draw(screen)
 	g.numPanel03.Draw(screen)
-	g.numPanel04.Draw(screen)
+	g.audioTestNumPanel.Draw(screen)
 	g.numPanel05.Draw(screen)
 	g.TileMargin.Draw(screen)
 	g.ScaleNumPad.Draw(screen)
@@ -229,7 +239,12 @@ func (g *Game) Update() error {
 	g.numPanel01.Update()
 	g.numPanel02.Update()
 	g.numPanel03.Update()
-	g.numPanel04.Update()
+	g.audioTestNumPanel.Update()
+	if g.audioTestNumPanel.Btns[1].Update3() {
+		g.UIHelp.PlaySound(g.audioTestNumPanel.CurValue)
+		// g.SoundThing.PlayThing(g.audioTestNumPanel.CurValue)
+		// fmt.Printf("%s\n\n", g.UIHelp.ToString())
+	}
 	g.numPanel05.Update()
 
 	if g.btn00.Update3() {
@@ -292,7 +307,7 @@ func (g *Game) Update() error {
 
 	}
 	if g.btn08.Update3() {
-		g.SoundThing.PlayThing(0)
+
 		// fmt.Printf("%s", g.SoundThing.ToString())
 	}
 
