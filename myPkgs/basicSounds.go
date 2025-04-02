@@ -31,10 +31,20 @@ func (aud *AudioThing) Init00(sRate, bFreq int, AC *audio.Context, GS *GameSetti
 	aud.SampleRate = sRate
 	aud.AudContext = AC
 	aud.Settings = GS
-	aud.Sound = aud.Init_Sub(0, 110, []float32{1.0, 0.25}, []float32{4.0, 2.0, 1.0, 0.5})
-	aud.Sounds = append(aud.Sounds, aud.Init_Sub(0, 110, []float32{1.0, 0.25}, []float32{4.0, 2.0, 1.0, 0.5}))
+	// aud.Sound = aud.Init_Sub(0, 110, []float32{1.0, 0.25}, []float32{4.0, 2.0, 1.0, 0.5})
+	// aud.Sounds = append(aud.Sounds, aud.Init_Sub(0, 110, []float32{1.0, 0.25}, []float32{4.0, 2.0, 1.0, 0.5}))
 }
-func (aud *AudioThing) Init01(GS *GameSettings, sRate, bFreq, note, refFreq int) {
+func (aud *AudioThing) Init01(GS *GameSettings, sRate, bFreq int) {
+	aud.BaseFreq = bFreq
+	aud.SampleRate = sRate
+	aud.AudContext = audio.NewContext(sRate)
+	//[]float32{2.0, 1.0, 0.5, 0.25, 0.125, 0.075}
+	// []float32{2.0, 1.0, 0.05, 0.025, 0.0125, 0.0075}
+	//[]float32{1.0, 0.05}, []float32{1.0, 0.05}
+	aud.Settings = GS
+	//aud.Init_Sub(0, 110, []float32{2.0}, []float32{0.250}) //<- with srate being 4800, and bfreq being 220 q being 60
+}
+func (aud *AudioThing) Init02(GS *GameSettings, sRate, bFreq, note, refFreq int) {
 	aud.BaseFreq = bFreq
 	aud.SampleRate = sRate
 	aud.AudContext = audio.NewContext(sRate)
@@ -46,7 +56,6 @@ func (aud *AudioThing) Init01(GS *GameSettings, sRate, bFreq, note, refFreq int)
 	aud.Sound = aud.Init_Sub(note, refFreq, []float32{2.0}, []float32{0.150})
 	aud.Sounds = append(aud.Sounds, aud.Init_Sub(note, refFreq, []float32{1.0}, []float32{0.150}))
 }
-
 func (aud *AudioThing) AddToAudioThing(note, refFreq int) {
 	// aud.Sounds = append(aud.Sounds, aud.Init_Sub(note, refFreq, []float32{1.0}, []float32{0.0750000}))
 	aud.Sounds = append(aud.Sounds, Soundwave_CreateSound(aud.SampleRate, aud.BaseFreq, note, refFreq, []float32{1.0}, []float32{0.0750000}))
@@ -58,8 +67,8 @@ func (aud *AudioThing) PlayThing(num int) {
 	p := aud.AudContext.NewPlayerF32FromBytes(aud.Sounds[num])
 	p.SetVolume(float64(aud.Settings.UIAudioVolume) / 100)
 	p.Play()
-	fmt.Printf("PLAY THING %d --- %5.2f -----\n", len(aud.Sounds[num]), p.Volume())
-	fmt.Printf("%v %v %v %v %v %v %v \n", aud.Sounds[num][0], aud.Sounds[num][500], aud.Sounds[num][1000], aud.Sounds[num][1500], aud.Sounds[num][2000], aud.Sounds[num][2500], aud.Sounds[num][3000])
+	// fmt.Printf("PLAY THING %d --- %5.2f -----\n", len(aud.Sounds[num]), p.Volume())
+	// fmt.Printf("%v %v %v %v %v %v %v \n", aud.Sounds[num][0], aud.Sounds[num][500], aud.Sounds[num][1000], aud.Sounds[num][1500], aud.Sounds[num][2000], aud.Sounds[num][2500], aud.Sounds[num][3000])
 }
 
 func (aud *AudioThing) PlayByte(b []byte) {

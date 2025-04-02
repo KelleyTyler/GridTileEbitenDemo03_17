@@ -66,7 +66,7 @@ func (g *Game) init() error {
 	defer func() {
 		g.initCalled = true
 	}()
-	g.SoundThing.Init01(&Settings, 3200, 220, 0, 110) //4800, 220, -15, 20
+	g.SoundThing.Init01(&Settings, 3200, 220) //4800, 220, -15, 20
 	g.UIHelp.Init_Default(&g.SoundThing)
 	col0 := Settings.ScreenResX - 140
 	col1 := Settings.ScreenResX - 72
@@ -113,12 +113,6 @@ func (g *Game) init() error {
 	// g.IntGrid.Init(96, 96, 8, 8, 64, 8, 0, 0, 4, 4)
 	g.MouseDragStartingPoint = mypkgs.CoordInts{X: 0, Y: 0}
 	g.MouseIsDragging = false
-
-	g.SoundThing.AddToAudioThing(10, 110) //01
-	g.SoundThing.AddToAudioThing(15, 110) //02
-	g.SoundThing.AddToAudioThing(20, 110) //03
-	g.SoundThing.AddToAudioThing(25, 110) //04
-	g.SoundThing.AddToAudioThing(25, 110) //05
 	return nil
 }
 
