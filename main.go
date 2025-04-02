@@ -49,6 +49,8 @@ type Game struct {
 
 	SoundThing mypkgs.AudioThing
 	UIHelp     mypkgs.UI_Helper
+
+	TEW mypkgs.TextEntryWindow
 }
 
 func init() {
@@ -113,6 +115,8 @@ func (g *Game) init() error {
 	// g.IntGrid.Init(96, 96, 8, 8, 64, 8, 0, 0, 4, 4)
 	g.MouseDragStartingPoint = mypkgs.CoordInts{X: 0, Y: 0}
 	g.MouseIsDragging = false
+	//------------------------------
+	g.TEW.Init(&g.UIHelp, mypkgs.CoordInts{X: 168, Y: 528}, mypkgs.CoordInts{X: 256, Y: 48})
 	return nil
 }
 
@@ -155,6 +159,8 @@ func (g *Game) PreDrawGUI(screen *ebiten.Image) {
 	g.numPanel05.Draw(screen)
 	g.TileMargin.Draw(screen)
 	g.ScaleNumPad.Draw(screen)
+	//------------
+	g.TEW.Draw(screen)
 }
 
 func (g *Game) PreDraw(screen *ebiten.Image) {
@@ -183,27 +189,6 @@ func (g *Game) Update() error {
 		}
 		// 	//g.btn21.Update(mx, my, true)
 	} else {
-	}
-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButton2) {
-		g.MouseIsDragging = true
-		mx, my := ebiten.CursorPosition()
-		g.MouseDragStartingPoint = mypkgs.CoordInts{X: mx, Y: my}
-		//fmt.Printf("DRAGGING YOUR MOUSE\n")
-	}
-	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButton2) {
-		if g.MouseIsDragging {
-			g.MouseIsDragging = false
-			// x0, y0 := ebiten.CursorPosition()
-			// x1 := g.MouseDragStartingPoint.X
-			// y1 := g.MouseDragStartingPoint.Y
-
-			// //fmt.Printf("HEY YOU DRAGGED YOUR MOUSE:\n%8s %6.2d,%6.2d\n%8s %6.2f %6.2f\n%8s %6.2d,%6.2d\n", "RAW", x1-x0, y1-y0, "Red.(f)", float32(x1-x0)/4.00, float32(y1-y0)/4.0, "Red.(i)", (x1-x0)/4.00, (y1-y0)/4.0)
-			// x2, y2 := (x1-x0)/4.00, (y1-y0)/4.0
-			// g.IntGrid.BoardPosition.Y -= y2
-			// g.IntGrid.BoardPosition.X -= x2
-			// g.MouseDragStartingPoint = mypkgs.CoordInts{X: 0, Y: 0}
-		}
-
 	}
 
 	if g.MouseIsDragging {
@@ -420,6 +405,18 @@ func (g *Game) Update() error {
 		// g.IntGrid.Position.X += 1
 	}
 
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButton2) {
+		g.MouseIsDragging = true
+		mx, my := ebiten.CursorPosition()
+		g.MouseDragStartingPoint = mypkgs.CoordInts{X: mx, Y: my}
+		//fmt.Printf("DRAGGING YOUR MOUSE\n")
+	}
+	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButton2) {
+		if g.MouseIsDragging {
+			g.MouseIsDragging = false
+		}
+
+	}
 	go g.IntGrid.UpdateOnMouseEvent()
 	g.PreDraw(foregroundImg)
 	g.gameDebugMsg = fmt.Sprintf("FPS:%8.3f TPS:%8.3f\n", ebiten.ActualFPS(), ebiten.ActualTPS())

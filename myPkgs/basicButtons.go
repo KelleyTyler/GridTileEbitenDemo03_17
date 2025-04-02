@@ -506,3 +506,91 @@ func (btnPnl *ButtonPanel) InitBtns(cols int, helper *UI_Helper, size CoordInts)
 		}
 	}
 }
+
+type TextEntryField struct {
+	Position   CoordInts
+	Dimensions CoordInts
+	Helper     *UI_Helper
+
+	DataStrng string
+	data      []rune //raw data on the string;
+	IsActive  bool
+}
+
+func (tef *TextEntryField) Init(helper *UI_Helper, position, dimensions CoordInts) {
+	tef.Position = position
+	tef.Dimensions = dimensions
+	tef.Helper = helper
+	tef.IsActive = true
+}
+func (tef *TextEntryField) Draw(screen *ebiten.Image) {
+	vector.DrawFilledRect(screen, float32(tef.Position.X), float32(tef.Position.Y), float32(tef.Dimensions.X), float32(tef.Dimensions.Y), color.White, true)
+	vector.StrokeRect(screen, float32(tef.Position.X), float32(tef.Position.Y), float32(tef.Dimensions.X), float32(tef.Dimensions.Y), 2.0, color.Black, true)
+	scaler := 2.0
+	tops := &text.DrawOptions{}
+
+	tops.GeoM.Translate(float64(tef.Position.X+2)*scaler, float64(tef.Position.Y)*scaler)
+	tops.GeoM.Scale(1/scaler, 1/scaler)
+	tops.ColorScale.ScaleWithColor(color.Black)
+	tops.LineSpacing = float64(20)
+	text.Draw(screen, "TEXT ENTRY!\ntext entry--- \nTExT ENTRY", tef.Helper.Btn_Text_Mono, tops)
+
+}
+
+type TextEntryWindow struct {
+	Position   CoordInts
+	Dimensions CoordInts
+	Helper     *UI_Helper
+	TEF        TextEntryField
+	DataStrng  string
+	Btns       [3]Button //close, clear, submit
+	data       []rune    //raw data on the string;
+	IsVisible  bool
+	IsActive   bool
+}
+
+func (tew *TextEntryWindow) Init(helper *UI_Helper, position, dimensions CoordInts) {
+	tew.Position = position
+	tew.TEF.Init(helper, position, dimensions)
+
+	tew.TEF.Position.X += 4
+	tew.TEF.Position.Y += 24
+	// tew.Dimensions =
+	tew.Dimensions.X = dimensions.X + 6
+	tew.Dimensions.Y = tew.TEF.Dimensions.Y + 48
+	tew.Helper = helper
+	tew.Btns[0].InitButton("CloseButton", "X", helper, 0, position.X+4, position.Y+4, 16, 16, 0, 0)
+	tew.Btns[1].InitButton("ClearButton", "Clear", helper, 0, position.X+dimensions.X-128, position.Y+tew.Dimensions.Y-20, 60, 16, 0, 0)
+	tew.Btns[2].InitButton("ClearButton", "Submit", helper, 0, position.X+dimensions.X-62, position.Y+tew.Dimensions.Y-20, 60, 16, 0, 0)
+	tew.IsVisible = true
+	tew.IsActive = true
+}
+func (tew *TextEntryWindow) Draw(screen *ebiten.Image) {
+	if tew.IsVisible {
+		vector.DrawFilledRect(screen, float32(tew.Position.X), float32(tew.Position.Y), float32(tew.Dimensions.X+4), float32(tew.Dimensions.Y), color.RGBA{100, 100, 100, 255}, true)
+		vector.StrokeRect(screen, float32(tew.Position.X), float32(tew.Position.Y), float32(tew.Dimensions.X+4), float32(tew.Dimensions.Y), 2.0, color.RGBA{20, 20, 20, 255}, true)
+
+		//vector.DrawFilledRect(screen, float32(tew.Position.X), float32(tew.Position.Y), float32(tew.Dimensions.X), float32(tew.Dimensions.Y), color.White, true)
+		//vector.StrokeRect(screen, float32(tew.Position.X), float32(tew.Position.Y), float32(tew.Dimensions.X), float32(tew.Dimensions.Y), 2.0, color.Black, true)
+		tew.Btns[0].DrawButton(screen)
+		tew.TEF.Draw(screen)
+		tew.Btns[1].DrawButton(screen)
+		tew.Btns[2].DrawButton(screen)
+		// scaler := 2.0
+		// tops := &text.DrawOptions{}
+
+		// tops.GeoM.Translate(float64(tew.Position.X+4)*scaler, float64(tew.Position.Y)*scaler)
+		// tops.GeoM.Scale(1/scaler, 1/scaler)
+		// tops.ColorScale.ScaleWithColor(color.Black)
+		// tops.LineSpacing = float64(20)
+		// text.Draw(screen, "TEXT ENTRY!\ntext entry--- \nTExT ENTRY", tew.Helper.Btn_Text_Mono, tops)
+
+	}
+}
+func (tew *TextEntryWindow) Update() {
+	if tew.IsVisible {
+		tew.Btns[0].Update3()
+		tew.Btns[1].Update3()
+		tew.Btns[2].Update3()
+	}
+}
