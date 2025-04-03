@@ -8,7 +8,7 @@ import (
 )
 
 func (imat *IntMatrix) SaveIntMatrixToFile(filename string) error {
-	fmt.Printf("Saving Matrix\n")
+	//fmt.Printf("Saving Matrix\n")
 	file, err := os.Create(fmt.Sprintf("%s.gob", filename))
 	if err != nil {
 		return err
@@ -25,7 +25,7 @@ func (imat *IntMatrix) SaveIntMatrixToFile(filename string) error {
 
 func (imat *IntMatrix) LoadIntMatrixFromFile(filename string) (IntMatrix, error) {
 	temp := make(IntMatrix, 0)
-	fmt.Printf("Loading Matrix\n")
+	//fmt.Printf("Loading Matrix\n")
 	file, err := os.Open(fmt.Sprintf("%s.gob", filename))
 	if err != nil {
 		return temp, err

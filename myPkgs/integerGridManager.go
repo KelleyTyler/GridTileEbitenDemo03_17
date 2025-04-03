@@ -43,6 +43,8 @@ type IntegerGridManager struct {
 	ScreenTicker                   int
 	ScreenTicker_max               int
 	BoardBuffer, BoardOverlayLayer *ebiten.Image
+
+	defaultFileFolderPath string
 }
 
 /* Muted Colors:
@@ -97,6 +99,7 @@ func (igd *IntegerGridManager) Init(uHelp *UI_Helper, N_TilesX, N_TilesY int, TS
 	igd.ScreenTicker_max = 6
 	igd.ScreenTicker = 0
 	igd.Helper = uHelp
+	igd.defaultFileFolderPath = "IntGrids/"
 }
 
 func (igd *IntegerGridManager) Rescale(TSizeX, TSizeY, margX, margY int) {
@@ -448,23 +451,29 @@ func (igd *IntegerGridManager) ClearImat() {
 // 	}
 // }
 
-func (igd *IntegerGridManager) SaveFile() error {
-	fmt.Printf("Saving Matrix\n")
-	err := igd.Imat.SaveIntMatrixToFile("IntGrids/MatrixSave00")
-	if err != nil {
-		fmt.Printf("Saving FAILED\n")
-		return err
+func (igd *IntegerGridManager) SaveFile(filename string) error {
+
+	if filename != "" {
+		fmt.Printf("Saving Matrix %s.gob\n", filename)
+		err := igd.Imat.SaveIntMatrixToFile(igd.defaultFileFolderPath + filename)
+		if err != nil {
+			fmt.Printf("Saving FAILED\n")
+			return err
+		}
 	}
+
 	return nil
 }
 
-func (igd *IntegerGridManager) LoadFile() error {
-	fmt.Printf("Loading Matrix\n")
-	temp, err := igd.Imat.LoadIntMatrixFromFile("IntGrids/MatrixSave00")
-	if err != nil {
-		fmt.Printf("Loading FAILED\n")
-		return err
+func (igd *IntegerGridManager) LoadFile(filename string) error {
+	if filename != "" {
+		fmt.Printf("Loading Matrix %s.gob\n", filename)
+		temp, err := igd.Imat.LoadIntMatrixFromFile(igd.defaultFileFolderPath + filename)
+		if err != nil {
+			fmt.Printf("Loading FAILED\n")
+			return err
+		}
+		igd.Imat = temp
 	}
-	igd.Imat = temp
 	return nil
 }

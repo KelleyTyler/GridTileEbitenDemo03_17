@@ -50,7 +50,7 @@ type Game struct {
 	SoundThing mypkgs.AudioThing
 	UIHelp     mypkgs.UI_Helper
 
-	TEW mypkgs.TextEntryWindow
+	TE_Save_Window, TE_Load_Window mypkgs.TextEntryWindow
 }
 
 func init() {
@@ -116,7 +116,10 @@ func (g *Game) init() error {
 	g.MouseDragStartingPoint = mypkgs.CoordInts{X: 0, Y: 0}
 	g.MouseIsDragging = false
 	//------------------------------
-	g.TEW.Init(&g.UIHelp, mypkgs.CoordInts{X: 168, Y: 528}, mypkgs.CoordInts{X: 256, Y: 48})
+	g.TE_Save_Window.Init(&g.UIHelp, "SAVE", "", "", mypkgs.CoordInts{X: 168, Y: 528}, mypkgs.CoordInts{X: 256, Y: 24})
+	g.TE_Load_Window.Init(&g.UIHelp, "LOAD", "", "", mypkgs.CoordInts{X: 168, Y: 528}, mypkgs.CoordInts{X: 256, Y: 24}) //+ 256 + 16
+	g.TE_Save_Window.IsVisible = false
+	g.TE_Load_Window.IsVisible = false
 	return nil
 }
 
@@ -160,7 +163,8 @@ func (g *Game) PreDrawGUI(screen *ebiten.Image) {
 	g.TileMargin.Draw(screen)
 	g.ScaleNumPad.Draw(screen)
 	//------------
-	g.TEW.Draw(screen)
+	g.TE_Save_Window.Draw(screen)
+	g.TE_Load_Window.Draw(screen)
 }
 
 func (g *Game) PreDraw(screen *ebiten.Image) {
@@ -225,6 +229,18 @@ func (g *Game) Update() error {
 	}
 	g.numPanel05.Update()
 
+	g.TE_Save_Window.Update()
+	g.TE_Load_Window.Update()
+
+	if g.TE_Save_Window.SubmitButton.Update3() {
+		g.IntGrid.SaveFile(g.TE_Save_Window.TEF.DataStrng)
+
+		g.TE_Save_Window.IsVisible = false
+	}
+	if g.TE_Load_Window.SubmitButton.Update3() {
+		g.IntGrid.LoadFile(g.TE_Load_Window.TEF.DataStrng)
+		g.TE_Load_Window.IsVisible = false
+	}
 	if g.btn00.Update3() {
 		// g.IntGrid.DEMO_COORDS_00(4, 0, 0) //igd.Coords.PrintCordArray()
 		// if g.IntGrid.Tile_Size.X == 16 {
@@ -233,10 +249,32 @@ func (g *Game) Update() error {
 		// 	g.IntGrid.Rescale(16, 16, 2, 2)
 		// }
 		//g.IntGrid.PFinder.Cursor.ShowCircle = !g.IntGrid.PFinder.Cursor.ShowCircle
-		g.IntGrid.SaveFile()
+		// g.IntGrid.SaveFile("MatrixSave00")
+
+		if g.TE_Save_Window.IsVisible {
+			g.TE_Save_Window.IsVisible = false
+
+		} else {
+			g.TE_Save_Window.IsVisible = true
+			g.TE_Save_Window.IsActive = true
+			if g.TE_Load_Window.IsVisible {
+				g.TE_Load_Window.IsVisible = false
+			}
+		}
 	}
 	if g.btn01.Update3() {
-		g.IntGrid.LoadFile()
+		if g.TE_Load_Window.IsVisible {
+			g.TE_Load_Window.IsVisible = false
+
+		} else {
+			g.TE_Load_Window.IsVisible = true
+			g.TE_Load_Window.IsActive = true
+			if g.TE_Save_Window.IsVisible {
+				g.TE_Save_Window.IsVisible = false
+
+			}
+		}
+		// g.IntGrid.LoadFile("MatrixSave00")
 		//g.IntGrid.DEMO_COORDS_00(5, 0, 0) //igd.Coords.SortDescOnX()
 	}
 	if g.btn02.Update3() {
@@ -339,85 +377,87 @@ func (g *Game) Update() error {
 		g.IntGrid.PFinder.Cursor.ShowNeighbors = !g.IntGrid.PFinder.Cursor.ShowNeighbors
 	}
 
-	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
-		// backgroundImg.Fill(color.RGBA{150, 150, 150, 255})
-		// g.IntGrid.Img.Fill(color.RGBA{150, 150, 150, 255})
-		g.IntGrid.ResetCoordPosition()
-	}
-	if inpututil.IsKeyJustPressed(ebiten.Key8) {
-		backgroundImg.Fill(backgroundColor)
-	}
-	//inpututil.IsKeyJustPressed(ebiten.KeyW)
-	if ebiten.IsKeyPressed(ebiten.KeyS) && ebiten.IsKeyPressed(ebiten.KeyShiftLeft) { //inpututil.IsKeyJustPressed(ebiten.KeyArrowUp)
-		g.IntGrid.BoardPosition.Y += 1
-		// g.IntGrid.RedrawBoard()
-		// g.IntGrid.Img.Fill(color.RGBA{150, 150, 150, 255})
-	}
-	if ebiten.IsKeyPressed(ebiten.KeyW) && ebiten.IsKeyPressed(ebiten.KeyShiftLeft) { //inpututil.IsKeyJustPressed(ebiten.KeyArrowDown)
-		g.IntGrid.BoardPosition.Y -= 1
-		// g.IntGrid.RedrawBoard()
-
-		//g.IntGrid.Img.Fill(color.RGBA{150, 150, 150, 255})
-	}
-	if ebiten.IsKeyPressed(ebiten.KeyA) && ebiten.IsKeyPressed(ebiten.KeyShiftLeft) { //inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft)
-		g.IntGrid.BoardPosition.X += 1
-		// g.IntGrid.RedrawBoard()
-
-		//g.IntGrid.Img.Fill(color.RGBA{150, 150, 150, 255})
-	}
-	if ebiten.IsKeyPressed(ebiten.KeyD) && ebiten.IsKeyPressed(ebiten.KeyShiftLeft) { //inpututil.IsKeyJustPressed(ebiten.KeyArrowRight)
-		g.IntGrid.BoardPosition.X -= 1
-		// g.IntGrid.RedrawBoard()
-
-		//g.IntGrid.Img.Fill(color.RGBA{150, 150, 150, 255})
-	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyW) {
-
-		//g.numPanel00.CurValue
-		if g.IntGrid.MoveCursorFreely(0, 1, []int{0, 2, 3, 4}) {
-			g.IntGrid.BoardPosition.Y += (g.IntGrid.Tile_Size.Y + g.IntGrid.Margin.Y)
+	if !g.TE_Load_Window.IsVisible && !g.TE_Save_Window.IsVisible {
+		if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
+			// backgroundImg.Fill(color.RGBA{150, 150, 150, 255})
+			// g.IntGrid.Img.Fill(color.RGBA{150, 150, 150, 255})
+			g.IntGrid.ResetCoordPosition()
 		}
-
-	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyA) {
-		// g.IntGrid.Position.X -= 1
-
-		if g.IntGrid.MoveCursorFreely(3, 1, []int{0, 2, 3, 4}) {
-			//g.IntGrid.Position.X += 18
-			g.IntGrid.BoardPosition.X += (g.IntGrid.Tile_Size.X + g.IntGrid.Margin.X)
+		if inpututil.IsKeyJustPressed(ebiten.Key8) {
+			backgroundImg.Fill(backgroundColor)
 		}
+		//inpututil.IsKeyJustPressed(ebiten.KeyW)
+		if ebiten.IsKeyPressed(ebiten.KeyS) && ebiten.IsKeyPressed(ebiten.KeyShiftLeft) { //inpututil.IsKeyJustPressed(ebiten.KeyArrowUp)
+			g.IntGrid.BoardPosition.Y += 1
+			// g.IntGrid.RedrawBoard()
+			// g.IntGrid.Img.Fill(color.RGBA{150, 150, 150, 255})
+		}
+		if ebiten.IsKeyPressed(ebiten.KeyW) && ebiten.IsKeyPressed(ebiten.KeyShiftLeft) { //inpututil.IsKeyJustPressed(ebiten.KeyArrowDown)
+			g.IntGrid.BoardPosition.Y -= 1
+			// g.IntGrid.RedrawBoard()
 
-	}
+			//g.IntGrid.Img.Fill(color.RGBA{150, 150, 150, 255})
+		}
+		if ebiten.IsKeyPressed(ebiten.KeyA) && ebiten.IsKeyPressed(ebiten.KeyShiftLeft) { //inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft)
+			g.IntGrid.BoardPosition.X += 1
+			// g.IntGrid.RedrawBoard()
 
-	if inpututil.IsKeyJustPressed(ebiten.KeyS) {
-		// g.IntGrid.Position.Y += 1
-		if g.IntGrid.MoveCursorFreely(2, 1, []int{0, 2, 3, 4}) {
-			g.IntGrid.BoardPosition.Y -= (g.IntGrid.Tile_Size.Y + g.IntGrid.Margin.Y)
+			//g.IntGrid.Img.Fill(color.RGBA{150, 150, 150, 255})
+		}
+		if ebiten.IsKeyPressed(ebiten.KeyD) && ebiten.IsKeyPressed(ebiten.KeyShiftLeft) { //inpututil.IsKeyJustPressed(ebiten.KeyArrowRight)
+			g.IntGrid.BoardPosition.X -= 1
+			// g.IntGrid.RedrawBoard()
+
+			//g.IntGrid.Img.Fill(color.RGBA{150, 150, 150, 255})
+		}
+		if inpututil.IsKeyJustPressed(ebiten.KeyW) {
+
+			//g.numPanel00.CurValue
+			if g.IntGrid.MoveCursorFreely(0, 1, []int{0, 2, 3, 4}) {
+				g.IntGrid.BoardPosition.Y += (g.IntGrid.Tile_Size.Y + g.IntGrid.Margin.Y)
+			}
+
+		}
+		if inpututil.IsKeyJustPressed(ebiten.KeyA) {
+			// g.IntGrid.Position.X -= 1
+
+			if g.IntGrid.MoveCursorFreely(3, 1, []int{0, 2, 3, 4}) {
+				//g.IntGrid.Position.X += 18
+				g.IntGrid.BoardPosition.X += (g.IntGrid.Tile_Size.X + g.IntGrid.Margin.X)
+			}
 
 		}
 
-	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyD) {
-		if g.IntGrid.MoveCursorFreely(1, 1, []int{0, 2, 3, 4}) {
-			g.IntGrid.BoardPosition.X -= (g.IntGrid.Tile_Size.X + g.IntGrid.Margin.X)
+		if inpututil.IsKeyJustPressed(ebiten.KeyS) {
+			// g.IntGrid.Position.Y += 1
+			if g.IntGrid.MoveCursorFreely(2, 1, []int{0, 2, 3, 4}) {
+				g.IntGrid.BoardPosition.Y -= (g.IntGrid.Tile_Size.Y + g.IntGrid.Margin.Y)
+
+			}
+
+		}
+		if inpututil.IsKeyJustPressed(ebiten.KeyD) {
+			if g.IntGrid.MoveCursorFreely(1, 1, []int{0, 2, 3, 4}) {
+				g.IntGrid.BoardPosition.X -= (g.IntGrid.Tile_Size.X + g.IntGrid.Margin.X)
+			}
+
+			// g.IntGrid.Position.X += 1
 		}
 
-		// g.IntGrid.Position.X += 1
-	}
-
-	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButton2) {
-		g.MouseIsDragging = true
-		mx, my := ebiten.CursorPosition()
-		g.MouseDragStartingPoint = mypkgs.CoordInts{X: mx, Y: my}
-		//fmt.Printf("DRAGGING YOUR MOUSE\n")
-	}
-	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButton2) {
-		if g.MouseIsDragging {
-			g.MouseIsDragging = false
+		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButton2) {
+			g.MouseIsDragging = true
+			mx, my := ebiten.CursorPosition()
+			g.MouseDragStartingPoint = mypkgs.CoordInts{X: mx, Y: my}
+			//fmt.Printf("DRAGGING YOUR MOUSE\n")
 		}
+		if inpututil.IsMouseButtonJustReleased(ebiten.MouseButton2) {
+			if g.MouseIsDragging {
+				g.MouseIsDragging = false
+			}
 
+		}
+		go g.IntGrid.UpdateOnMouseEvent()
 	}
-	go g.IntGrid.UpdateOnMouseEvent()
 	g.PreDraw(foregroundImg)
 	g.gameDebugMsg = fmt.Sprintf("FPS:%8.3f TPS:%8.3f\n", ebiten.ActualFPS(), ebiten.ActualTPS())
 	g.gameDebugMsg += fmt.Sprintf("%s\n", Settings.ToString())

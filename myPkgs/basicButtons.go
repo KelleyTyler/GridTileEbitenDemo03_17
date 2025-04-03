@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"image/color"
 	"log"
+	"strings"
 
 	//"math"
 
@@ -508,89 +509,255 @@ func (btnPnl *ButtonPanel) InitBtns(cols int, helper *UI_Helper, size CoordInts)
 }
 
 type TextEntryField struct {
-	Position   CoordInts
-	Dimensions CoordInts
-	Helper     *UI_Helper
-
-	DataStrng string
-	data      []rune //raw data on the string;
-	IsActive  bool
+	Position        CoordInts
+	Dimensions      CoordInts
+	Helper          *UI_Helper
+	Img             *ebiten.Image
+	DataStrng       string
+	data            []rune //raw data on the string;
+	IsActive        bool
+	maxRunesPerLine int
+	maxLines        int
+	counter         int
+	counterMax      int
 }
 
 func (tef *TextEntryField) Init(helper *UI_Helper, position, dimensions CoordInts) {
 	tef.Position = position
 	tef.Dimensions = dimensions
+	tef.Img = ebiten.NewImage(dimensions.X, dimensions.Y)
+	fmt.Printf("IMAGE CREATED!\n")
+	tef.Img.Fill(color.White)
 	tef.Helper = helper
-	tef.IsActive = true
+	tef.IsActive = false
+	tef.DataStrng = ""
+	tef.maxRunesPerLine = 10
+	tef.maxLines = 1
+	tef.counter = 0
+	tef.counterMax = 30
 }
-func (tef *TextEntryField) Draw(screen *ebiten.Image) {
-	vector.DrawFilledRect(screen, float32(tef.Position.X), float32(tef.Position.Y), float32(tef.Dimensions.X), float32(tef.Dimensions.Y), color.White, true)
-	vector.StrokeRect(screen, float32(tef.Position.X), float32(tef.Position.Y), float32(tef.Dimensions.X), float32(tef.Dimensions.Y), 2.0, color.Black, true)
-	scaler := 2.0
+func (tef *TextEntryField) PreDraw() {
+	//fmt.Printf("PREDRAW")
+	tef.Img.Fill(color.RGBA{255, 255, 255, 255})
+	scaler := 1.5 //1.75
 	tops := &text.DrawOptions{}
+	tops.GeoM.Reset()
+	// tops.GeoM.Translate(float64(tef.Position.X+2)*scaler, float64(tef.Position.Y)*scaler)
+	tops.GeoM.Translate(float64(2)*scaler, float64(2)*scaler)
 
-	tops.GeoM.Translate(float64(tef.Position.X+2)*scaler, float64(tef.Position.Y)*scaler)
 	tops.GeoM.Scale(1/scaler, 1/scaler)
 	tops.ColorScale.ScaleWithColor(color.Black)
 	tops.LineSpacing = float64(20)
-	text.Draw(screen, "TEXT ENTRY!\ntext entry--- \nTExT ENTRY", tef.Helper.Btn_Text_Mono, tops)
+	t := tef.DataStrng
+	if tef.counter%60 < tef.counterMax {
+		t += "_"
+		tef.counter = 0
+	}
+	text.Draw(tef.Img, t, tef.Helper.Btn_Text_Reg, tops)
+
+}
+
+func (tef *TextEntryField) Draw(screen *ebiten.Image) {
+	tef.PreDraw()
+	//vector.DrawFilledRect(screen, float32(tef.Position.X), float32(tef.Position.Y), float32(tef.Dimensions.X), float32(tef.Dimensions.Y), color.White, true)
+	ops := ebiten.DrawImageOptions{}
+	ops.GeoM.Reset()
+	ops.GeoM.Translate(float64(tef.Position.X), float64(tef.Position.Y))
+	screen.DrawImage(tef.Img, &ops)
+	vector.StrokeRect(screen, float32(tef.Position.X), float32(tef.Position.Y), float32(tef.Dimensions.X), float32(tef.Dimensions.Y), 2.0, color.Black, true)
+}
+
+func (tef *TextEntryField) IsMouseOverPos(adj_X, adj_Y int) bool {
+	x, y := ebiten.CursorPosition()
+	if (x > tef.Position.X+adj_X && x < tef.Position.X+adj_X+tef.Dimensions.X) && (y > tef.Position.Y+adj_Y && y < tef.Position.Y+adj_Y+tef.Dimensions.Y) {
+		return true
+	}
+	return false
+}
+
+func (tef *TextEntryField) Update() {
+
+	if tef.IsMouseOverPos(0, 0) {
+		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButton0) {
+			tef.IsActive = true
+		}
+
+	} else {
+		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButton0) {
+			tef.IsActive = false
+		}
+
+	}
+	if tef.IsActive {
+		tef.data = ebiten.AppendInputChars(tef.data[:0])
+		tef.DataStrng += string(tef.data)
+
+		ss := strings.Split(tef.DataStrng, "\n")
+		// if len(ss) > tef.maxLines {
+		// 	tef.DataStrng = strings.Join(ss[len(ss)-tef.maxLines:], "\n")
+		// } else if len(tef.DataStrng) > 10 {
+		// 	fmt.Printf("%d \n", len(ss))
+		// }
+		if len(ss) > tef.maxLines {
+			tef.DataStrng = strings.Join(ss[len(ss)-tef.maxLines:], "\n")
+		}
+
+		if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+			tef.DataStrng += "\n"
+		}
+		if inpututil.IsKeyJustPressed(ebiten.KeyBackspace) {
+			if len(tef.DataStrng) >= 1 {
+				tef.DataStrng = tef.DataStrng[:len(tef.DataStrng)-1]
+			}
+		}
+		tef.counter++
+	}
 
 }
 
 type TextEntryWindow struct {
+	WindowName string
 	Position   CoordInts
 	Dimensions CoordInts
 	Helper     *UI_Helper
 	TEF        TextEntryField
-	DataStrng  string
-	Btns       [3]Button //close, clear, submit
-	data       []rune    //raw data on the string;
-	IsVisible  bool
-	IsActive   bool
+
+	Btns         [3]Button //close, clear, submit
+	CloseButton  Button
+	SubmitButton Button
+	ClearButton  Button
+	// CancelButton Button
+	IsVisible bool
+	IsActive  bool
+	ticker    int
+	tickerLim int
+
+	//--------
+	Prompt           string
+	promptPosition   CoordInts
+	promptDimensions CoordInts
+
+	ShowPrompt          bool
+	PostField           string
+	postFieldPosition   CoordInts
+	postFieldDimensions CoordInts
+	ShowPostField       bool
 }
 
-func (tew *TextEntryWindow) Init(helper *UI_Helper, position, dimensions CoordInts) {
+func (tew *TextEntryWindow) Init(helper *UI_Helper, windowLbl string, prompt, post string, position, dimensions CoordInts) {
 	tew.Position = position
 	tew.TEF.Init(helper, position, dimensions)
 
+	tew.WindowName = windowLbl
+	if len(prompt) > 0 {
+		tew.Prompt = prompt
+		tew.ShowPrompt = true
+		// textHeight := 20
+		tew.promptPosition = CoordInts{X: 8, Y: 24}
+		tew.promptDimensions = CoordInts{X: 0, Y: 20}
+	} else {
+		tew.promptPosition = CoordInts{X: 4, Y: 24}
+		tew.promptDimensions = CoordInts{X: 0, Y: 0}
+		tew.ShowPrompt = false
+	}
 	tew.TEF.Position.X += 4
-	tew.TEF.Position.Y += 24
+	tew.TEF.Position.Y += tew.promptPosition.Y + tew.promptDimensions.Y + 4
 	// tew.Dimensions =
+
+	if len(post) > 0 {
+		tew.PostField = post
+		tew.postFieldPosition = CoordInts{X: 4, Y: tew.TEF.Position.Y + tew.TEF.Dimensions.Y}
+		tew.postFieldDimensions = CoordInts{X: 0, Y: 20}
+	} else {
+		tew.postFieldPosition = CoordInts{X: 4, Y: tew.TEF.Position.Y + tew.TEF.Dimensions.Y}
+		tew.postFieldDimensions = CoordInts{X: 0, Y: 0}
+		tew.ShowPostField = false
+	}
 	tew.Dimensions.X = dimensions.X + 6
-	tew.Dimensions.Y = tew.TEF.Dimensions.Y + 48
+	tew.Dimensions.Y = tew.TEF.Dimensions.Y + tew.postFieldDimensions.Y + tew.promptDimensions.Y + 56
 	tew.Helper = helper
-	tew.Btns[0].InitButton("CloseButton", "X", helper, 0, position.X+4, position.Y+4, 16, 16, 0, 0)
-	tew.Btns[1].InitButton("ClearButton", "Clear", helper, 0, position.X+dimensions.X-128, position.Y+tew.Dimensions.Y-20, 60, 16, 0, 0)
-	tew.Btns[2].InitButton("ClearButton", "Submit", helper, 0, position.X+dimensions.X-62, position.Y+tew.Dimensions.Y-20, 60, 16, 0, 0)
+	tew.CloseButton.InitButton("CloseButton", "X", helper, 0, position.X+dimensions.X-10, position.Y+4, 16, 16, 0, 0)
+	tew.ClearButton.InitButton("ClearButton", "Clear", helper, 0, position.X+dimensions.X-128, position.Y+tew.Dimensions.Y-20, 60, 16, 0, 0)
+	tew.SubmitButton.InitButton("ClearButton", "Submit", helper, 0, position.X+dimensions.X-62, position.Y+tew.Dimensions.Y-20, 60, 16, 0, 0)
 	tew.IsVisible = true
 	tew.IsActive = true
+	tew.ticker = 0
+	tew.tickerLim = 10
 }
 func (tew *TextEntryWindow) Draw(screen *ebiten.Image) {
 	if tew.IsVisible {
-		vector.DrawFilledRect(screen, float32(tew.Position.X), float32(tew.Position.Y), float32(tew.Dimensions.X+4), float32(tew.Dimensions.Y), color.RGBA{100, 100, 100, 255}, true)
+		vector.DrawFilledRect(screen, float32(tew.Position.X), float32(tew.Position.Y), float32(tew.Dimensions.X+4), float32(tew.Dimensions.Y), color.RGBA{175, 175, 175, 255}, true)
+		vector.DrawFilledRect(screen, float32(tew.Position.X), float32(tew.Position.Y), float32(tew.Dimensions.X+4), float32(24), color.RGBA{100, 100, 100, 255}, true)
+		vector.StrokeLine(screen, float32(tew.Position.X), float32(tew.Position.Y+22), float32(tew.Position.X+tew.Dimensions.X+4), float32(tew.Position.Y+24), 2.0, color.RGBA{20, 20, 20, 255}, true)
 		vector.StrokeRect(screen, float32(tew.Position.X), float32(tew.Position.Y), float32(tew.Dimensions.X+4), float32(tew.Dimensions.Y), 2.0, color.RGBA{20, 20, 20, 255}, true)
-
+		// tew.TEF.Draw(screen)
 		//vector.DrawFilledRect(screen, float32(tew.Position.X), float32(tew.Position.Y), float32(tew.Dimensions.X), float32(tew.Dimensions.Y), color.White, true)
 		//vector.StrokeRect(screen, float32(tew.Position.X), float32(tew.Position.Y), float32(tew.Dimensions.X), float32(tew.Dimensions.Y), 2.0, color.Black, true)
-		tew.Btns[0].DrawButton(screen)
-		tew.TEF.Draw(screen)
-		tew.Btns[1].DrawButton(screen)
-		tew.Btns[2].DrawButton(screen)
-		// scaler := 2.0
-		// tops := &text.DrawOptions{}
+		tew.CloseButton.DrawButton(screen)
+		tew.ClearButton.DrawButton(screen)
+		tew.SubmitButton.DrawButton(screen)
 
-		// tops.GeoM.Translate(float64(tew.Position.X+4)*scaler, float64(tew.Position.Y)*scaler)
-		// tops.GeoM.Scale(1/scaler, 1/scaler)
-		// tops.ColorScale.ScaleWithColor(color.Black)
-		// tops.LineSpacing = float64(20)
-		// text.Draw(screen, "TEXT ENTRY!\ntext entry--- \nTExT ENTRY", tew.Helper.Btn_Text_Mono, tops)
+		tew.TEF.Draw(screen)
+
+		scaler := 1.5
+		tops := &text.DrawOptions{}
+
+		tops.GeoM.Translate(float64(tew.Position.X+8)*scaler, float64(tew.Position.Y+4)*scaler)
+		tops.GeoM.Scale(1/scaler, 1/scaler)
+		tops.ColorScale.ScaleWithColor(color.White)
+		tops.LineSpacing = float64(20) * scaler
+		text.Draw(screen, tew.WindowName, tew.Helper.Btn_Text_Reg, tops)
+		if tew.ShowPrompt {
+			scaler = 1.75
+			tops.GeoM.Reset()
+			tops.GeoM.Translate(float64(tew.Position.X+tew.promptPosition.X)*scaler, float64(tew.Position.Y+tew.promptPosition.Y+4)*scaler)
+			tops.GeoM.Scale(1/scaler, 1/scaler)
+			tops.ColorScale.ScaleWithColor(color.Black)
+			tops.LineSpacing = float64(20) * scaler
+			text.Draw(screen, tew.Prompt, tew.Helper.Btn_Text_Reg, tops)
+		}
 
 	}
 }
 func (tew *TextEntryWindow) Update() {
 	if tew.IsVisible {
-		tew.Btns[0].Update3()
-		tew.Btns[1].Update3()
-		tew.Btns[2].Update3()
+		if tew.IsActive {
+			// if !tew.TEF.IsActive {
+			// 	tew.TEF.IsActive = true
+			// }
+			if tew.CloseButton.Update3() {
+				tew.IsVisible = false
+				tew.TEF.DataStrng = ""
+				tew.CloseButton.State = 0
+			}
+			if tew.SubmitButton.Update3() {
+				// tew.IsActive = false
+				tew.CloseButton.State = 0
+			}
+			if tew.ClearButton.Update3() {
+				tew.TEF.DataStrng = ""
+
+			}
+			tew.TEF.Update()
+			if tew.ticker < tew.tickerLim {
+				tew.ticker++
+			} else {
+				tew.ticker = 0
+				//fmt.Printf("TICK!\n")
+
+			}
+		}
+	} else {
+		if tew.IsActive {
+			tew.IsActive = false
+			tew.CloseButton.State = 0
+			tew.ClearButton.State = 0
+			//tew.SubmitButton.State = 0
+		}
+		if tew.TEF.IsActive {
+			tew.TEF.IsActive = false
+		}
+		tew.TEF.DataStrng = ""
+
 	}
 }
