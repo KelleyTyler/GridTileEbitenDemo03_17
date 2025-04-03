@@ -111,13 +111,13 @@ func (g *Game) init() error {
 	g.ScaleNumPad.Init("Scale_Selector", "SCALE", &g.UIHelp, true, col1, block4+36+36+36, 32, 16, 1, 4, 32, 1)
 	g.coorAr = append(g.coorAr, mypkgs.CoordInts{X: 2, Y: 2})
 	// g.IntGrid.Init(32, 32, 16, 16, 64, 8, 2, 2)
-	g.IntGrid.Init(&g.UIHelp, 64, 64, 8, 8, 168, 8, 0, 0, 4, 4)
+	g.IntGrid.Init(&g.UIHelp, 32, 32, 8, 8, 168, 8, 0, 0, 4, 4)
 	// g.IntGrid.Init(96, 96, 8, 8, 64, 8, 0, 0, 4, 4)
 	g.MouseDragStartingPoint = mypkgs.CoordInts{X: 0, Y: 0}
 	g.MouseIsDragging = false
 	//------------------------------
-	g.TE_Save_Window.Init(&g.UIHelp, "SAVE", "", "", mypkgs.CoordInts{X: 168, Y: 528}, mypkgs.CoordInts{X: 256, Y: 24})
-	g.TE_Load_Window.Init(&g.UIHelp, "LOAD", "", "", mypkgs.CoordInts{X: 168, Y: 528}, mypkgs.CoordInts{X: 256, Y: 24}) //+ 256 + 16
+	g.TE_Save_Window.Init(&g.UIHelp, "SAVE", "", "", mypkgs.CoordInts{X: 228, Y: 228}, mypkgs.CoordInts{X: 256, Y: 24}) //X: 168, Y: 528}
+	g.TE_Load_Window.Init(&g.UIHelp, "LOAD", "", "", mypkgs.CoordInts{X: 228, Y: 228}, mypkgs.CoordInts{X: 256, Y: 24}) //+ 256 + 16
 	g.TE_Save_Window.IsVisible = false
 	g.TE_Load_Window.IsVisible = false
 	return nil
@@ -229,28 +229,7 @@ func (g *Game) Update() error {
 	}
 	g.numPanel05.Update()
 
-	g.TE_Save_Window.Update()
-	g.TE_Load_Window.Update()
-
-	if g.TE_Save_Window.SubmitButton.Update3() {
-		g.IntGrid.SaveFile(g.TE_Save_Window.TEF.DataStrng)
-
-		g.TE_Save_Window.IsVisible = false
-	}
-	if g.TE_Load_Window.SubmitButton.Update3() {
-		g.IntGrid.LoadFile(g.TE_Load_Window.TEF.DataStrng)
-		g.TE_Load_Window.IsVisible = false
-	}
 	if g.btn00.Update3() {
-		// g.IntGrid.DEMO_COORDS_00(4, 0, 0) //igd.Coords.PrintCordArray()
-		// if g.IntGrid.Tile_Size.X == 16 {
-		// 	g.IntGrid.Rescale(32, 32, 4, 4)
-		// } else {
-		// 	g.IntGrid.Rescale(16, 16, 2, 2)
-		// }
-		//g.IntGrid.PFinder.Cursor.ShowCircle = !g.IntGrid.PFinder.Cursor.ShowCircle
-		// g.IntGrid.SaveFile("MatrixSave00")
-
 		if g.TE_Save_Window.IsVisible {
 			g.TE_Save_Window.IsVisible = false
 
@@ -261,6 +240,7 @@ func (g *Game) Update() error {
 				g.TE_Load_Window.IsVisible = false
 			}
 		}
+		g.btn00.State = 0
 	}
 	if g.btn01.Update3() {
 		if g.TE_Load_Window.IsVisible {
@@ -459,6 +439,19 @@ func (g *Game) Update() error {
 		go g.IntGrid.UpdateOnMouseEvent()
 	}
 	g.PreDraw(foregroundImg)
+
+	g.TE_Save_Window.Update()
+	g.TE_Load_Window.Update()
+
+	if g.TE_Save_Window.SubmitButton.Update3() {
+		g.IntGrid.SaveFile(g.TE_Save_Window.TEF.DataStrng)
+
+		g.TE_Save_Window.IsVisible = false
+	}
+	if g.TE_Load_Window.SubmitButton.Update3() {
+		g.IntGrid.LoadFile(g.TE_Load_Window.TEF.DataStrng)
+		g.TE_Load_Window.IsVisible = false
+	}
 	g.gameDebugMsg = fmt.Sprintf("FPS:%8.3f TPS:%8.3f\n", ebiten.ActualFPS(), ebiten.ActualTPS())
 	g.gameDebugMsg += fmt.Sprintf("%s\n", Settings.ToString())
 	//g.gameDebugMsg += fmt.Sprintf("BTN0: %2d btn01:%2d btn02:%2d\n", g.btn00.State, g.btn01.State, g.btn02.State)

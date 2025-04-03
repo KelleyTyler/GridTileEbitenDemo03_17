@@ -173,7 +173,7 @@ func (btn *Button) Update3() bool { //no clue if this works;
 			return btn.IsToggled
 		} else {
 			btn.Helper.PlaySound(2)
-			btn.State = 2
+			btn.State = 0
 			return true
 		}
 	} else if !inpututil.IsMouseButtonJustReleased(ebiten.MouseButton(0)) && btn.isMouseOverPos(0, 0) {
