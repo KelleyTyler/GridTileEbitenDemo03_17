@@ -51,7 +51,7 @@ type UI_Helper struct {
 	Btn_Sounds                  [][]byte
 	Btn_TextSrc                 *text.GoTextFaceSource
 	Btn_Text_Mono, Btn_Text_Reg text.Face
-
+	// BtnImgs                     []ebiten.Image
 	SoundSys *AudioThing
 }
 
@@ -114,18 +114,14 @@ func IsMouseOverPos(adj_x, adj_y int, position, size CoordInts) bool {
 		return false
 	}
 }
-func (btn *Button) InitButton(name, label string, uiHelpr *UI_Helper, bType int, Pos_X, Pos_Y, BtnWidth, BtnHeight, OffsetX, OffsetY int) {
-	btn.Name, btn.Label = name, label
-	btn.Offset.X, btn.Offset.Y, btn.Size.X, btn.Size.Y = OffsetX, OffsetY, BtnWidth, BtnHeight
-	btn.Coords.X, btn.Coords.Y = Pos_X, Pos_Y
-	btn.IsEnabled = true
-	btn.IsToggled = false
-	btn.isHovered = false
-	btn.Helper = uiHelpr
-	btn.BType = bType
-	// btn.Color = []color.Color{color.RGBA{75, 150, 75, 255}, color.RGBA{120, 220, 75, 255}, color.RGBA{140, 240, 100, 255},
-	// color.RGBA{150, 75, 75, 255}, color.RGBA{220, 120, 75, 255}, color.RGBA{240, 140, 90, 255}}
-	btn.Color = btn.Helper.Button_Colors
+
+type General_UI_Interface interface {
+	Init(helper *UI_Helper, position, dimensions CoordInts)
+	Update()
+	UpdateAdj(parentPos CoordInts)
+	Draw(screen *ebiten.Image)
+	ToString() string
+	GetType() string
 }
 
 type Button struct {
@@ -147,8 +143,23 @@ type Button struct {
 	Helper *UI_Helper
 }
 
+func (btn *Button) InitButton(name, label string, uiHelpr *UI_Helper, bType int, Pos_X, Pos_Y, BtnWidth, BtnHeight, OffsetX, OffsetY int) {
+	btn.Name, btn.Label = name, label
+	btn.Offset.X, btn.Offset.Y, btn.Size.X, btn.Size.Y = OffsetX, OffsetY, BtnWidth, BtnHeight
+	btn.Coords.X, btn.Coords.Y = Pos_X, Pos_Y
+	btn.IsEnabled = true
+	btn.IsToggled = false
+	btn.isHovered = false
+	btn.Helper = uiHelpr
+	btn.BType = bType
+	// btn.Color = []color.Color{color.RGBA{75, 150, 75, 255}, color.RGBA{120, 220, 75, 255}, color.RGBA{140, 240, 100, 255},
+	// color.RGBA{150, 75, 75, 255}, color.RGBA{220, 120, 75, 255}, color.RGBA{240, 140, 90, 255}}
+	btn.Color = btn.Helper.Button_Colors
+}
 func (btn *Button) ToString() string {
-	return ""
+	// return "Button"
+	strng := fmt.Sprintf("Btn: %s : %s\n Type: %d\nState:%d\n", btn.Name, btn.Label, btn.BType, btn.State)
+	return strng
 }
 
 func (btn *Button) PrintString() {
@@ -366,7 +377,7 @@ func (txtPnl *TextPanel) Draw(screen *ebiten.Image) {
 	scaler := 2.0
 	tops := &text.DrawOptions{}
 
-	tops.GeoM.Translate(float64(txtPnl.Position.X+4)*scaler, float64(txtPnl.Position.Y)*scaler)
+	tops.GeoM.Translate(float64(txtPnl.Position.X+4)*scaler, float64(txtPnl.Position.Y+2)*scaler)
 	tops.GeoM.Scale(1/scaler, 1/scaler)
 	tops.ColorScale.ScaleWithColor(color.White)
 	tops.LineSpacing = float64(20)

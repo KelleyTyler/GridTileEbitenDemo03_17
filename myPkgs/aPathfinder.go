@@ -287,7 +287,9 @@ func (igd *IntegerGridManager) MoveCursorFreely(dir int, speed int, walls []int)
 			if !IntArrayContains(walls, igd.Imat.GetCoordVal(tempPos)) {
 				igd.PFinder.Cursor.Position = tempPos
 				igd.UpdateCursor()
+
 				return true
+
 			} else {
 				return false
 			}
@@ -316,7 +318,10 @@ func (igd *IntegerGridManager) UpdateCursor() {
 	temp3, temp4 := igd.PFinder.Cursor.GetCircle(igd.PFinder.Cursor.circRad, igd.Imat)
 	igd.PFinder.Cursor.CirclePoints = temp3
 	igd.PFinder.Cursor.CircleValues = temp4
+
 	igd.FindPath(0)
+	// igd.BoardChange = true
+	igd.BoardOverlayChange = true
 }
 func (igd *IntegerGridManager) UpdateCursor2() {
 	temp, temp2, _ := igd.Imat.GetNeighbors8(igd.PFinder.Cursor.Position, [4]int{1, 2, 1, 2})
@@ -325,25 +330,29 @@ func (igd *IntegerGridManager) UpdateCursor2() {
 	igd.FindPath(0)
 }
 func (igd *IntegerGridManager) DrawCursor_00(screen *ebiten.Image) {
-	igd.Imat.DrawAGridTile_With_Line(screen, igd.PFinder.Cursor.Position, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{200, 150, 0, 255}, color.Black, color.Black, 2.0, false)
+	igd.Imat.DrawAGridTile_With_Line(screen, igd.PFinder.Cursor.Position, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{200, 150, 0, 255}, color.Black, color.Black, color.Black, 2.0, 2.0, 2.0, true, true, true, false)
 	if igd.PFinder.Cursor.ShowNeighbors {
 		for i, a := range igd.PFinder.Cursor.Neighbors {
 			if igd.PFinder.Cursor.Neighbor_Values[i] == 1 {
-				igd.Imat.DrawAGridTile_With_Line(screen, a, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{200, 0, 150, 255}, color.Black, color.Black, 2.0, false)
+				igd.Imat.DrawAGridTile_With_Line(screen, a, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{200, 0, 150, 255}, color.Black, color.Black, color.Black, 2.0, 2.0, 2.0, true, true, true, false)
 			} else {
-				igd.Imat.DrawAGridTile_With_Line(screen, a, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{0, 150, 200, 255}, color.Black, color.Black, 2.0, false)
+				igd.Imat.DrawAGridTile_With_Line(screen, a, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{0, 150, 200, 255}, color.Black, color.Black, color.Black, 2.0, 2.0, 2.0, true, true, true, false)
 			}
 		}
 	}
 }
 func (igd *IntegerGridManager) DrawCursor(screen *ebiten.Image) {
-	igd.Imat.DrawAGridTile_With_Line(screen, igd.PFinder.Cursor.Position, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{200, 150, 0, 255}, color.Black, color.Black, 2.0, false)
+	igd.Imat.DrawAGridTile_With_Line(screen, igd.PFinder.Cursor.Position, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{200, 150, 0, 255}, color.Black, color.Black, color.Black, 2.0, 2.0, 2.0, true, true, true, false)
 	if igd.PFinder.Cursor.ShowNeighbors {
 		for i, a := range igd.PFinder.Cursor.Neighbors {
 			if igd.PFinder.Cursor.Neighbor_Values[i] == 1 {
-				igd.Imat.DrawAGridTile_With_Line(screen, a, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{200, 0, 150, 255}, color.Black, color.Black, 2.0, false)
+				// igd.Imat.DrawAGridTile_With_Line(screen, a, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{200, 0, 150, 255}, color.Black, color.Black, color.Black, 2.0, 2.0, 2.0, true, true, true, false)
+				igd.Imat.DrawAGridTile_With_Line(screen, a, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{200, 0, 150, 255}, color.Black, color.Black, color.Black, 2.0, 2.0, 2.0, true, true, true, false)
+
 			} else {
-				igd.Imat.DrawAGridTile_With_Line(screen, a, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{0, 150, 200, 255}, color.Black, color.Black, 2.0, false)
+				// igd.Imat.DrawAGridTile_With_Line(screen, a, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{0, 150, 200, 255}, color.Black, color.Black, color.Black, 2.0, 2.0, 2.0, true, true, true, false)
+				igd.Imat.DrawAGridTile_With_Line(screen, a, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{0, 150, 200, 255}, color.Black, color.Black, color.Black, 2.0, 2.0, 2.0, true, true, true, false)
+
 			}
 		}
 	}
@@ -352,9 +361,13 @@ func (igd *IntegerGridManager) DrawCursor(screen *ebiten.Image) {
 		for i, a := range igd.PFinder.Cursor.CirclePoints {
 			if igd.PFinder.Cursor.CircleValues[i] == 1 {
 				//fmt.Printf("CURSOR %3d/%3d\n", i, len(igd.PFinder.Cursor.CircleValues))
-				igd.Imat.DrawAGridTile_With_Line(screen, a, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{0, 200, 150, 255}, color.Black, color.Black, 2.0, false)
+				// igd.Imat.DrawAGridTile_With_Line(screen, a, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{0, 200, 150, 255}, color.Black, color.Black, color.Black, 2.0, 2.0, 2.0, true, true, true, false)
+				igd.Imat.DrawAGridTile_With_Line(screen, a, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{0, 200, 150, 255}, color.Black, color.Black, color.Black, 2.0, 2.0, 2.0, true, true, true, false)
+
 			} else {
-				igd.Imat.DrawAGridTile_With_Line(screen, a, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{0, 150, 200, 255}, color.Black, color.Black, 2.0, false)
+				// igd.Imat.DrawAGridTile_With_Line(screen, a, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{0, 150, 200, 255}, color.Black, color.Black, color.Black, 2.0, 2.0, 2.0, true, true, true, false)
+				igd.Imat.DrawAGridTile_With_Line(screen, a, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{0, 200, 150, 255}, color.Black, color.Black, color.Black, 2.0, 2.0, 2.0, true, true, true, false)
+
 			}
 		}
 	}

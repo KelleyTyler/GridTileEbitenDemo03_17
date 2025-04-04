@@ -6,6 +6,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"github.com/hajimehoshi/ebiten/v2/vector"
 	// "github.com/hajimehoshi/ebiten/v2/vector"
 )
 
@@ -39,12 +40,20 @@ type IntegerGridManager struct {
 	Img    *ebiten.Image
 	Helper *UI_Helper
 
+	TileBaseImage *ebiten.Image
+	Tiles         []ebiten.Image
+
 	Scale                          float64
 	ScreenTicker                   int
 	ScreenTicker_max               int
 	BoardBuffer, BoardOverlayLayer *ebiten.Image
-
+	//-------------------------------------------------------
 	defaultFileFolderPath string
+	//----
+	BoardChange        bool
+	BoardOverlayChange bool
+	BoardChangesCoords CoordList
+	BoardChangeValues  []int
 }
 
 /* Muted Colors:
@@ -92,7 +101,9 @@ func (igd *IntegerGridManager) Init(uHelp *UI_Helper, N_TilesX, N_TilesY int, TS
 
 	igd.BoardMargin = CoordInts{X: iMargeX, Y: iMargeY}
 	igd.BoardPosition = CoordInts{X: iMargeX, Y: iMargeY}
-	igd.Imat.DrawGridTiles(igd.Img, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors)
+	//igd.Imat.DrawGridTiles(igd.Img, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors)
+	//igd.Imat.DrawFullGridTilesFromColors(igd.Img, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors, color.RGBA{12, 12, 12, 100}, color.RGBA{12, 12, 12, 100}, 1.0, 4.0, true, true, true)
+	igd.RedrawBoardFromColors(color.RGBA{12, 12, 12, 100}, color.RGBA{0, 50, 50, 255}, 0, 2.0, false, true, false)
 	igd.Scale = 1
 	fmt.Printf("MAZEM\n")
 	igd.MazeM.Init(&igd.Imat, 10)
@@ -100,6 +111,11 @@ func (igd *IntegerGridManager) Init(uHelp *UI_Helper, N_TilesX, N_TilesY int, TS
 	igd.ScreenTicker = 0
 	igd.Helper = uHelp
 	igd.defaultFileFolderPath = "IntGrids/"
+	//-------------------------------------Tile Base Image
+	igd.InitTileColors(TSizeX, TSizeY, igd.Colors)
+	///-------------------------------------------
+	igd.BoardChange = false
+
 }
 
 func (igd *IntegerGridManager) Rescale(TSizeX, TSizeY, margX, margY int) {
@@ -110,37 +126,33 @@ func (igd *IntegerGridManager) Rescale(TSizeX, TSizeY, margX, margY int) {
 	igd.BoardBuffer = ebiten.NewImage(iX, iY)
 	igd.BoardOverlayLayer = ebiten.NewImage(iX, iY)
 	igd.Img.Fill(color.Black)
+	igd.BoardChange = true
+	igd.BoardOverlayChange = true
 }
 
 func (igd *IntegerGridManager) Draw(screen *ebiten.Image) {
-	// if igd.PFinder.IsStartInit {
-	// 	igd.Imat[igd.PFinder.StartPos.Y][igd.PFinder.StartPos.X] = 5
-	// }
-	// if igd.PFinder.IsEndInit {
-	// 	igd.Imat[igd.PFinder.EndPos.Y][igd.PFinder.EndPos.X] = 6
-	// }
-
-	ops := ebiten.DrawImageOptions{}
 	if igd.ScreenTicker > igd.ScreenTicker_max {
-		igd.RedrawBoard()
-		igd.RedrawBoardOverlay()
+		igd.ManageChangesToGameboard()
+		if igd.BoardChange {
+			igd.RedrawBoardFromColors(color.RGBA{12, 12, 12, 100}, color.RGBA{0, 50, 50, 255}, 1.0, 2.0, false, true, false)
+			igd.BoardChange = false
+		}
+		if igd.BoardOverlayChange {
+			go igd.RedrawBoardOverlay()
+			igd.BoardOverlayChange = false
+		}
 		igd.ScreenTicker = 0
 	} else {
 		igd.ScreenTicker++
 	}
-
-	// igd.Img.DrawImage(igd.BoardOverlayLayer, nil)
-	// go igd.Imat.DrawGridTiles(igd.Img, 4, 4, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors)
-
-	// ops.GeoM.Reset()
-	// go igd.BoardOverlayLayer.Clear()
-	//igd.BoardOverlayLayer.Fill(color.RGBA{0, 150, 150, 50})
-	// vector.DrawFilledRect(igd.BoardOverlayLayer, float32(-igd.BoardPosition.X+64), float32(-igd.BoardPosition.Y+64), 64.0, 64.0, color.RGBA{150, 0, 150, 255}, true)
-	// ops.GeoM.Translate(float64(igd.Position.X-igd.BoardMargin.X), float64(igd.Position.Y-igd.BoardMargin.Y))//igd.BoardPosition.X, igd.BoardPosition.Y
-	// ops.GeoM.Translate(float64(igd.BoardPosition.X-igd.BoardMargin.X), float64(igd.BoardPosition.Y-igd.BoardMargin.X))
-	// ops.GeoM.Scale(igd.Scale, igd.Scale)
-	// igd.Img.DrawImage(igd.BoardOverlayLayer, &ops)
-	// ops.GeoM.Reset()
+	ops := ebiten.DrawImageOptions{}
+	ops.GeoM.Reset()
+	ops.GeoM.Translate(float64(igd.BoardPosition.X), float64(igd.BoardPosition.Y))
+	ops.GeoM.Scale(igd.Scale, igd.Scale)
+	igd.Img.Fill(color.RGBA{20, 20, 20, 255})
+	igd.Img.DrawImage(igd.BoardBuffer, &ops)
+	igd.Img.DrawImage(igd.BoardOverlayLayer, &ops)
+	//igd.Img.Fill(color.RGBA{20, 20, 20, 255})
 
 	// xx, yy := igd.BoardPosition.X-igd.BoardMargin.X, igd.BoardPosition.Y-igd.BoardMargin.Y //adjusted positions for the buffered area;
 	//igd.Imat.DrawGridTiles(screen, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors)
@@ -149,55 +161,44 @@ func (igd *IntegerGridManager) Draw(screen *ebiten.Image) {
 	// ops.GeoM.Scale(igd.Scale, igd.Scale)
 	// igd.Img.DrawImage(igd.BoardOverlayLayer, nil)
 	// ops := ebiten.DrawImageOptions{}
+	ops.GeoM.Reset()
 	ops.GeoM.Translate(float64(igd.Position.X-igd.BoardMargin.X), float64(igd.Position.Y-igd.BoardMargin.Y))
+	// ops.GeoM.Translate(float64(igd.Position.X), float64(igd.Position.Y))
 	ops.GeoM.Scale(igd.Scale, igd.Scale)
 	screen.DrawImage(igd.Img, &ops)
 }
-func (igd *IntegerGridManager) RedrawBoard() { //color.RGBA{20, 20, 20, 255} //color.RGBA{50, 50, 50, 255}
-	igd.Img.Fill(color.RGBA{20, 20, 20, 255})
-	igd.Imat.DrawGridTiles(igd.Img, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors)
+func (igd *IntegerGridManager) RedrawBoardFromColors(TileOLColor, BoardOLColor color.Color, TileOLThickness, BoardOLThickness float32, Show_TileOL, ShowBoardOL, AA bool) { //color.RGBA{20, 20, 20, 255} //color.RGBA{50, 50, 50, 255}
+
+	// igd.Imat.DrawFullGridTilesFromColors(igd.Img, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors, TileOLColor, BoardOLColor, TileOLThickness, BoardOLThickness, Show_TileOL, ShowBoardOL, AA)
+	igd.Imat.DrawFullGridTilesFromColors(igd.BoardBuffer, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors, TileOLColor, BoardOLColor, TileOLThickness, BoardOLThickness, Show_TileOL, ShowBoardOL, AA)
+
+	//igd.Imat.DrawGridTilesFromImages(igd.Img, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Tiles)
 }
 func (igd *IntegerGridManager) RedrawBoardOverlay() {
+	igd.BoardOverlayLayer.Clear()
 	if igd.PFinder.IsStartInit {
-		// igd.Imat.DrawAGridTile(screen, igd.PFinder.StartPos, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{250, 250, 250, 255}, true)
-		igd.Imat.DrawAGridTile(igd.Img, igd.PFinder.StartPos, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{250, 250, 250, 255}, true)
+		// igd.Imat.DrawAGridTile(igd.Img, igd.PFinder.StartPos, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{250, 250, 250, 255}, color.Black, 1.0, true, true)
+		// igd.Imat.DrawAGridTile(igd.BoardBuffer, igd.PFinder.StartPos, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{250, 250, 250, 255}, color.Black, 1.0, true, true)
+		igd.Imat.DrawAGridTile(igd.BoardOverlayLayer, igd.PFinder.StartPos, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{250, 250, 250, 255}, color.Black, 1.0, true, true)
+
 	}
 	if igd.PFinder.IsEndInit {
-		// igd.Imat.DrawAGridTile(screen, igd.PFinder.EndPos, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{50, 50, 50, 255}, true)
-		igd.Imat.DrawAGridTile(igd.Img, igd.PFinder.EndPos, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{50, 50, 50, 255}, true)
-		// igd.Imat.DrawAGridTile(igd.BoardOverlayLayer, igd.PFinder.EndPos, 0, 0, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{50, 50, 50, 255}, true)
+		// igd.Imat.DrawAGridTile(igd.Img, igd.PFinder.EndPos, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{50, 50, 50, 255}, color.Black, 1.0, true, true)
+		igd.Imat.DrawAGridTile(igd.BoardOverlayLayer, igd.PFinder.EndPos, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{50, 50, 50, 255}, color.Black, 1.0, true, true)
 
 	}
 	if igd.MazeM.Cords0_IsVisible {
-		// igd.MazeM.DrawCoordLinesFromIGD(*igd, color.RGBA{100, 200, 200, 255}) igd.BoardPosition.X, igd.BoardPosition.Y,
-		// igd.MazeM.Draw_CoordLines_raw(screen, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{150, 200, 150, 255})
-		igd.MazeM.Draw_CoordLines_raw(igd.Img, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{150, 200, 150, 255})
-		// igd.MazeM.Draw_CoordLines_raw(igd.BoardOverlayLayer, 0, 0, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{150, 200, 150, 255})
+		// igd.MazeM.Draw_CoordLines_raw(igd.Img, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{150, 200, 150, 255})
+		igd.MazeM.Draw_CoordLines_raw(igd.BoardOverlayLayer, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{150, 200, 150, 255})
 	}
-
 	if igd.PFinder.IsFullyInitialized {
-		//igd.Imat.DrawAGridTile(screen, igd.PFinder.Cursor.Position, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{50, 140, 50, 255}, false)
-
 		if igd.PFinder.HasFalsePos {
-			// igd.Imat.DrawAGridTile(screen, igd.PFinder.FalsePos, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{140, 50, 50, 255}, false)
-			igd.Imat.DrawListAsTiles(igd.Img, igd.PFinder.FalsePos, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{140, 50, 50, 255}, false)
-			// for _, j := range igd.PFinder.FalsePos { //igd.BoardPosition.X, igd.BoardPosition.Y
-			// 	// igd.Imat.DrawAGridTile(screen, j, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{140, 50, 50, 255}, false)
-			// 	igd.Imat.DrawAGridTile(igd.Img, j, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{140, 50, 50, 255}, false)
-
-			// }
-			igd.Imat.DrawListAsTiles(igd.Img, igd.PFinder.Moves, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{140, 50, 50, 255}, false)
-
-			// for _, x := range igd.PFinder.Moves {
-			// 	// igd.Imat.DrawAGridTile(screen, x, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{50, 125, 125, 255}, false)
-			// 	igd.Imat.DrawAGridTile(igd.Img, x, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{50, 125, 125, 255}, false)
-
-			// }
-
+			// igd.Imat.DrawListAsTiles(igd.Img, igd.PFinder.FalsePos, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{140, 50, 50, 255}, color.Black, 1.0, true, false)
+			// igd.Imat.DrawListAsTiles(igd.Img, igd.PFinder.Moves, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{140, 50, 50, 255}, color.Black, 1.0, true, false)
+			igd.Imat.DrawListAsTiles(igd.BoardOverlayLayer, igd.PFinder.FalsePos, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{140, 50, 50, 255}, color.Black, 1.0, true, false)
+			igd.Imat.DrawListAsTiles(igd.BoardOverlayLayer, igd.PFinder.Moves, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{140, 50, 50, 255}, color.Black, 1.0, true, false)
 		}
-		igd.DrawCursor(igd.Img)
-		// igd.Imat.DrawAGridTile_With_Line(screen, igd.PFinder.Cursor.Position, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{200, 150, 0, 255}, color.Black, 2.0, false)
-		// igd.Imat.DrawAGridTile(screen, igd.PFinder.Cursor.Position, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{255, 15, 0, 1}, false) //{255,15,0,1}
+		igd.DrawCursor(igd.BoardOverlayLayer)
 	}
 }
 
@@ -212,13 +213,32 @@ func IsCursorInBounds(PosX int, PosY int, Width, Height int) bool {
 func IsCursorInBounds_02(mX, mY, PosX int, PosY int, Width, Height int) bool {
 	return mX > PosX && mX < PosX+Width && mY > PosY && mY < PosY+Height
 }
+
+func (igd *IntegerGridManager) InitTileColors(TSizeX, TSizeY int, Clors []color.Color) {
+	igd.TileBaseImage = ebiten.NewImage(10*TSizeX, 1*TSizeY)
+	igd.TileBaseImage.Fill(color.White)
+	for i, c := range Clors {
+		// igd.Tiles = append(igd.Tiles, *ebiten.NewImage(TSizeX, TSizeY))
+
+		vector.DrawFilledRect(igd.TileBaseImage, float32(i*TSizeX), 0, float32(TSizeX), float32(TSizeY), c, false)
+	}
+	for _, d := range Clors {
+		tempTile := ebiten.NewImage(TSizeX, TSizeY)
+		tempTile.Fill(d)
+		igd.Tiles = append(igd.Tiles, *tempTile)
+	}
+}
+
 func (igd *IntegerGridManager) UpdateOnMouseEvent() {
 	Raw_Mouse_X, Raw_Mouse_Y := ebiten.CursorPosition()
 	tempX, tempY := -1, -1
 	// temp2X, temp2Y := -1, -1
 	isOnTile := false
 	// isOnTile2 := false
-	xx, yy := (igd.BoardPosition.X - igd.BoardMargin.X), (igd.BoardPosition.Y - igd.BoardMargin.Y)
+	// xx, yy := (igd.BoardPosition.X - igd.BoardMargin.X), (igd.BoardPosition.Y - igd.BoardMargin.Y)
+	// xx, yy := (igd.BoardPosition.X - (igd.BoardMargin.X - 4)), (igd.BoardPosition.Y - (igd.BoardMargin.Y - 4))
+	xx, yy := (igd.BoardPosition.X), (igd.BoardPosition.Y)
+
 	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButton(0)) && IsCursorInBounds_02(Raw_Mouse_X, Raw_Mouse_Y, igd.Position.X, igd.Position.Y, 644, 644) {
 		//go igd.RedrawBoard()
 		//temp0X, temp0Y, isOnTile = igd.Imat.GetCoordOfMouseEvent(Raw_Mouse_X-xx, Raw_Mouse_Y-yy, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y)
@@ -230,15 +250,31 @@ func (igd *IntegerGridManager) UpdateOnMouseEvent() {
 		if !igd.PFinderEndSelect && !igd.PFinderStartSelect && !igd.SelectPoints {
 			if isOnTile {
 				igd.Helper.PlaySound(4)
-
+				tempVal := igd.Imat.GetCoordVal(CoordInts{tempX, tempY})
+				if igd.FullColors {
+					if tempVal > len(igd.Colors)-2 {
+						tempVal = 0
+					} else {
+						tempVal++
+					}
+				} else {
+					if tempVal > igd.CycleEnd {
+						tempVal = igd.CycleStart
+					} else {
+						tempVal++
+					}
+				}
+				igd.BoardChangeValues = append(igd.BoardChangeValues, tempVal)
+				igd.BoardChangesCoords = igd.BoardChangesCoords.PushToReturn(CoordInts{tempX, tempY})
+				// igd.BoardChange = true
 			}
-			if igd.FullColors {
+			// if igd.FullColors {
 
-				_, _ = igd.Imat.ChangeValOnMouseEvent(Raw_Mouse_X-xx, Raw_Mouse_Y-yy, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.CycleStart, len(igd.Colors)-1, !(igd.PFinderStartSelect || igd.PFinderEndSelect))
+			// 	_, _ = igd.Imat.ChangeValOnMouseEvent(Raw_Mouse_X-xx, Raw_Mouse_Y-yy, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.CycleStart, len(igd.Colors)-1, !(igd.PFinderStartSelect || igd.PFinderEndSelect))
 
-			} else {
-				_, _ = igd.Imat.ChangeValOnMouseEvent(Raw_Mouse_X-xx, Raw_Mouse_Y-yy, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.CycleStart, igd.CycleEnd, !(igd.PFinderStartSelect || igd.PFinderEndSelect))
-			}
+			// } else {
+			// 	_, _ = igd.Imat.ChangeValOnMouseEvent(Raw_Mouse_X-xx, Raw_Mouse_Y-yy, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.CycleStart, igd.CycleEnd, !(igd.PFinderStartSelect || igd.PFinderEndSelect))
+			// }
 		}
 
 		//
@@ -253,6 +289,8 @@ func (igd *IntegerGridManager) UpdateOnMouseEvent() {
 				igd.LastPoint = CoordInts{tempX, tempY}
 				if (!igd.LastPoint.IsEqualTo(CoordInts{-1, -1})) {
 					igd.MazeM.AddToCoords(tempX, tempY)
+					// igd.BoardChange = true
+					igd.BoardOverlayChange = true
 					//igd.Coords = igd.Coords.PushToReturn(igd.LastPoint)
 				}
 			} else if igd.PFinderEndSelect && isOnTile {
@@ -261,12 +299,18 @@ func (igd *IntegerGridManager) UpdateOnMouseEvent() {
 				// igd.Imat[tempY][tempX] = 5
 				igd.PFinder.IsEndInit = true
 				igd.PFinderEndSelect = false
+				// igd.BoardChange = true
+				igd.BoardOverlayChange = true
+
 			} else if igd.PFinderStartSelect && isOnTile {
 				igd.Helper.PlaySound(3)
 				igd.PFinder.StartPos = CoordInts{tempX, tempY}
 				// igd.Imat[tempY][tempX] = 6
 				igd.PFinder.IsStartInit = true
 				igd.PFinderStartSelect = false
+				// igd.BoardChange = true
+				igd.BoardOverlayChange = true
+
 			}
 		}
 	}
@@ -440,6 +484,9 @@ func (igd *IntegerGridManager) ClearImat() {
 			igd.Imat[i][j] = 0
 		}
 	}
+	igd.BoardChange = true
+	igd.BoardOverlayChange = true
+
 }
 
 // func (igd *IntegerGridManager) DrawCoordsOnImat() {
@@ -475,5 +522,6 @@ func (igd *IntegerGridManager) LoadFile(filename string) error {
 		}
 		igd.Imat = temp
 	}
+	igd.BoardChange = true
 	return nil
 }

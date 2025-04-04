@@ -17,6 +17,12 @@ type GameSettings struct {
 	ScreenResY  int    `json:"screen_res_y,"`
 	//-------
 	UIAudioVolume int `json:"ui_audio_volume,"`
+	//--------
+
+	GameBoardX     int `json:"game_board_x,"`
+	GameBoardY     int `json:"game_board_y,"`
+	GameBoardTileX int `json:"game_board_tile_x,"`
+	GameBoardTileY int `json:"game_board_tile_y,"`
 }
 
 /*
@@ -65,12 +71,16 @@ func (sets *GameSettings) ToString() string {
 
 func GetSettingsFromBakedIn() GameSettings {
 	var gSets GameSettings = GameSettings{
-		VersionID:     "0.0.09",
-		WindowSizeX:   960, //860//892
-		WindowSizeY:   640, //660 //720
-		ScreenResX:    960, //860 //892
-		ScreenResY:    640,
-		UIAudioVolume: 100,
+		VersionID:      "0.0.09",
+		WindowSizeX:    960, //860//892
+		WindowSizeY:    640, //660 //720
+		ScreenResX:     960, //860 //892
+		ScreenResY:     640,
+		UIAudioVolume:  100,
+		GameBoardX:     32,
+		GameBoardY:     32,
+		GameBoardTileX: 16,
+		GameBoardTileY: 16,
 	}
 	return gSets
 }

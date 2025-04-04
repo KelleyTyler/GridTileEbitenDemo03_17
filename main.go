@@ -108,10 +108,10 @@ func (g *Game) init() error {
 	g.audioTestNumPanel.Init("AudioTest", "AudioTest", &g.UIHelp, true, col0, block4+36+36, 32, 16, 0, 0, 5, 1)
 	//=----------
 	g.TileMargin.Init("TileMargin_Selector", "TileMargin", &g.UIHelp, true, col0, block4+36+36+36, 32, 16, 0, 4, 16, 1)
-	g.ScaleNumPad.Init("Scale_Selector", "SCALE", &g.UIHelp, true, col1, block4+36+36+36, 32, 16, 1, 4, 32, 1)
+	g.ScaleNumPad.Init("Scale_Selector", "SCALE", &g.UIHelp, true, col1, block4+36+36+36, 32, 16, 1, Settings.GameBoardTileX/4, 32, 1)
 	g.coorAr = append(g.coorAr, mypkgs.CoordInts{X: 2, Y: 2})
 	// g.IntGrid.Init(32, 32, 16, 16, 64, 8, 2, 2)
-	g.IntGrid.Init(&g.UIHelp, 32, 32, 8, 8, 168, 8, 0, 0, 4, 4)
+	g.IntGrid.Init(&g.UIHelp, Settings.GameBoardX, Settings.GameBoardY, Settings.GameBoardTileX, Settings.GameBoardTileY, 168, 8, 2, 2, 4, 4)
 	// g.IntGrid.Init(96, 96, 8, 8, 64, 8, 0, 0, 4, 4)
 	g.MouseDragStartingPoint = mypkgs.CoordInts{X: 0, Y: 0}
 	g.MouseIsDragging = false
@@ -295,6 +295,9 @@ func (g *Game) Update() error {
 	if g.btn06.Update3() {
 		// go g.IntGrid.Process()
 		go g.IntGrid.MazeM.BasicDecayProcess([]int{1, 2, 3, 4, 5}, [4]int{5, 6, 6, 5})
+		g.IntGrid.BoardChange = true
+		g.IntGrid.BoardOverlayChange = true
+
 	}
 
 	if g.btn07.Update3() {
@@ -302,7 +305,8 @@ func (g *Game) Update() error {
 		// go g.IntGrid.MazeM.MoreAdvancedDecay([]int{1, 2, 3, 4, 5}, [4]int{1, 2, 2, 1})
 		// g.IntGrid.MazeM.PrimLike_Maze_Algorithm00_Looper([]int{1, 2, 3, 4, 5}, []int{-1, 1, 2, 4}, [4]int{1, 2, 2, 1}, true)
 		g.IntGrid.MazeM.PrimeLike_Wrapper(5, []int{1, 2, 3, 4, 5}, []int{-1, 1, 2, 4}, [4]int{1, 2, 2, 1}, true)
-
+		g.IntGrid.BoardChange = true
+		g.IntGrid.BoardOverlayChange = true
 	}
 	if g.btn08.Update3() {
 

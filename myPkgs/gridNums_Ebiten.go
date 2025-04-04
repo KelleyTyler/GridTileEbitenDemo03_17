@@ -8,29 +8,55 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
-func (imat IntMatrix) DrawAGridTile(screen *ebiten.Image, coord CoordInts, OffsetX int, OffsetY int, tileW int, tileH int, GapX int, GapY int, clr color.Color, aa bool) {
-	vector.DrawFilledRect(screen, float32((tileW*coord.X)+(GapX*coord.X)+OffsetX), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY), float32(tileW), float32(tileH), clr, aa)
+func (imat IntMatrix) DrawAGridTile(screen *ebiten.Image, coord CoordInts, OffsetX int, OffsetY int, tileW int, tileH int, GapX int, GapY int, clr0, clr1 color.Color, OLThickness float32, showOL, aa bool) {
+	vector.DrawFilledRect(screen, float32((tileW*coord.X)+(GapX*coord.X)+OffsetX), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY), float32(tileW), float32(tileH), clr0, aa)
+	if showOL {
+		vector.StrokeRect(screen, float32((tileW*coord.X)+(GapX*coord.X)+OffsetX), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY), float32(tileW), float32(tileH), OLThickness, clr1, aa)
+		vector.StrokeLine(screen, float32((tileW*coord.X)+(GapX*coord.X)+OffsetX), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY), float32((tileW*coord.X)+(GapX*coord.X)+OffsetX+tileW), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY+tileH), 2.0, color.Black, aa)
 
-	vector.StrokeRect(screen, float32((tileW*coord.X)+(GapX*coord.X)+OffsetX), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY), float32(tileW), float32(tileH), 2.0, color.Black, aa)
-	vector.StrokeLine(screen, float32((tileW*coord.X)+(GapX*coord.X)+OffsetX), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY), float32((tileW*coord.X)+(GapX*coord.X)+OffsetX+tileW), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY+tileH), 2.0, color.Black, aa)
+	}
+	//vector.StrokeLine(screen, float32((tileW*coord.X)+(GapX*coord.X)+OffsetX), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY), float32((tileW*coord.X)+(GapX*coord.X)+OffsetX+tileW), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY+tileH), 2.0, color.Black, aa)
 
 }
 
-func (imat IntMatrix) DrawAGridTile_With_Line(screen *ebiten.Image, coord CoordInts, OffsetX int, OffsetY int, tileW int, tileH int, GapX int, GapY int, clr0, clr1, clr2 color.Color, lineThick float32, aa bool) {
+func (imat IntMatrix) DrawAGridTile_With_Line(screen *ebiten.Image, coord CoordInts, OffsetX int, OffsetY int, tileW int, tileH int, GapX int, GapY int, clr0, clr1, clr2, clr3 color.Color, OLthick, lineThick00, lineThick01 float32, showOL, showL0, showL1, aa bool) {
 	vector.DrawFilledRect(screen, float32((tileW*coord.X)+(GapX*coord.X)+OffsetX), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY), float32(tileW), float32(tileH), clr0, aa)
-	vector.StrokeRect(screen, float32((tileW*coord.X)+(GapX*coord.X)+OffsetX), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY), float32(tileW), float32(tileH), 2.0, color.Black, aa)
-	vector.StrokeLine(screen, float32((tileW*coord.X)+(GapX*coord.X)+OffsetX), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY), float32((tileW*coord.X)+(GapX*coord.X)+OffsetX+tileW), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY+tileH), lineThick, clr1, aa)
-	vector.StrokeLine(screen, float32((tileW*coord.X)+(GapX*coord.X)+OffsetX), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY+tileH), float32((tileW*coord.X)+(GapX*coord.X)+OffsetX+tileW), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY), lineThick, clr2, aa)
+	vector.StrokeRect(screen, float32((tileW*coord.X)+(GapX*coord.X)+OffsetX), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY), float32(tileW), float32(tileH), OLthick, clr1, aa)
+	vector.StrokeLine(screen, float32((tileW*coord.X)+(GapX*coord.X)+OffsetX), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY), float32((tileW*coord.X)+(GapX*coord.X)+OffsetX+tileW), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY+tileH), lineThick00, clr1, aa)
+	vector.StrokeLine(screen, float32((tileW*coord.X)+(GapX*coord.X)+OffsetX), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY+tileH), float32((tileW*coord.X)+(GapX*coord.X)+OffsetX+tileW), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY), lineThick01, clr2, aa)
 	//vector.StrokeRect(screen, float32((tileW*coord.X)+(GapX*coord.X)+OffsetX), float32((tileH*coord.Y)+(GapY*coord.Y)+OffsetY), float32(tileW), float32(tileH), 2.0, color.Black, aa)
 }
 
-func (imat IntMatrix) DrawGridTiles(screen *ebiten.Image, OffsetX int, OffsetY int, tileW int, tileH int, GapX int, GapY int, colors []color.Color) {
+func (imat IntMatrix) DrawFullGridTilesFromColors(screen *ebiten.Image, OffsetX int, OffsetY int, tileW int, tileH int, GapX int, GapY int, colors []color.Color, TileOLColor, BoardOLColor color.Color, TileOLThickness, BoardOLThickness float32, showTileOL, showBoardOL, aa bool) {
 	test1X := ((len(imat[0]) * tileW) + (len(imat[0]) * GapX)) + OffsetX
 	test1Y := ((len(imat) * tileH) + (len(imat) * GapY)) + OffsetY
 	for y, _ := range imat {
 		for x, b := range imat[y] {
-			vector.DrawFilledRect(screen, float32((tileW*x)+(GapX*x)+OffsetX), float32((tileH*y)+(GapY*y)+OffsetY), float32(tileW), float32(tileH), colors[b], false)
+			vector.DrawFilledRect(screen, float32((tileW*x)+(GapX*x)+OffsetX), float32((tileH*y)+(GapY*y)+OffsetY), float32(tileW), float32(tileH), colors[b], aa)
 
+			// color0 := color.RGBA{12, 12, 12, 100} //color.Black
+			if showTileOL {
+				vector.StrokeRect(screen, float32((tileW*x)+(GapX*x)+OffsetX), float32((tileH*y)+(GapY*y)+OffsetY), float32(tileW), float32(tileH), TileOLThickness, TileOLColor, aa)
+			}
+		}
+	}
+	//vector.StrokeRect(screen, float32(OffsetX-0), float32(OffsetY-0), float32(test1X-0), float32(test1Y+0), 2.0, color.RGBA{210, 153, 100, 255}, true) //0, 179, 100, 255
+	if showBoardOL {
+		vector.StrokeRect(screen, float32(OffsetX-3), float32(OffsetY-3), float32(test1X-OffsetX-GapX+6), float32(test1Y-OffsetY-GapY+6), BoardOLThickness, BoardOLColor, aa) //color.RGBA{0, 50, 50, 255}
+
+	}
+	//vector.StrokeRect(screen, float32(OffsetX-0), float32(OffsetY-0), float32(test1X-OffsetX), float32(test1Y-OffsetY), 2.0, color.RGBA{0, 253, 100, 255}, true)
+}
+func (imat IntMatrix) DrawGridTilesFromImages(screen *ebiten.Image, OffsetX int, OffsetY int, tileW int, tileH int, GapX int, GapY int, imgs []ebiten.Image) {
+	test1X := ((len(imat[0]) * tileW) + (len(imat[0]) * GapX)) + OffsetX
+	test1Y := ((len(imat) * tileH) + (len(imat) * GapY)) + OffsetY
+	for y, _ := range imat {
+		for x, b := range imat[y] {
+			// vector.DrawFilledRect(screen, float32((tileW*x)+(GapX*x)+OffsetX), float32((tileH*y)+(GapY*y)+OffsetY), float32(tileW), float32(tileH), colors[b], false)
+			ops := ebiten.DrawImageOptions{}
+			ops.GeoM.Reset()
+			ops.GeoM.Translate(float64((tileW*x)+(GapX*x)+OffsetX), float64((tileH*y)+(GapY*y)+OffsetY))
+			screen.DrawImage(&imgs[b], &ops)
 			color0 := color.RGBA{12, 12, 12, 100} //color.Black
 			vector.StrokeRect(screen, float32((tileW*x)+(GapX*x)+OffsetX), float32((tileH*y)+(GapY*y)+OffsetY), float32(tileW), float32(tileH), 0, color0, false)
 		}
@@ -39,15 +65,14 @@ func (imat IntMatrix) DrawGridTiles(screen *ebiten.Image, OffsetX int, OffsetY i
 	vector.StrokeRect(screen, float32(OffsetX-3), float32(OffsetY-3), float32(test1X-OffsetX-GapX+6), float32(test1Y-OffsetY-GapY+6), 4.0, color.RGBA{0, 50, 50, 255}, true)
 	//vector.StrokeRect(screen, float32(OffsetX-0), float32(OffsetY-0), float32(test1X-OffsetX), float32(test1Y-OffsetY), 2.0, color.RGBA{0, 253, 100, 255}, true)
 }
-
-func (imat IntMatrix) DrawListAsTiles(screen *ebiten.Image, cord CoordList, offsetX, offsetY int, tileW, tileH int, gapX, gapY int, clr0 color.Color, aa bool) {
+func (imat IntMatrix) DrawListAsTiles(screen *ebiten.Image, cord CoordList, offsetX, offsetY int, tileW, tileH int, gapX, gapY int, clr0, clr1 color.Color, outlineThickness float32, showOL, aa bool) {
 	for _, a := range cord {
-		imat.DrawAGridTile(screen, a, offsetX, offsetY, tileW, tileH, gapX, gapY, clr0, aa)
+		imat.DrawAGridTile(screen, a, offsetX, offsetY, tileW, tileH, gapX, gapY, clr0, clr1, outlineThickness, showOL, aa)
 	}
 }
 func (imat IntMatrix) DrawListAsTiles_withLines(screen *ebiten.Image, cord CoordList, offsetX, offsetY int, tileW, tileH int, gapX, gapY int, clr0, clr1, clr2 color.Color, lineThick float32, aa bool) {
 	for _, a := range cord {
-		imat.DrawAGridTile_With_Line(screen, a, offsetX, offsetY, tileW, tileH, gapX, gapY, clr0, clr1, clr2, lineThick, aa)
+		imat.DrawAGridTile_With_Line(screen, a, offsetX, offsetY, tileW, tileH, gapX, gapY, clr0, clr1, clr2, color.Black, 2.0, 2.0, lineThick, true, true, true, false)
 	}
 }
 
