@@ -29,7 +29,7 @@ type GameSettings struct {
 This will load from a JSON file;
 */
 func GetBytesFromJSON(filePath string) ([]byte, error) {
-	fmt.Print("INIT JSON HELLO!\n\n")
+	//fmt.Print("INIT JSON HELLO!\n\n")
 	jSonFile, err := os.Open(filePath)
 	if err != nil {
 		return nil, err

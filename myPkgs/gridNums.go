@@ -431,6 +431,20 @@ func (imat *IntMatrix) PrimMazeGenCell_CheckingRules(cord CoordInts, filter []in
 	//fmt.Printf("\n")
 	return true
 }
+func (imat *IntMatrix) GetACirclePointsFromCenter_FilledBresenham(center CoordInts, radius int) CoordList {
+	tempCoord00 := imat.GetACirclePointsFromCenter(center, radius)
+	tempCoord00 = tempCoord00.RemoveDuplicates()
+	var tempCoord CoordList
+	for _, c := range tempCoord00 {
+		tempCoord02, _ := BresenhamLine_CullAfterImpact(center, c, *imat, []int{0})
+		// tempCoord = append(tempCoord, BresenhamLine(center, c)...)
+		tempCoord = append(tempCoord, tempCoord02...)
+		// if()
+	}
+	tempCoord = tempCoord.RemoveDuplicates()
+
+	return tempCoord
+}
 
 func (imat *IntMatrix) GetACirclePointsFromCenter(center CoordInts, radius int) CoordList {
 	tempList := make(CoordList, 0)

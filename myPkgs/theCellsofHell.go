@@ -81,6 +81,8 @@ func (cell *Cell) IsAt(cord CoordInts) bool {
 func (cell *Cell) GetCircle(radius int, imat IntMatrix) (CoordList, []int) {
 	// fmt.Printf("ADD CIRCLE\n")
 	tempPoints := imat.GetACirclePointsFromCenter(cell.Position, radius)
+	// tempPoints = append(tempPoints, imat.GetACirclePointsFromCenter_FilledBresenham(cell.Position, radius)...)
+	tempPoints.RemoveDuplicates()
 	var tempNums []int
 	for _, p := range tempPoints {
 		if imat.IsValid(p) {

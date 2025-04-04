@@ -1,7 +1,6 @@
 package mypkgs
 
 import (
-	"fmt"
 	"math"
 )
 
@@ -29,20 +28,20 @@ func BresenhamLine(c1 CoordInts, c2 CoordInts) CoordList {
 	var outList CoordList
 	if math.Abs(float64(c2.Y)-float64(c1.Y)) < math.Abs(float64(c2.X)-float64(c1.X)) {
 		if c1.X > c2.X {
-			fmt.Printf("BRESENHAM:%16s \n", "Low Inverted")
+			//fmt.Printf("BRESENHAM:%16s \n", "Low Inverted")
 			outList = BresenhamLine_Low(c2, c1)
 			outList = outList.FlipOrder()
 		} else {
-			fmt.Printf("BRESENHAM:%16s \n", "Low Regular")
+			//fmt.Printf("BRESENHAM:%16s \n", "Low Regular")
 			outList = BresenhamLine_Low(c1, c2)
 		}
 	} else {
 		if c1.Y > c2.Y {
-			fmt.Printf("BRESENHAM:%16s \n", "High Inverted")
+			//fmt.Printf("BRESENHAM:%16s \n", "High Inverted")
 			outList = BresenHamLine_High(c2, c1)
 			outList = outList.FlipOrder()
 		} else {
-			fmt.Printf("BRESENHAM:%16s \n", "High Regular")
+			//fmt.Printf("BRESENHAM:%16s \n", "High Regular")
 			outList = BresenHamLine_High(c1, c2)
 		}
 	}

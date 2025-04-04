@@ -184,16 +184,16 @@ func (g *Game) Update() error {
 		g.init()
 	}
 
-	mx, my := ebiten.CursorPosition()
+	// mx, my := ebiten.CursorPosition()
 
-	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButton0) {
-		if g.btn19.IsToggled {
-			g.IntGrid.DrawACircleOnClick(mx, my, g.numPanel03.GetCurrValue(), 1)
-			//g.btn20.IsToggled = false
-		}
-		// 	//g.btn21.Update(mx, my, true)
-	} else {
-	}
+	// if inpututil.IsMouseButtonJustReleased(ebiten.MouseButton0) {
+	// 	// if g.btn19.IsToggled {
+	// 	// 	g.IntGrid.DrawACircleOnClick(mx, my, g.numPanel03.GetCurrValue(), 1)
+	// 	// 	//g.btn20.IsToggled = false
+	// 	// }
+	// 	// 	//g.btn21.Update(mx, my, true)
+	// } else {
+	// }
 
 	if g.MouseIsDragging {
 		x0, y0 := ebiten.CursorPosition()
@@ -221,6 +221,7 @@ func (g *Game) Update() error {
 	g.numPanel01.Update()
 	g.numPanel02.Update()
 	g.numPanel03.Update()
+	g.IntGrid.DrawCircleRad = g.numPanel03.CurValue
 	g.audioTestNumPanel.Update()
 	if g.audioTestNumPanel.Btns[1].Update3() {
 		g.UIHelp.PlaySound(g.audioTestNumPanel.CurValue)
@@ -258,7 +259,8 @@ func (g *Game) Update() error {
 		//g.IntGrid.DEMO_COORDS_00(5, 0, 0) //igd.Coords.SortDescOnX()
 	}
 	if g.btn02.Update3() {
-		g.IntGrid.DEMO_COORDS_00(6, 0, 0) //remove duplicates
+		// g.IntGrid.DEMO_COORDS_00(6, 0, 0) //remove duplicates
+		g.IntGrid.PFinder.Cursor.ShowCircle = !g.IntGrid.PFinder.Cursor.ShowCircle
 	}
 	if g.btn03.Update3() {
 		g.IntGrid.ClearImat()
@@ -294,7 +296,9 @@ func (g *Game) Update() error {
 	}
 	if g.btn06.Update3() {
 		// go g.IntGrid.Process()
-		go g.IntGrid.MazeM.BasicDecayProcess([]int{1, 2, 3, 4, 5}, [4]int{5, 6, 6, 5})
+		g.IntGrid.MazeM.BasicDecayProcess([]int{1, 2, 3, 4, 5}, [4]int{5, 6, 6, 5})
+		// go g.IntGrid.MazeM.BasicDecayProcess([]int{1, 2, 3, 4, 5}, [4]int{5, 6, 6, 5})
+
 		g.IntGrid.BoardChange = true
 		g.IntGrid.BoardOverlayChange = true
 
@@ -305,6 +309,8 @@ func (g *Game) Update() error {
 		// go g.IntGrid.MazeM.MoreAdvancedDecay([]int{1, 2, 3, 4, 5}, [4]int{1, 2, 2, 1})
 		// g.IntGrid.MazeM.PrimLike_Maze_Algorithm00_Looper([]int{1, 2, 3, 4, 5}, []int{-1, 1, 2, 4}, [4]int{1, 2, 2, 1}, true)
 		g.IntGrid.MazeM.PrimeLike_Wrapper(5, []int{1, 2, 3, 4, 5}, []int{-1, 1, 2, 4}, [4]int{1, 2, 2, 1}, true)
+		// go g.IntGrid.MazeM.PrimeLike_Wrapper(5, []int{1, 2, 3, 4, 5}, []int{-1, 1, 2, 4}, [4]int{1, 2, 2, 1}, true)
+
 		g.IntGrid.BoardChange = true
 		g.IntGrid.BoardOverlayChange = true
 	}
@@ -355,7 +361,9 @@ func (g *Game) Update() error {
 		g.IntGrid.PFindr_DrawManhattan2([]int{0, 2, 3, 4})
 	}
 	if g.btn19.Update3() {
-
+		g.IntGrid.DrawCircle = true
+	} else {
+		g.IntGrid.DrawCircle = false
 	}
 	if g.btn20.Update3() {
 		g.IntGrid.PFinder.Cursor.ShowNeighbors = !g.IntGrid.PFinder.Cursor.ShowNeighbors
@@ -440,7 +448,9 @@ func (g *Game) Update() error {
 			}
 
 		}
-		go g.IntGrid.UpdateOnMouseEvent()
+		// go g.IntGrid.UpdateOnMouseEvent()
+		g.IntGrid.UpdateOnMouseEvent()
+
 	}
 	g.PreDraw(foregroundImg)
 
@@ -457,14 +467,14 @@ func (g *Game) Update() error {
 		g.TE_Load_Window.IsVisible = false
 	}
 	g.gameDebugMsg = fmt.Sprintf("FPS:%8.3f TPS:%8.3f\n", ebiten.ActualFPS(), ebiten.ActualTPS())
-	g.gameDebugMsg += fmt.Sprintf("%s\n", Settings.ToString())
-	//g.gameDebugMsg += fmt.Sprintf("BTN0: %2d btn01:%2d btn02:%2d\n", g.btn00.State, g.btn01.State, g.btn02.State)
-	g.gameDebugMsg += "------------------------\n"
-	g.gameDebugMsg += g.IntGrid.PFinder.ToString()
-	//g.gameDebugMsg += fmt.Sprintf("\tIS INIT?:\n\t\tSTART:%t\n\t\tSTOP:%t\n\t\tFULL:%t\n", g.IntGrid.PFinder.IsEndInit, g.IntGrid.PFinder.IsEndInit, g.IntGrid.PFinder.IsFullyInitialized)
-	// g.gameDebugMsg += fmt.Sprintf("\t")
-	g.gameDebugMsg += "------------------------\n"
-	g.gameDebugMsg += fmt.Sprintf("%s\n", g.IntGrid.ToString())
+	// g.gameDebugMsg += fmt.Sprintf("%s\n", Settings.ToString())
+	// //g.gameDebugMsg += fmt.Sprintf("BTN0: %2d btn01:%2d btn02:%2d\n", g.btn00.State, g.btn01.State, g.btn02.State)
+	// g.gameDebugMsg += "------------------------\n"
+	// g.gameDebugMsg += g.IntGrid.PFinder.ToString()
+	// //g.gameDebugMsg += fmt.Sprintf("\tIS INIT?:\n\t\tSTART:%t\n\t\tSTOP:%t\n\t\tFULL:%t\n", g.IntGrid.PFinder.IsEndInit, g.IntGrid.PFinder.IsEndInit, g.IntGrid.PFinder.IsFullyInitialized)
+	// // g.gameDebugMsg += fmt.Sprintf("\t")
+	// g.gameDebugMsg += "------------------------\n"
+	// g.gameDebugMsg += fmt.Sprintf("%s\n", g.IntGrid.ToString())
 	return nil
 }
 

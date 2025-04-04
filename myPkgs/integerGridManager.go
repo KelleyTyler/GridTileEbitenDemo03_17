@@ -54,6 +54,9 @@ type IntegerGridManager struct {
 	BoardOverlayChange bool
 	BoardChangesCoords CoordList
 	BoardChangeValues  []int
+	//--------------------------------------
+	DrawCircle    bool
+	DrawCircleRad int
 }
 
 /* Muted Colors:
@@ -93,7 +96,7 @@ func (igd *IntegerGridManager) Init(uHelp *UI_Helper, N_TilesX, N_TilesY int, TS
 	igd.PFinder = Pathfinding{IsActive: false, IsFullyInitialized: false, IsEndInit: false, HasFalsePos: false}
 	//--------
 	iX, iY := igd.Imat.GetCursorBounds(iMargeX+iMargeX-MargX, iMargeY+iMargeY-MargY, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y)
-	fmt.Printf("SCREEN SIZE: %d, %d\n", iX, iY)
+	//fmt.Printf("SCREEN SIZE: %d, %d\n", iX, iY)
 	igd.Img = ebiten.NewImage(644, 644)
 	igd.BoardBuffer = ebiten.NewImage(iX, iY)
 	igd.BoardOverlayLayer = ebiten.NewImage(iX, iY)
@@ -105,7 +108,7 @@ func (igd *IntegerGridManager) Init(uHelp *UI_Helper, N_TilesX, N_TilesY int, TS
 	//igd.Imat.DrawFullGridTilesFromColors(igd.Img, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors, color.RGBA{12, 12, 12, 100}, color.RGBA{12, 12, 12, 100}, 1.0, 4.0, true, true, true)
 	igd.RedrawBoardFromColors(color.RGBA{12, 12, 12, 100}, color.RGBA{0, 50, 50, 255}, 0, 2.0, false, true, false)
 	igd.Scale = 1
-	fmt.Printf("MAZEM\n")
+	//fmt.Printf("MAZEM\n")
 	igd.MazeM.Init(&igd.Imat, 10)
 	igd.ScreenTicker_max = 6
 	igd.ScreenTicker = 0
@@ -134,7 +137,7 @@ func (igd *IntegerGridManager) Draw(screen *ebiten.Image) {
 	if igd.ScreenTicker > igd.ScreenTicker_max {
 		igd.ManageChangesToGameboard()
 		if igd.BoardChange {
-			igd.RedrawBoardFromColors(color.RGBA{12, 12, 12, 100}, color.RGBA{0, 50, 50, 255}, 1.0, 2.0, false, true, false)
+			go igd.RedrawBoardFromColors(color.RGBA{12, 12, 12, 100}, color.RGBA{0, 50, 50, 255}, 1.0, 2.0, false, true, false)
 			igd.BoardChange = false
 		}
 		if igd.BoardOverlayChange {
@@ -258,7 +261,7 @@ func (igd *IntegerGridManager) UpdateOnMouseEvent() {
 						tempVal++
 					}
 				} else {
-					if tempVal > igd.CycleEnd {
+					if tempVal > igd.CycleEnd-1 {
 						tempVal = igd.CycleStart
 					} else {
 						tempVal++
@@ -276,7 +279,9 @@ func (igd *IntegerGridManager) UpdateOnMouseEvent() {
 			// 	_, _ = igd.Imat.ChangeValOnMouseEvent(Raw_Mouse_X-xx, Raw_Mouse_Y-yy, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.CycleStart, igd.CycleEnd, !(igd.PFinderStartSelect || igd.PFinderEndSelect))
 			// }
 		}
-
+		if igd.DrawCircle {
+			igd.DrawACircleOnClick(Raw_Mouse_X, Raw_Mouse_Y, igd.DrawCircleRad, 1)
+		}
 		//
 		// // igd.MazeM.PrintString()
 		// igd.AddToCoords(tempX, tempY)
@@ -319,59 +324,130 @@ func (igd *IntegerGridManager) UpdateOnMouseEvent() {
 func (igd *IntegerGridManager) DrawACircleOnClick(Raw_Mouse_X, Raw_Mouse_Y int, Radius int, valueIs int) {
 	var center CoordInts
 	var is_OnPoint bool
-	xx, yy := (igd.BoardPosition.X - igd.BoardMargin.X), (igd.BoardPosition.Y - igd.BoardMargin.Y)
+	// xx, yy := (igd.BoardPosition.X - igd.BoardMargin.X), (igd.BoardPosition.Y - igd.BoardMargin.Y)
+	xx, yy := (igd.BoardPosition.X), (igd.BoardPosition.Y)
+
 	center.X, center.Y, is_OnPoint = igd.Imat.GetCoordOfMouseEvent(Raw_Mouse_X-xx, Raw_Mouse_Y-yy, igd.Position.X, igd.Position.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y)
 
 	if is_OnPoint && IsCursorInBounds_02(Raw_Mouse_X, Raw_Mouse_Y, igd.Position.X, igd.Position.Y, 644, 644) {
-		fmt.Printf("MIDPOINT CIRCLE\n\tCENTER (x,y): %3d,%3d\n\tRadius:%3d\n", center.X, center.Y, Radius)
-		//temp := center
-		P := 1 - Radius
-		x := Radius
-		y := 0
-		for x > y {
-			y++
-			if P <= 0 {
-				fmt.Printf("P is less than Or Equal to zero\n")
-				P = P + 2*y + 1
-			} else {
-				fmt.Printf("P is Greater than zero\n")
-				x--
-				P = P + 2*y - 2*x + 1
-			}
-			//output here
-			igd.circleDrawWSub(x, y, valueIs, center)
-			if x < y {
-				break
+
+		for i := range Radius {
+			tempCoord := igd.Imat.GetACirclePointsFromCenter(center, i)
+			// igd.BoardChangesCoords = append(igd.BoardChangesCoords, tempCoord...)
+			// var temp []int
+			for _, c := range tempCoord {
+				if igd.Imat.IsValid(c) {
+					igd.BoardChangesCoords = append(igd.BoardChangesCoords, c)
+					// temp = append(temp, 1)
+					igd.BoardChangeValues = append(igd.BoardChangeValues, valueIs)
+				}
 			}
 		}
+		//tempCoord00 := igd.Imat.GetACirclePointsFromCenter(center, Radius)
+		//tempCoord00 = tempCoord00.RemoveDuplicates()
+		// igd.BoardChangesCoords = append(igd.BoardChangesCoords, tempCoord...)
+		// var temp []int
+		// xVal := 2
+		// for i := range Radius {
+		// if xVal > len(igd.Colors)-2 {
+		// 	xVal = 2
+		// } else {
+		// 	xVal++
+		// }
+		// }
+		// tempCoord00 := igd.Imat.GetACirclePointsFromCenter(center, Radius)
+		// tempCoord00 = tempCoord00.RemoveDuplicates()
+		// var tempCoord CoordList
+		// for _, c := range tempCoord00 {
+		// 	tempCoord02, _ := BresenhamLine_CullAfterImpact(center, c, igd.Imat, []int{0})
+		// 	// tempCoord = append(tempCoord, BresenhamLine(center, c)...)
+		// 	tempCoord = append(tempCoord, tempCoord02...)
+		// 	// if()
+		// }
+		// tempCoord = tempCoord.RemoveDuplicates()
 
-		temp_01A := center
-		temp_01A.X += Radius
-		// igd.Imat[temp_01A.Y][temp_01A.X] = valueIs
-		if igd.Imat.IsValid(temp_01A) {
-			igd.Imat[temp_01A.Y][temp_01A.X] = valueIs
-		}
-		temp_01B := center
-		temp_01B.X -= Radius
-		if igd.Imat.IsValid(temp_01B) {
-			igd.Imat[temp_01B.Y][temp_01B.X] = valueIs
-		}
-		temp_01C := center
-		temp_01C.Y -= Radius
-		if igd.Imat.IsValid(temp_01C) {
-			igd.Imat[temp_01C.Y][temp_01C.X] = valueIs
-		}
-		temp_01D := center
-		temp_01D.Y += Radius
-		if igd.Imat.IsValid(temp_01D) {
-			igd.Imat[temp_01D.Y][temp_01D.X] = valueIs
-		}
+		// for _, c := range tempCoord {
+		// 	if igd.Imat.IsValid(c) {
+		// 		igd.BoardChangesCoords = append(igd.BoardChangesCoords, c)
+		// 		// temp = append(temp, 1)
+		// 		igd.BoardChangeValues = append(igd.BoardChangeValues, xVal)
+		// 	}
+		// }
 
-		// fmt.Printf("0: %d %d VALUEIS %d\n", center.X, center.Y, valueIs)
-		// fmt.Printf("A: %d %d\n", temp_01A.X, temp_01A.Y)
-		// fmt.Printf("B: %d %d\n", temp_01B.X, temp_01B.Y)
-		// fmt.Printf("C: %d %d\n", temp_01C.X, temp_01C.Y)
-		// fmt.Printf("D: %d %d\n", temp_01D.X, temp_01D.Y)
+		//valueIs
+		//-----------------------------------------------------------------------
+		// tempCoord00 := igd.Imat.GetACirclePointsFromCenter(center, Radius)
+		// var tempCoord CoordList
+		// for _, c := range tempCoord00 {
+		// 	// tempCoord02:=BresenhamLine(center,c)
+		// 	tempCoord = append(tempCoord, BresenhamLine(center, c)...)
+		// 	// if()
+		// }
+
+		// for _, c := range tempCoord {
+		// 	if igd.Imat.IsValid(c) {
+		// 		igd.BoardChangesCoords = append(igd.BoardChangesCoords, c)
+		// 		// temp = append(temp, 1)
+		// 		igd.BoardChangeValues = append(igd.BoardChangeValues, valueIs)
+		// 	}
+		// }
+
+		//fmt.Printf("Coords: %3d , nums: %3d\n", len(igd.BoardChangesCoords), len(igd.BoardChangeValues))
+		// igd.BoardChangeValues = append(igd.BoardChangeValues, temp...)
+
+		// if len(igd.BoardChangeValues) != len(igd.BoardChangesCoords) {
+		// 	fmt.Printf("PROBLEM THEY DON'T MATCH _ ROOT!!!\n")
+		// }
+		igd.BoardChange = true
+		// fmt.Printf("MIDPOINT CIRCLE\n\tCENTER (x,y): %3d,%3d\n\tRadius:%3d\n", center.X, center.Y, Radius)
+		// //temp := center
+		// P := 1 - Radius
+		// x := Radius
+		// y := 0
+		// for x > y {
+		// 	y++
+		// 	if P <= 0 {
+		// 		fmt.Printf("P is less than Or Equal to zero\n")
+		// 		P = P + 2*y + 1
+		// 	} else {
+		// 		fmt.Printf("P is Greater than zero\n")
+		// 		x--
+		// 		P = P + 2*y - 2*x + 1
+		// 	}
+		// 	//output here
+		// 	igd.circleDrawWSub(x, y, valueIs, center)
+		// 	if x < y {
+		// 		break
+		// 	}
+		// }
+
+		// temp_01A := center
+		// temp_01A.X += Radius
+		// // igd.Imat[temp_01A.Y][temp_01A.X] = valueIs
+		// if igd.Imat.IsValid(temp_01A) {
+		// 	igd.Imat[temp_01A.Y][temp_01A.X] = valueIs
+		// }
+		// temp_01B := center
+		// temp_01B.X -= Radius
+		// if igd.Imat.IsValid(temp_01B) {
+		// 	igd.Imat[temp_01B.Y][temp_01B.X] = valueIs
+		// }
+		// temp_01C := center
+		// temp_01C.Y -= Radius
+		// if igd.Imat.IsValid(temp_01C) {
+		// 	igd.Imat[temp_01C.Y][temp_01C.X] = valueIs
+		// }
+		// temp_01D := center
+		// temp_01D.Y += Radius
+		// if igd.Imat.IsValid(temp_01D) {
+		// 	igd.Imat[temp_01D.Y][temp_01D.X] = valueIs
+		// }
+
+		// // fmt.Printf("0: %d %d VALUEIS %d\n", center.X, center.Y, valueIs)
+		// // fmt.Printf("A: %d %d\n", temp_01A.X, temp_01A.Y)
+		// // fmt.Printf("B: %d %d\n", temp_01B.X, temp_01B.Y)
+		// // fmt.Printf("C: %d %d\n", temp_01C.X, temp_01C.Y)
+		// // fmt.Printf("D: %d %d\n", temp_01D.X, temp_01D.Y)
 	}
 }
 

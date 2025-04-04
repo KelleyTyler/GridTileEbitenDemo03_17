@@ -61,6 +61,7 @@ func (igd *IntegerGridManager) RESETPathfinder() {
 		igd.PFinder.IsFullyInitialized = false
 		igd.PFinder.EndPos = CoordInts{X: -1, Y: -1}
 		igd.PFinder.StartPos = CoordInts{X: -1, Y: -1}
+		igd.BoardOverlayChange = true
 	}
 }
 
@@ -72,14 +73,16 @@ func (igd *IntegerGridManager) RESETPathfinder() {
 // }
 
 func (igd *IntegerGridManager) PathfindingProcess() {
-	fmt.Printf("\n\nPATHFINDING PROCESS\n\n")
+	//fmt.Printf("\n\nPATHFINDING PROCESS\n\n")
 	if igd.PFinder.IsStartInit && igd.PFinder.IsEndInit && !igd.PFinder.IsFullyInitialized {
 		igd.PFinder.IsFullyInitialized = true
-		fmt.Printf("\nINITIALIZED AND READY\n")
+		//fmt.Printf("\nINITIALIZED AND READY\n")
 		igd.PFinder.Cursor.InitP(igd.PFinder.StartPos, igd.PFinder.EndPos, igd.Imat)
+		igd.BoardOverlayChange = true
 	}
 
 	if igd.PFinder.IsFullyInitialized {
+		igd.BoardOverlayChange = true
 		//get vector to the target area;
 		//igd.SLOPEMOVE(2, []int{0, 2, 3, 4})'
 		// igd.PFinder.FalsePos = BresenhamLine(igd.PFinder.StartPos, igd.PFinder.EndPos)
@@ -362,7 +365,7 @@ func (igd *IntegerGridManager) DrawCursor(screen *ebiten.Image) {
 			if igd.PFinder.Cursor.CircleValues[i] == 1 {
 				//fmt.Printf("CURSOR %3d/%3d\n", i, len(igd.PFinder.Cursor.CircleValues))
 				// igd.Imat.DrawAGridTile_With_Line(screen, a, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{0, 200, 150, 255}, color.Black, color.Black, color.Black, 2.0, 2.0, 2.0, true, true, true, false)
-				igd.Imat.DrawAGridTile_With_Line(screen, a, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{0, 200, 150, 255}, color.Black, color.Black, color.Black, 2.0, 2.0, 2.0, true, true, true, false)
+				igd.Imat.DrawAGridTile_With_Line(screen, a, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{0, 50, 150, 255}, color.Black, color.Black, color.Black, 2.0, 2.0, 2.0, true, true, true, false)
 
 			} else {
 				// igd.Imat.DrawAGridTile_With_Line(screen, a, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{0, 150, 200, 255}, color.Black, color.Black, color.Black, 2.0, 2.0, 2.0, true, true, true, false)

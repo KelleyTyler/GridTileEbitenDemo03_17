@@ -537,7 +537,7 @@ func (tef *TextEntryField) Init(helper *UI_Helper, position, dimensions CoordInt
 	tef.Position = position
 	tef.Dimensions = dimensions
 	tef.Img = ebiten.NewImage(dimensions.X, dimensions.Y)
-	fmt.Printf("IMAGE CREATED!\n")
+	//fmt.Printf("IMAGE CREATED!\n")
 	tef.Img.Fill(color.White)
 	tef.Helper = helper
 	tef.IsActive = false
