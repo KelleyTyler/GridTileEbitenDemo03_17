@@ -647,3 +647,82 @@ func (node *Node) Sort_D_3End_Tick() {
 		}
 	}
 }
+
+func (node *Node) SnakeMove(newPos CoordInts, addToTail bool) {
+	node.snakeMoveHelper(newPos, addToTail, false)
+}
+
+func (node *Node) snakeMoveHelper(newPos CoordInts, addToTail, active bool) {
+	if active {
+		temp := node.Postion
+		node.Postion = newPos
+		if node.ChildPTR != nil {
+			node.ChildPTR.snakeMoveHelper(temp, addToTail, true)
+		}
+	} else {
+		if node.ParentPTR != nil {
+			node.ParentPTR.snakeMoveHelper(newPos, addToTail, false)
+		} else {
+			if addToTail {
+				node.PushToBack(CoordInts{2, 2}, CoordInts{-1, -1}, CoordInts{6, 6})
+			}
+			temp := node.Postion
+			num := node.GetNumberOfOccurances_Position(newPos)
+			// fmt.Printf("%d\n", num)
+			if num < 1 {
+				node.Postion = newPos
+				if node.ChildPTR != nil {
+					node.ChildPTR.snakeMoveHelper(temp, addToTail, true)
+				}
+			} else {
+				//fmt.Printf("WHAT?\n")
+			}
+		}
+	}
+}
+
+func (node *Node) GetNumberOfOccurances_Position(pos CoordInts) int {
+	return node.get_num_occurances_position_helper(pos, false, 0)
+}
+func (node *Node) get_num_occurances_position_helper(pos CoordInts, active bool, count int) int {
+	if active {
+
+		if node.Postion.IsEqualTo(pos) {
+			if node.ChildPTR != nil {
+				return node.ChildPTR.get_num_occurances_position_helper(pos, true, count+1)
+			} else {
+				return count
+			}
+		} else {
+			if node.ChildPTR != nil {
+				return node.ChildPTR.get_num_occurances_position_helper(pos, true, count)
+			} else {
+				return count
+			}
+		}
+	} else {
+		if node.ParentPTR != nil {
+			return node.get_num_occurances_position_helper(pos, false, count)
+		} else {
+			if node.Postion.IsEqualTo(pos) {
+				if node.ChildPTR != nil {
+					return node.ChildPTR.get_num_occurances_position_helper(pos, true, count+1)
+				} else {
+					return 1
+				}
+			} else {
+				if node.ChildPTR != nil {
+					return node.ChildPTR.get_num_occurances_position_helper(pos, true, count)
+				} else {
+					return 0
+				}
+			}
+		}
+	}
+}
+
+// // pick a point that is one off from the tail but which does not interact with the others
+// func (node *Node) AddSnakeTail() {
+// 	temp := node.GetEnd()
+// 	if()
+// }

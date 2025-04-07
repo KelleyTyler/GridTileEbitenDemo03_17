@@ -204,6 +204,9 @@ func (igd *IntegerGridManager) RedrawBoardOverlay() {
 		}
 		igd.DrawCursor(igd.BoardOverlayLayer)
 	}
+	if igd.PFinder.showNodes {
+		igd.PFinder.Nodes.ShowOnImat(igd.BoardOverlayLayer, igd.Helper, igd.Imat, igd.GetIMatDisplayOptions([]color.Color{color.Black}, []bool{true, true, true}, []float32{1.0, 1.0, 1.0}), []color.Color{color.RGBA{200, 50, 50, 255}, color.RGBA{50, 200, 50, 255}, color.RGBA{50, 50, 200, 255}, color.RGBA{50, 150, 200, 255}})
+	}
 }
 
 func (igd *IntegerGridManager) ResetCoordPosition() {

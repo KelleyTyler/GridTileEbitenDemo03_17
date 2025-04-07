@@ -367,7 +367,8 @@ func (g *Game) Update() error {
 	}
 	if g.btn20.Update3() {
 		// g.IntGrid.PFinder.Cursor.ShowNeighbors = !g.IntGrid.PFinder.Cursor.ShowNeighbors
-		mypkgs.NodeTest(g.IntGrid.Imat)
+		// mypkgs.NodeTest(g.IntGrid.Imat)
+		g.IntGrid.PathfinderNodeDemo(10, false)
 	}
 
 	if !g.TE_Load_Window.IsVisible && !g.TE_Save_Window.IsVisible {
@@ -380,6 +381,35 @@ func (g *Game) Update() error {
 			backgroundImg.Fill(backgroundColor)
 		}
 		//inpututil.IsKeyJustPressed(ebiten.KeyW)
+
+		if inpututil.IsKeyJustPressed(ebiten.KeyArrowUp) {
+			if ebiten.IsKeyPressed(ebiten.KeyControl) {
+				g.IntGrid.PathfinderNodeDemo(0, true)
+			} else {
+				g.IntGrid.PathfinderNodeDemo(0, false)
+			}
+		}
+		if inpututil.IsKeyJustPressed(ebiten.KeyArrowRight) {
+			if ebiten.IsKeyPressed(ebiten.KeyControl) {
+				g.IntGrid.PathfinderNodeDemo(1, true)
+			} else {
+				g.IntGrid.PathfinderNodeDemo(1, false)
+			}
+		}
+		if inpututil.IsKeyJustPressed(ebiten.KeyArrowDown) {
+			if ebiten.IsKeyPressed(ebiten.KeyControl) {
+				g.IntGrid.PathfinderNodeDemo(2, true)
+			} else {
+				g.IntGrid.PathfinderNodeDemo(2, false)
+			}
+		}
+		if inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft) {
+			if ebiten.IsKeyPressed(ebiten.KeyControl) {
+				g.IntGrid.PathfinderNodeDemo(3, true)
+			} else {
+				g.IntGrid.PathfinderNodeDemo(3, false)
+			}
+		}
 		if ebiten.IsKeyPressed(ebiten.KeyS) && ebiten.IsKeyPressed(ebiten.KeyShiftLeft) { //inpututil.IsKeyJustPressed(ebiten.KeyArrowUp)
 			g.IntGrid.BoardPosition.Y += 1
 			// g.IntGrid.RedrawBoard()
@@ -403,7 +433,7 @@ func (g *Game) Update() error {
 
 			//g.IntGrid.Img.Fill(color.RGBA{150, 150, 150, 255})
 		}
-		if inpututil.IsKeyJustPressed(ebiten.KeyW) {
+		if inpututil.IsKeyJustPressed(ebiten.KeyW) && !ebiten.IsKeyPressed(ebiten.KeyShiftLeft) {
 
 			//g.numPanel00.CurValue
 			if g.IntGrid.MoveCursorFreely(0, 1, []int{0, 2, 3, 4}) {
@@ -411,7 +441,7 @@ func (g *Game) Update() error {
 			}
 
 		}
-		if inpututil.IsKeyJustPressed(ebiten.KeyA) {
+		if inpututil.IsKeyJustPressed(ebiten.KeyA) && !ebiten.IsKeyPressed(ebiten.KeyShiftLeft) {
 			// g.IntGrid.Position.X -= 1
 
 			if g.IntGrid.MoveCursorFreely(3, 1, []int{0, 2, 3, 4}) {
@@ -421,7 +451,7 @@ func (g *Game) Update() error {
 
 		}
 
-		if inpututil.IsKeyJustPressed(ebiten.KeyS) {
+		if inpututil.IsKeyJustPressed(ebiten.KeyS) && !ebiten.IsKeyPressed(ebiten.KeyShiftLeft) {
 			// g.IntGrid.Position.Y += 1
 			if g.IntGrid.MoveCursorFreely(2, 1, []int{0, 2, 3, 4}) {
 				g.IntGrid.BoardPosition.Y -= (g.IntGrid.Tile_Size.Y + g.IntGrid.Margin.Y)
@@ -429,7 +459,7 @@ func (g *Game) Update() error {
 			}
 
 		}
-		if inpututil.IsKeyJustPressed(ebiten.KeyD) {
+		if inpututil.IsKeyJustPressed(ebiten.KeyD) && !ebiten.IsKeyPressed(ebiten.KeyShiftLeft) {
 			if g.IntGrid.MoveCursorFreely(1, 1, []int{0, 2, 3, 4}) {
 				g.IntGrid.BoardPosition.X -= (g.IntGrid.Tile_Size.X + g.IntGrid.Margin.X)
 			}
