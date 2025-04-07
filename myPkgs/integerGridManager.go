@@ -94,16 +94,17 @@ func (igd *IntegerGridManager) Init(uHelp *UI_Helper, N_TilesX, N_TilesY int, TS
 	igd.AlgorithmRunning = false      //depricated
 	//-------
 	igd.PFinder = Pathfinding{IsActive: false, IsFullyInitialized: false, IsEndInit: false, HasFalsePos: false}
+	igd.RESETPathfinder()
 	//--------
-	iX, iY := igd.Imat.GetCursorBounds(iMargeX+iMargeX-MargX, iMargeY+iMargeY-MargY, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y)
+	igd.BoardMargin = CoordInts{X: iMargeX, Y: iMargeY}
+	igd.BoardPosition = CoordInts{X: iMargeX, Y: iMargeY}
+	iX, iY := igd.Imat.GetCursorBounds(igd.BoardMargin.X+igd.BoardPosition.X-igd.Margin.X, igd.BoardMargin.Y+igd.BoardPosition.Y-igd.Margin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y)
 	//fmt.Printf("SCREEN SIZE: %d, %d\n", iX, iY)
 	igd.Img = ebiten.NewImage(644, 644)
 	igd.BoardBuffer = ebiten.NewImage(iX, iY)
 	igd.BoardOverlayLayer = ebiten.NewImage(iX, iY)
 	igd.Img.Fill(color.Black)
 
-	igd.BoardMargin = CoordInts{X: iMargeX, Y: iMargeY}
-	igd.BoardPosition = CoordInts{X: iMargeX, Y: iMargeY}
 	//igd.Imat.DrawGridTiles(igd.Img, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors)
 	//igd.Imat.DrawFullGridTilesFromColors(igd.Img, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, igd.Colors, color.RGBA{12, 12, 12, 100}, color.RGBA{12, 12, 12, 100}, 1.0, 4.0, true, true, true)
 	igd.RedrawBoardFromColors(color.RGBA{12, 12, 12, 100}, color.RGBA{0, 50, 50, 255}, 0, 2.0, false, true, false)
@@ -599,5 +600,11 @@ func (igd *IntegerGridManager) LoadFile(filename string) error {
 		igd.Imat = temp
 	}
 	igd.BoardChange = true
+	iX, iY := igd.Imat.GetCursorBounds(igd.BoardMargin.X+igd.BoardPosition.X-igd.Margin.X, igd.BoardMargin.Y+igd.BoardPosition.Y-igd.Margin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y)
+	//fmt.Printf("SCREEN SIZE: %d, %d\n", iX, iY)
+	igd.Img = ebiten.NewImage(644, 644)
+	igd.BoardBuffer = ebiten.NewImage(iX, iY)
+	igd.BoardOverlayLayer = ebiten.NewImage(iX, iY)
+	igd.RESETPathfinder()
 	return nil
 }

@@ -2,6 +2,7 @@ package mypkgs
 
 import (
 	"fmt"
+	"math"
 )
 
 type IntMatrix [][]int
@@ -30,7 +31,7 @@ func (iMat IntMatrix) PrintMatrix() {
 	fmt.Printf("SIZE:%d\n", len(iMat))
 	for i, _ := range iMat {
 		for _, c := range iMat[i] {
-			fmt.Printf("[%2d]", c)
+			fmt.Printf("[%4d]", c)
 		}
 		fmt.Printf("\n")
 	}
@@ -509,3 +510,60 @@ func (imat *IntMatrix) GetACirclePointsSUB(center CoordInts, x, y, radius int) C
 	}
 	return tempList
 }
+
+/*
+-fills the int matrix with numbers that are the literal distance from 'endpoint';
+*/
+func (imat IntMatrix) IntmatrixDistanceMarking(endpoint CoordInts) {
+	if imat.IsValid(endpoint) {
+		for i, a := range imat {
+			for j, _ := range a {
+				temp0 := CoordInts{X: j, Y: i}
+				xx, yy := temp0.GetDifferenceInInts(endpoint)
+				// dis := temp0.GetDistance(endpoint)
+				// imat[i][j] = int(math.Sqrt(float64(xx*xx) + float64(yy*yy)))
+				imat[i][j] = int(math.Abs(float64(xx)) + math.Abs(float64(yy)))
+			}
+		}
+	}
+}
+
+func (imat IntMatrix) IntmatrixDistance_Great_Marking(cursor, endpoint CoordInts) {
+	if imat.IsValid(endpoint) {
+		for i, a := range imat {
+			for j, _ := range a {
+				temp0 := CoordInts{X: j, Y: i}
+				xx, yy := temp0.GetDifferenceInInts(endpoint)
+				// dis := temp0.GetDistance(endpoint)
+				// imat[i][j] = int(math.Sqrt(float64(xx*xx) + float64(yy*yy)))
+				imat[i][j] = int(math.Abs(float64(xx)) + math.Abs(float64(yy)))
+			}
+		}
+	}
+}
+
+func (imat00 IntMatrix) Intmatrix_Dist_With_Walls(imat01 IntMatrix, ForbiddenNumbers []int) {
+	for i, a := range imat01 {
+		for j, b := range a {
+			if IntArrayContains(ForbiddenNumbers, b) {
+				imat00[i][j] = -1
+			}
+		}
+	}
+}
+
+/*
+	6 6 6 6 6 6 6 6 6 6 6 6 6
+	6 5 5 5 5 5 5 5 5 5 5 5 6
+	6 5 4 4 4 4 4 4 4 4 4 5 6
+	6 5 4 3 3 3 3 3 3 3 4 5 6
+	6 5 4 3 2 2 2 2 2 3 4 5 6
+	6 5 4 3 2 1 1 1 2 3 4 5 6
+	6 5 4 3 2 1 0 1 2 3 4 5 6
+	6 5 4 3 2 1 1 1 2 3 4 5 6
+	6 5 4 3 2 2 2 2 2 3 4 5 6
+	6 5 4 3 3 3 3 3 3 3 4 5 6
+	6 5 4 4 4 4 4 4 4 4 4 5 6
+	6 5 5 5 5 5 5 5 5 5 5 5 6
+	6 6 6 6 6 6 6 6 6 6 6 6 6
+*/

@@ -19,10 +19,17 @@ type Pathfinding struct {
 	Color              color.Color
 	SpriteDim          CoordInts
 	Cursor             Cell
-	FalsePos           CoordList //open list
+	FalsePos           CoordList // list
 	ClosedList         CoordList //closed list
+	OpenList           CoordList //open list
+	BlockedList        CoordList
 	Moves              CoordList
-	HasFalsePos        bool
+
+	Visited           IntMatrix
+	Distance          IntMatrix
+	Distance_To_Start IntMatrix
+
+	HasFalsePos bool
 }
 
 // func (igd *Pathfinding) Tick_DownFalseposlane() {
@@ -38,9 +45,12 @@ func (pFndr *Pathfinding) ToString() string {
 		outstrng += fmt.Sprintf("%7s: %3d,%3d\n", "END", pFndr.EndPos.X, pFndr.EndPos.Y)
 		xx, yy := pFndr.Cursor.Position.GetDifferenceInInts(pFndr.EndPos)
 		outstrng += fmt.Sprintf("%7s: %3d,%3d %d\n", "DIF.", xx, yy, GetDiffer(pFndr.Cursor.Position, pFndr.EndPos))
+
 	}
 	outstrng += fmt.Sprintf("FalsePos: %t ,len: %d\n", pFndr.HasFalsePos, len(pFndr.FalsePos))
 	outstrng += fmt.Sprintf("MOVES:%d\n", len(pFndr.Moves))
+	outstrng += fmt.Sprintf("DISTANCE:%d %d\n", len(pFndr.Distance), len(pFndr.Distance[0]))
+	outstrng += fmt.Sprintf("VISTED:%d %d\n", len(pFndr.Visited), len(pFndr.Visited[0]))
 	return outstrng
 }
 func (pFndr *Pathfinding) PrintString() {
@@ -50,6 +60,15 @@ func (igd *IntegerGridManager) DrawPathfinder(screen *ebiten.Image) {
 
 }
 func (igd *IntegerGridManager) RESETPathfinder() {
+
+	igd.PFinder.Visited = make(IntMatrix, len(igd.Imat))
+	igd.PFinder.Distance = make(IntMatrix, len(igd.Imat))
+	igd.PFinder.Distance_To_Start = make(IntMatrix, len(igd.Imat))
+	for i, a := range igd.Imat {
+		igd.PFinder.Visited[i] = make([]int, len(a))
+		igd.PFinder.Distance[i] = make([]int, len(a))
+		igd.PFinder.Distance_To_Start[i] = make([]int, len(a))
+	}
 	if igd.PFinder.IsFullyInitialized {
 		igd.Imat[igd.PFinder.EndPos.Y][igd.PFinder.EndPos.X] = 1
 		igd.Imat[igd.PFinder.StartPos.Y][igd.PFinder.StartPos.X] = 1
@@ -62,7 +81,10 @@ func (igd *IntegerGridManager) RESETPathfinder() {
 		igd.PFinder.EndPos = CoordInts{X: -1, Y: -1}
 		igd.PFinder.StartPos = CoordInts{X: -1, Y: -1}
 		igd.BoardOverlayChange = true
+		//-----------------------------
+
 	}
+
 }
 
 // func (igd *IntegerGridManager) SelectPathfinderStart() {

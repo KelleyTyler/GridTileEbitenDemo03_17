@@ -366,7 +366,8 @@ func (g *Game) Update() error {
 		g.IntGrid.DrawCircle = false
 	}
 	if g.btn20.Update3() {
-		g.IntGrid.PFinder.Cursor.ShowNeighbors = !g.IntGrid.PFinder.Cursor.ShowNeighbors
+		// g.IntGrid.PFinder.Cursor.ShowNeighbors = !g.IntGrid.PFinder.Cursor.ShowNeighbors
+		mypkgs.NodeTest(g.IntGrid.Imat)
 	}
 
 	if !g.TE_Load_Window.IsVisible && !g.TE_Save_Window.IsVisible {
@@ -456,25 +457,33 @@ func (g *Game) Update() error {
 
 	g.TE_Save_Window.Update()
 	g.TE_Load_Window.Update()
+	if g.TE_Save_Window.IsActive && g.TE_Save_Window.IsVisible {
+		if g.TE_Save_Window.SubmitButton.Update3() {
+			if g.TE_Save_Window.IsActive {
+				g.IntGrid.SaveFile(g.TE_Save_Window.TEF.DataStrng)
+				g.TE_Save_Window.IsVisible = false
+			}
 
-	if g.TE_Save_Window.SubmitButton.Update3() {
-		g.IntGrid.SaveFile(g.TE_Save_Window.TEF.DataStrng)
-
-		g.TE_Save_Window.IsVisible = false
+		}
 	}
-	if g.TE_Load_Window.SubmitButton.Update3() {
-		g.IntGrid.LoadFile(g.TE_Load_Window.TEF.DataStrng)
-		g.TE_Load_Window.IsVisible = false
+
+	if g.TE_Load_Window.IsActive && g.TE_Load_Window.IsVisible {
+		if g.TE_Load_Window.SubmitButton.Update3() {
+			if g.TE_Load_Window.IsActive {
+				g.IntGrid.LoadFile(g.TE_Load_Window.TEF.DataStrng)
+				g.TE_Load_Window.IsVisible = false
+			}
+		}
 	}
 	g.gameDebugMsg = fmt.Sprintf("FPS:%8.3f TPS:%8.3f\n", ebiten.ActualFPS(), ebiten.ActualTPS())
-	// g.gameDebugMsg += fmt.Sprintf("%s\n", Settings.ToString())
+	g.gameDebugMsg += fmt.Sprintf("%s\n", Settings.ToString())
 	// //g.gameDebugMsg += fmt.Sprintf("BTN0: %2d btn01:%2d btn02:%2d\n", g.btn00.State, g.btn01.State, g.btn02.State)
-	// g.gameDebugMsg += "------------------------\n"
-	// g.gameDebugMsg += g.IntGrid.PFinder.ToString()
+	g.gameDebugMsg += "------------------------\n"
+	g.gameDebugMsg += g.IntGrid.PFinder.ToString()
 	// //g.gameDebugMsg += fmt.Sprintf("\tIS INIT?:\n\t\tSTART:%t\n\t\tSTOP:%t\n\t\tFULL:%t\n", g.IntGrid.PFinder.IsEndInit, g.IntGrid.PFinder.IsEndInit, g.IntGrid.PFinder.IsFullyInitialized)
 	// // g.gameDebugMsg += fmt.Sprintf("\t")
-	// g.gameDebugMsg += "------------------------\n"
-	// g.gameDebugMsg += fmt.Sprintf("%s\n", g.IntGrid.ToString())
+	g.gameDebugMsg += "------------------------\n"
+	g.gameDebugMsg += fmt.Sprintf("%s\n", g.IntGrid.ToString())
 	return nil
 }
 
