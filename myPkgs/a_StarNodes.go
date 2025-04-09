@@ -211,6 +211,24 @@ func (node *Node) SortBy() {
 
 }
 
+func (node *Node) SetCostToParent() {
+	if node.ParentPTR != nil {
+		xx, yy := node.ParentPTR.Postion.GetDifferenceInInts(node.Postion)
+		node.MCost_toParent = int(math.Abs(float64(xx)) + math.Abs(float64(yy)))
+	} else {
+		node.MCost_toParent = -1
+	}
+}
+func (node *Node) SetCostToParent_Cascading() {
+	if node.ParentPTR != nil {
+		xx, yy := node.ParentPTR.Postion.GetDifferenceInInts(node.Postion)
+		node.MCost_toParent = int(math.Abs(float64(xx)) + math.Abs(float64(yy)))
+		node.ParentPTR.SetCostToParent_Cascading()
+	} else {
+		node.MCost_toParent = -1
+	}
+}
+
 // func (node *Node) Pop() *Node {
 
 // }
@@ -437,10 +455,13 @@ func (node *Node) RemoveFromIndex(index int) {
 	tNodeA.UpdateIndex()
 }
 
-func (node *Node) ThisShit() {
-
+func (n00 *Node) IsOnSamePosition(n01 *Node) bool {
+	return n00.Postion.IsEqualTo(n01.Postion)
 }
 
+// func (n00 *Node) Is_On_SamePointOrCloserToParent(n01 *Node) (bool, int) {
+
+// }
 func (node *Node) ToString() string {
 	a := (node.ParentPTR != nil)
 	b := (node.ChildPTR != nil)

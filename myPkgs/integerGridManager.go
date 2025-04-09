@@ -205,7 +205,13 @@ func (igd *IntegerGridManager) RedrawBoardOverlay() {
 		igd.DrawCursor(igd.BoardOverlayLayer)
 	}
 	if igd.PFinder.showNodes {
-		igd.PFinder.Nodes.ShowOnImat(igd.BoardOverlayLayer, igd.Helper, igd.Imat, igd.GetIMatDisplayOptions([]color.Color{color.Black}, []bool{true, true, true}, []float32{1.0, 1.0, 1.0}), []color.Color{color.RGBA{200, 50, 50, 255}, color.RGBA{50, 200, 50, 255}, color.RGBA{50, 50, 200, 255}, color.RGBA{50, 150, 200, 255}})
+		for _, x := range igd.PFinder.n_OpenList {
+			igd.Imat.DrawAGridTile(igd.BoardOverlayLayer, x.Postion, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{30, 200, 200, 255}, color.RGBA{255, 0, 0, 255}, 1.0, true, true)
+		}
+		for _, Y := range igd.PFinder.n_ClosedList {
+			igd.Imat.DrawAGridTile(igd.BoardOverlayLayer, Y.Postion, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{200, 0, 200, 255}, color.RGBA{255, 0, 0, 255}, 1.0, true, true)
+		}
+		//igd.PFinder.Nodes.ShowOnImat(igd.BoardOverlayLayer, igd.Helper, igd.Imat, igd.GetIMatDisplayOptions([]color.Color{color.Black}, []bool{true, true, true}, []float32{1.0, 1.0, 1.0}), []color.Color{color.RGBA{200, 50, 50, 255}, color.RGBA{50, 200, 50, 255}, color.RGBA{50, 50, 200, 255}, color.RGBA{50, 150, 200, 255}})
 	}
 }
 

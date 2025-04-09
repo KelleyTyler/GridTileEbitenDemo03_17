@@ -37,6 +37,11 @@ type Pathfinding struct {
 	showNodes      bool
 	nodeDemoActive bool
 	nodeDemoNum    int
+
+	n_OpenList    []*Node
+	n_ClosedList  []*Node
+	n_BlockedList []*Node
+	pathComplete  bool
 }
 
 // func (igd *Pathfinding) Tick_DownFalseposlane() {
@@ -58,7 +63,8 @@ func (pFndr *Pathfinding) ToString() string {
 	outstrng += fmt.Sprintf("MOVES:%d\n", len(pFndr.Moves))
 	outstrng += fmt.Sprintf("DISTANCE:%d %d\n", len(pFndr.Distance), len(pFndr.Distance[0]))
 	outstrng += fmt.Sprintf("VISTED:%d %d\n", len(pFndr.Visited), len(pFndr.Visited[0]))
-	outstrng += fmt.Sprintf("IS NODES VISIBLE?:%6t %3d\n", pFndr.showNodes, pFndr.Nodes.GetLength())
+	outstrng += fmt.Sprintf("NODES VISIBLE?:%6t %3d\n", pFndr.showNodes, pFndr.Nodes.GetLength())
+	outstrng += fmt.Sprintf("nOpen:%3d nClosed: %3d nBlocked:%3d\n", len(pFndr.n_OpenList), len(pFndr.n_ClosedList), len(pFndr.n_BlockedList))
 	return outstrng
 }
 func (pFndr *Pathfinding) PrintString() {
@@ -73,6 +79,9 @@ func (igd *IntegerGridManager) RESETPathfinder() {
 	igd.PFinder.Distance = make(IntMatrix, len(igd.Imat))
 	igd.PFinder.Distance_To_Start = make(IntMatrix, len(igd.Imat))
 	igd.PFinder.Nodes = InitNode(CoordInts{2, 2}, CoordInts{2, 2}, CoordInts{6, 6})
+	igd.PFinder.n_OpenList = make([]*Node, 0)
+	igd.PFinder.n_ClosedList = make([]*Node, 0)
+	igd.PFinder.n_BlockedList = make([]*Node, 0)
 	for i, a := range igd.Imat {
 		igd.PFinder.Visited[i] = make([]int, len(a))
 		igd.PFinder.Distance[i] = make([]int, len(a))
@@ -126,79 +135,8 @@ func (igd *IntegerGridManager) PathfinderNodeDemo(controlInput int, isAdding boo
 		case 4:
 		default:
 		}
-		// switch igd.PFinder.nodeDemoNum {
-		// case 0:
-		// 	igd.PFinder.Nodes.PushToBack(CoordInts{2, 2}, CoordInts{3, 8}, CoordInts{6, 6})
-		// 	igd.PFinder.Nodes.PushToBack(CoordInts{2, 2}, CoordInts{4, 8}, CoordInts{6, 6})
-		// 	igd.PFinder.Nodes.PushToBack(CoordInts{2, 2}, CoordInts{5, 8}, CoordInts{6, 6})
-		// 	igd.PFinder.Nodes.PushToBack(CoordInts{2, 2}, CoordInts{6, 8}, CoordInts{6, 6})
-		// 	igd.PFinder.Nodes.PushToBack(CoordInts{2, 2}, CoordInts{7, 8}, CoordInts{6, 6})
-		// 	igd.PFinder.nodeDemoNum++
-
-		// 	igd.BoardOverlayChange = true
-		// case 1:
-		// 	igd.PFinder.Nodes.PushToBack(CoordInts{2, 2}, CoordInts{7, 7}, CoordInts{6, 6})
-		// 	igd.PFinder.Nodes.PushToBack(CoordInts{2, 2}, CoordInts{6, 7}, CoordInts{6, 6})
-		// 	igd.PFinder.Nodes.PushToBack(CoordInts{2, 2}, CoordInts{5, 7}, CoordInts{6, 6})
-		// 	igd.PFinder.Nodes.PushToBack(CoordInts{2, 2}, CoordInts{4, 7}, CoordInts{6, 6})
-
-		// 	igd.PFinder.nodeDemoNum++
-		// 	igd.BoardOverlayChange = true
-		// case 2:
-		// 	igd.PFinder.Nodes.SnakeMove(CoordInts{2, 1})
-		// 	igd.PFinder.Nodes.PushToBack(CoordInts{2, 2}, CoordInts{3, 7}, CoordInts{6, 6})
-		// 	igd.PFinder.Nodes.PushToBack(CoordInts{2, 2}, CoordInts{3, 6}, CoordInts{6, 6})
-		// 	igd.PFinder.nodeDemoNum++
-		// 	igd.BoardOverlayChange = true
-		// case 3:
-		// 	igd.PFinder.Nodes.SnakeMove(CoordInts{1, 1})
-		// 	igd.PFinder.nodeDemoNum++
-		// 	igd.BoardOverlayChange = true
-		// case 4:
-		// 	igd.PFinder.Nodes.SnakeMove(CoordInts{1, 2})
-		// 	igd.PFinder.nodeDemoNum++
-		// 	igd.BoardOverlayChange = true
-		// case 5:
-		// 	igd.PFinder.Nodes.SnakeMove(CoordInts{1, 3})
-		// 	igd.PFinder.nodeDemoNum++
-		// 	igd.BoardOverlayChange = true
-		// case 6:
-		// 	igd.PFinder.Nodes.SnakeMove(CoordInts{1, 4})
-		// 	igd.PFinder.nodeDemoNum++
-		// 	igd.BoardOverlayChange = true
-		// case 7:
-		// 	igd.PFinder.Nodes.SnakeMove(CoordInts{1, 5})
-		// 	igd.PFinder.nodeDemoNum++
-		// 	igd.BoardOverlayChange = true
-		// case 8:
-		// 	igd.PFinder.Nodes.SnakeMove(CoordInts{1, 6})
-		// 	igd.PFinder.nodeDemoNum++
-		// 	igd.BoardOverlayChange = true
-		// case 9:
-		// 	igd.PFinder.Nodes.SnakeMove(CoordInts{1, 7})
-		// 	igd.PFinder.nodeDemoNum++
-		// 	igd.BoardOverlayChange = true
-		// case 10:
-		// 	igd.PFinder.Nodes.SnakeMove(CoordInts{1, 8})
-		// 	igd.PFinder.nodeDemoNum++
-		// 	igd.BoardOverlayChange = true
-		// case 11:
-		// 	igd.PFinder.Nodes.SnakeMove(CoordInts{1, 9})
-		// 	igd.PFinder.nodeDemoNum++
-		// 	igd.BoardOverlayChange = true
-		// }
-
-		//	igd.PFinder.Nodes = InitNode(CoordInts{2, 2}, CoordInts{2, 2}, CoordInts{6, 6})
-
 	}
 }
-
-// func (igd *IntegerGridManager) SelectPathfinderStart() {
-
-// }
-// func (igd *IntegerGridManager) SelectPathfinderEnd() {
-
-// }
 
 func (igd *IntegerGridManager) PathfindingProcess() {
 	//fmt.Printf("\n\nPATHFINDING PROCESS\n\n")
@@ -211,11 +149,6 @@ func (igd *IntegerGridManager) PathfindingProcess() {
 
 	if igd.PFinder.IsFullyInitialized {
 		igd.BoardOverlayChange = true
-		//get vector to the target area;
-		//igd.SLOPEMOVE(2, []int{0, 2, 3, 4})'
-		// igd.PFinder.FalsePos = BresenhamLine(igd.PFinder.StartPos, igd.PFinder.EndPos)
-		// igd.PFinder.HasFalsePos = true
-
 	}
 }
 func (igd *IntegerGridManager) PFindr_DrawSlope() {
@@ -513,27 +446,7 @@ func (igd *IntegerGridManager) MoveCursorAround(Vect CoordInts, walls []int) (in
 	//step1;
 	var valer int
 	tempPos := MoveModifierCoords(tempCurs.Position, Vect.X, 0)
-	//
 
-	// tempPos := MoveModifierCoords(igd.PFinder.Cursor.Position, Vect.X, 0)
-	// if len(igd.PFinder.Nodes) > 0 {
-	// 	if igd.PFinder.Nodes.CountInstances(tempPos) == 0 {
-	// 		igd.PFinder.Nodes = append(igd.PFinder.Nodes, tempPos)
-	// 	}
-	// }
-	// if !IntArrayContains(walls, igd.Imat.GetCoordVal(tempPos)) {
-
-	// 	for i := range Vect.Y {
-	// 		tempPos = MoveModifierCoords(tempCurs.Position, Vect.X, i)
-	// 		fmt.Printf("MOVE: %d - POINT: %d %d Val Here: %d\n", i, tempPos.X, tempPos.Y, igd.Imat.GetCoordVal(tempPos))
-	// 		if IntArrayContains(walls, igd.Imat.GetCoordVal(tempPos)) {
-	// 			valer = i
-
-	// 			break
-	// 		}
-	// 	}
-	// }
-	// for i := range Vect.Y {
 	for i := 0; i < len(igd.Imat); i++ {
 
 		tempPos = MoveModifierCoords(tempCurs.Position, Vect.X, i)

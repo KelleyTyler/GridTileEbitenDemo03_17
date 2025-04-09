@@ -91,7 +91,7 @@ func (g *Game) init() error {
 	g.btn14.InitButton("Btn14", "Reset\nStart/Stop", &g.UIHelp, 0, col0, block2+36, 64, 32, 0, 0)
 	g.btn15.InitButton("Btn15", "Pathfind\nINIT", &g.UIHelp, 0, col1, block2+36, 64, 32, 0, 0)
 	block3 := 314
-	g.btn16.InitButton("Btn16", "Pathfind\nBRESENHAM", &g.UIHelp, 0, col0, block3, 64, 32, 0, 0)
+	g.btn16.InitButton("Btn16", "Pathfind\nAStar", &g.UIHelp, 0, col0, block3, 64, 32, 0, 0) //"Pathfind\nBRESENHAM"
 	g.btn17.InitButton("Btn17", "Pathfind\nBreadth", &g.UIHelp, 0, col1, block3, 64, 32, 0, 0)
 	g.btn18.InitButton("Btn18", "Pathfind\nManhattan", &g.UIHelp, 0, col0, block3+36, 64, 32, 0, 0)
 	g.btn19.InitButton("Btn19", "Draw\nCircle", &g.UIHelp, 2, col1, block3+36, 64, 32, 0, 0)
@@ -347,13 +347,15 @@ func (g *Game) Update() error {
 		g.IntGrid.PathfindingProcess()
 	}
 	if g.btn16.Update3() {
-		g.IntGrid.PFindr_DrawBresenHamLine([]int{0, 2, 3, 4})
+		//g.IntGrid.PFindr_DrawBresenHamLine([]int{0, 2, 3, 4})
+		g.IntGrid.AStarPrep([]int{0, 2, 3, 4, 5, 6})
 		// go g.IntGrid.MoveCursorAround(mypkgs.CoordInts{X: 2, Y: 2}, []int{0, 2, 3, 4})
 	}
 	if g.btn17.Update3() {
 		// g.IntGrid.PFindr_DrawSlope()
 		// g.IntGrid.PFindr_DrawManhattan()
-		g.IntGrid.FindPath(g.numPanel05.CurValue)
+		// g.IntGrid.FindPath(g.numPanel05.CurValue)
+		g.IntGrid.AStarTICK([4]int{1, 2, 2, 1}, []int{0, 2, 3, 4, 5, 6})
 		//mypkgs.FindPath(g.IntGrid.Imat,g.IntGrid.PFinder.StartPos,g.I)
 		//g.IntGrid.PFinder.HasFalsePos = !g.IntGrid.PFinder.HasFalsePos
 	}
