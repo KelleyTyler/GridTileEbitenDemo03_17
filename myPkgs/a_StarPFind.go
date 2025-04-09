@@ -2,6 +2,7 @@ package mypkgs
 
 import (
 	"fmt"
+	"image/color"
 	"math"
 )
 
@@ -35,21 +36,20 @@ func (igd *IntegerGridManager) AStarPrep(WallValues []int) {
 		igd.PFinder.OpenList = make(CoordList, 0)
 		igd.PFinder.ClosedList = make(CoordList, 0)
 		igd.PFinder.BlockedList = make(CoordList, 0)
-
 		// temp := igd.Imat.NodeAr_GetNeighbors4(startNode, MarginValues, igd.PFinder.EndPos)
 		temp := igd.Imat.NodeAr_GetNeighbors4FILTERED(startNode, MarginValues, WallValues, igd.PFinder.EndPos)
 		igd.PFinder.n_OpenList = append(igd.PFinder.n_OpenList, temp...)
 
-		for _, q := range igd.PFinder.n_OpenList {
-			q.MCost_Sum = q.MCost_toEnd + q.MCost_toParent
-			fmt.Printf("%s %d\n", q.ToString(), q.MCost_Sum)
-		}
-		fmt.Printf("--------------------------\n")
+		// for _, q := range igd.PFinder.n_OpenList {
+		// 	q.MCost_Sum = q.MCost_toEnd + q.MCost_toParent
+		// 	fmt.Printf("%s %d\n", q.ToString(), q.MCost_Sum)
+		// }
+		// fmt.Printf("--------------------------\n")
 		NodesAr_Sort_ByF_Value(igd.PFinder.n_OpenList)
-		for _, r := range igd.PFinder.n_OpenList {
-			fmt.Printf("%s %d\n", r.ToString(), r.MCost_Sum)
-		}
-		fmt.Printf("--------------------------\n\n|||||||\n")
+		// for _, r := range igd.PFinder.n_OpenList {
+		// 	fmt.Printf("%s %d\n", r.ToString(), r.MCost_Sum)
+		// }
+		// fmt.Printf("--------------------------\n\n|||||||\n")
 		// igd.PFinder.n_OpenList =
 
 		// temp, _, _ := igd.Imat.GetNeighbors4(igd.PFinder.StartPos, [4]int{1, 2, 2, 1})
@@ -58,27 +58,28 @@ func (igd *IntegerGridManager) AStarPrep(WallValues []int) {
 		igd.PFinder.showNodes = true
 		igd.BoardOverlayChange = true
 
-		// for len(igd.PFinder.n_OpenList) > 0 {
-		// 	igd.AStarTICK(MarginValues, WallValues)
+		for len(igd.PFinder.n_OpenList) > 0 && !igd.PFinder.pathComplete {
+			igd.AStarTICK(MarginValues, WallValues)
 
-		// }
+		}
 	}
 
 }
 
 func (igd *IntegerGridManager) AStarTICK(MarginValues [4]int, WallValues []int) {
 	if len(igd.PFinder.n_OpenList) > 0 {
-		var q *Node
-		fmt.Printf("SIZE OF N_OPENLIST: %d\n", len(igd.PFinder.n_OpenList))
-		for _, j := range igd.PFinder.n_OpenList {
-			fmt.Printf("%s\n", j.ToString())
-		}
+		///fmt.Printf("SIZE OF N_OPENLIST: %d\n", len(igd.PFinder.n_OpenList))
+		// for _, j := range igd.PFinder.n_OpenList {
+		// 	fmt.Printf("%s\n", j.ToString())
+		// }
 		//igd.PFinder.n_OpenList
 		// q, igd.PFinder.n_OpenList = NodesAr_PopFromFront(igd.PFinder.n_OpenList)
 
 		// var tList []*Node
 		// q, _ = NodesAr_PopFromFront(igd.PFinder.n_OpenList)
-		q = igd.PFinder.n_OpenList[0]
+		// var q *Node
+
+		q := igd.PFinder.n_OpenList[0]
 		if len(igd.PFinder.n_OpenList) > 1 {
 			igd.PFinder.n_OpenList = append(igd.PFinder.n_OpenList[:0], igd.PFinder.n_OpenList[0+1:]...)
 
@@ -87,24 +88,25 @@ func (igd *IntegerGridManager) AStarTICK(MarginValues [4]int, WallValues []int) 
 		// igd.Pfinder.n_OpenList
 		if q != nil {
 			q.MCost_Sum = q.MCost_toEnd + q.MCost_toParent
-			// igd.Imat.DrawAGridTile(igd.BoardOverlayLayer, q.Postion, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{200, 200, 0, 255}, color.RGBA{255, 0, 0, 255}, 1.0, true, true)
-			fmt.Printf("For Q is %s  MCOST %d\n", q.ToString(), q.MCost_Sum)
+			igd.Imat.DrawAGridTile(igd.BoardOverlayLayer, q.Postion, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{200, 200, 0, 255}, color.RGBA{255, 0, 0, 255}, 1.0, true, true)
+			//fmt.Printf("For Q is %s  MCOST %d\n", q.ToString(), q.MCost_Sum)
 			if q.Postion.IsEqualTo(igd.PFinder.EndPos) {
-				fmt.Printf("\n\n\n\nEND FOUND!\n\n\n\n\n\n")
+				//fmt.Printf("\n\n\n\nEND FOUND!\n\n\n\n\n\n")
 				igd.BoardOverlayChange = true
+				igd.PFinder.pathComplete = true
 
 			} else {
 				if igd.Imat.IsValid(q.Postion) {
-					fmt.Printf("IS VALID!!\n\n")
+					//fmt.Printf("IS VALID!!\n\n")
 					// _, b2, b3 := igd.Imat.IsCoordValueInArrayOfValues_What_Exists(q.Postion, WallValues)//!IntArrayContains(WallValues, igd.Imat.GetCoordVal(q.Postion))
 					if igd.Imat.GetCoordVal(q.Postion) == 1 {
-						fmt.Printf("NO WALLS!!\n\n")
+						//fmt.Printf("NO WALLS!!\n\n")
 						temp_successors := igd.Imat.NodeAr_GetNeighbors4FILTERED(q, MarginValues, WallValues, igd.PFinder.EndPos)
 						//for loop(for each succesor){
-						fmt.Printf("SUCCESSORS :%d\n", len(temp_successors))
-						for i, suc := range temp_successors {
+						//fmt.Printf("SUCCESSORS :%d\n", len(temp_successors))
+						for _, suc := range temp_successors {
 							suc.MCost_Sum = suc.MCost_toEnd + suc.MCost_toParent
-							fmt.Printf("SUCCESOR: %d %d---\n %s\n", i, suc.MCost_Sum, suc.ToString())
+							//fmt.Printf("SUCCESOR: %d %d---\n %s\n", i, suc.MCost_Sum, suc.ToString())
 							suc.MCost_Sum = suc.MCost_toEnd + suc.MCost_toParent
 							// t, v := NodeAr_Contains_what(igd.PFinder.n_OpenList, suc)
 							// if v && t != nil {
@@ -115,9 +117,9 @@ func (igd *IntegerGridManager) AStarTICK(MarginValues [4]int, WallValues []int) 
 							// }
 							if !NodeAr_Contains(igd.PFinder.n_ClosedList, suc) && !q.Postion.IsEqualTo(suc.Postion) && !suc.Postion.IsEqualTo(igd.PFinder.StartPos) {
 								igd.PFinder.n_OpenList = append(igd.PFinder.n_OpenList, suc)
-								fmt.Printf("ADDE DTO OPENLIST !\n")
+								//fmt.Printf("ADDE DTO OPENLIST !\n")
 							} else {
-								fmt.Printf("NOT ADDED TO OPENLIST !\n")
+								//fmt.Printf("NOT ADDED TO OPENLIST !\n")
 
 							}
 
@@ -133,7 +135,7 @@ func (igd *IntegerGridManager) AStarTICK(MarginValues [4]int, WallValues []int) 
 						for _, prev := range igd.PFinder.n_ClosedList {
 
 							if prev.Postion.IsEqualTo(q.Postion) {
-								fmt.Printf("Q MATCH\nPREV:\t%s\n Q:\t%s\n", prev.ToString(), q.ToString())
+								//fmt.Printf("Q MATCH\nPREV:\t%s\n Q:\t%s\n", prev.ToString(), q.ToString())
 								if q.MCost_Sum < prev.MCost_Sum {
 
 									override_CList = true
@@ -143,7 +145,7 @@ func (igd *IntegerGridManager) AStarTICK(MarginValues [4]int, WallValues []int) 
 							}
 						}
 						if override_CList {
-							fmt.Printf("Q ADDED!%d\n", q.ValueOnCoord)
+							//fmt.Printf("Q ADDED!%d\n", q.ValueOnCoord)
 							igd.PFinder.n_ClosedList = append(igd.PFinder.n_ClosedList, q)
 						} else {
 							// fmt.Printf("Q RETURNS TO THING%d\n", q.ValueOnCoord)
@@ -154,9 +156,9 @@ func (igd *IntegerGridManager) AStarTICK(MarginValues [4]int, WallValues []int) 
 						// igd.PFinder.n_ClosedList = append(igd.PFinder.n_ClosedList, q)
 						//<---PROBLEM!!!! how do we send feedback to the main thing with a dead end?---->perhaps this is about finding the closed list and then using that to narrow down the potential path;
 					} else {
-						// igd.Imat.DrawAGridTile(igd.BoardOverlayLayer, q.Postion, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{255, 0, 0, 255}, color.RGBA{255, 255, 0, 255}, 1.0, true, true)
+						igd.Imat.DrawAGridTile(igd.BoardOverlayLayer, q.Postion, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{255, 0, 0, 255}, color.RGBA{255, 255, 0, 255}, 1.0, true, true)
 
-						fmt.Printf("Q (%d,%d) SLAMS INTO WALL  %d %d \n", q.Postion.X, q.Postion.Y, q.ValueOnCoord, igd.Imat.GetCoordVal(q.Postion))
+						//fmt.Printf("Q (%d,%d) SLAMS INTO WALL  %d %d \n", q.Postion.X, q.Postion.Y, q.ValueOnCoord, igd.Imat.GetCoordVal(q.Postion))
 					}
 				}
 
@@ -166,7 +168,7 @@ func (igd *IntegerGridManager) AStarTICK(MarginValues [4]int, WallValues []int) 
 
 			// 	}
 			// }
-			fmt.Printf("----> END LEN:%3d Closed List:%3d\n\n", len(igd.PFinder.n_OpenList), len(igd.PFinder.n_ClosedList))
+			//fmt.Printf("----> END LEN:%3d Closed List:%3d\n\n", len(igd.PFinder.n_OpenList), len(igd.PFinder.n_ClosedList))
 			NodesAr_Sort_ByF_Value(igd.PFinder.n_OpenList)
 		} else {
 			fmt.Printf("Q IS NILL!\n\n")
@@ -185,7 +187,7 @@ func (igd *IntegerGridManager) AStarTICK(MarginValues [4]int, WallValues []int) 
 	//so I'm supposed to make 8 succesors to q and have said successors point to q as their parent; hence why I was thinking I needed a linked list;
 	// however this isn't particularly useful;
 	// so I'm going to probably need to create an array of like
-	fmt.Printf("-------------------\n")
+	///fmt.Printf("-------------------\n")
 	igd.PFinder.showNodes = true
 	igd.BoardOverlayChange = true
 }

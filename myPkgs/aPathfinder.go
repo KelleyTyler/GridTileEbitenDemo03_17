@@ -82,6 +82,7 @@ func (igd *IntegerGridManager) RESETPathfinder() {
 	igd.PFinder.n_OpenList = make([]*Node, 0)
 	igd.PFinder.n_ClosedList = make([]*Node, 0)
 	igd.PFinder.n_BlockedList = make([]*Node, 0)
+	igd.PFinder.pathComplete = false
 	for i, a := range igd.Imat {
 		igd.PFinder.Visited[i] = make([]int, len(a))
 		igd.PFinder.Distance[i] = make([]int, len(a))

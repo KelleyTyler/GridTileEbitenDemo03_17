@@ -35,10 +35,10 @@ func NodesAr_Sort_ByF_Value(nodel []*Node) {
 			}
 		}
 	} else {
-		fmt.Printf("SMALLER THAN 1\n")
+		//fmt.Printf("SMALLER THAN 1\n")
 	}
 
-	fmt.Printf("END SORT _______\n")
+	//fmt.Printf("END SORT _______\n")
 }
 func NodesAr_Sort_ByF_Value_OLD(nodel []*Node) []*Node {
 	temp := make([]*Node, len(nodel))
@@ -217,21 +217,21 @@ func (nodel *Node_PriorityQueue) Sort_ByF_Value_return2() Node_PriorityQueue {
 	return temp
 }
 
-func (nodel *Node_PriorityQueue) PopFromFront() *Node {
-	tempAr := make(Node_PriorityQueue, len(*nodel))
-	// copy(temp, nodel)
-	var temp *Node
-	if len(*nodel) > 0 {
-		temp = nodel.GetValueAt(0)
-		if len(*nodel) > 1 {
-			for i := 1; i < len(*nodel)-1; i++ {
-				tempAr = append(tempAr, nodel.GetValueAt(i))
-			}
-		}
-	}
-	nodel = &tempAr
-	return temp
-}
+// func (nodel *Node_PriorityQueue) PopFromFront() *Node {
+// 	tempAr := make(Node_PriorityQueue, len(*nodel))
+// 	// copy(temp, nodel)
+// 	var temp *Node
+// 	if len(*nodel) > 0 {
+// 		temp = nodel.GetValueAt(0)
+// 		if len(*nodel) > 1 {
+// 			for i := 1; i < len(*nodel)-1; i++ {
+// 				tempAr = append(tempAr, nodel.GetValueAt(i))
+// 			}
+// 		}
+// 	}
+// 	nodel = &tempAr
+// 	return temp
+// }
 
 func (nodel *Node_PriorityQueue) PopFromFront_return2() (*Node, Node_PriorityQueue) {
 	tempAr := make(Node_PriorityQueue, len(*nodel))
