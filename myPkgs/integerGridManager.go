@@ -180,38 +180,53 @@ func (igd *IntegerGridManager) RedrawBoardFromColors(TileOLColor, BoardOLColor c
 }
 func (igd *IntegerGridManager) RedrawBoardOverlay() {
 	igd.BoardOverlayLayer.Clear()
+	tempOpts := igd.GetIMatDisplayOptions([]color.Color{color.RGBA{255, 0, 0, 255}, color.Black, color.Black}, []bool{true, true, true}, []float32{1.0, 1.0, 1.0})
 	if igd.PFinder.IsStartInit {
 		// igd.Imat.DrawAGridTile(igd.Img, igd.PFinder.StartPos, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{250, 250, 250, 255}, color.Black, 1.0, true, true)
 		// igd.Imat.DrawAGridTile(igd.BoardBuffer, igd.PFinder.StartPos, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{250, 250, 250, 255}, color.Black, 1.0, true, true)
-		igd.Imat.DrawAGridTile(igd.BoardOverlayLayer, igd.PFinder.StartPos, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{250, 250, 250, 255}, color.Black, 1.0, true, true)
+		// igd.Imat.DrawAGridTile(igd.BoardOverlayLayer, igd.PFinder.StartPos, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{250, 250, 250, 255}, color.Black, 1.0, true, true)
+		igd.Imat.DrawAGridTile_With_Lines(igd.BoardOverlayLayer, igd.PFinder.StartPos, color.RGBA{250, 250, 250, 255}, igd.GetIMatDisplayOptions_ptr([]color.Color{color.Black, color.Black, color.Black}, []bool{true, false, true}, []float32{1.0, 1.0, 2.0}))
 
 	}
 	if igd.PFinder.IsEndInit {
 		// igd.Imat.DrawAGridTile(igd.Img, igd.PFinder.EndPos, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{50, 50, 50, 255}, color.Black, 1.0, true, true)
-		igd.Imat.DrawAGridTile(igd.BoardOverlayLayer, igd.PFinder.EndPos, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{50, 50, 50, 255}, color.Black, 1.0, true, true)
-
+		//igd.Imat.DrawAGridTile(igd.BoardOverlayLayer, igd.PFinder.EndPos, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{50, 50, 50, 255}, color.Black, 1.0, true, true)
+		igd.Imat.DrawAGridTile_With_Lines(igd.BoardOverlayLayer, igd.PFinder.EndPos, color.RGBA{50, 50, 50, 255}, igd.GetIMatDisplayOptions_ptr([]color.Color{color.Black, color.Black, color.Black}, []bool{true, false, true}, []float32{1.0, 1.0, 1.0}))
 	}
 	if igd.MazeM.Cords0_IsVisible {
 		// igd.MazeM.Draw_CoordLines_raw(igd.Img, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{150, 200, 150, 255})
-		igd.MazeM.Draw_CoordLines_raw(igd.BoardOverlayLayer, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{150, 200, 150, 255})
+		// igd.MazeM.Draw_CoordLines_raw(igd.BoardOverlayLayer, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{150, 200, 150, 255})
+		igd.MazeM.Draw_CoordLines_Raw(igd.BoardOverlayLayer, color.RGBA{150, 200, 150, 255}, igd.GetIMatDisplayOptions([]color.Color{color.Black, color.Black, color.Black}, []bool{true, true, false}, []float32{1.0, 1.0, 1.0}))
 	}
 	if igd.PFinder.IsFullyInitialized {
 		if igd.PFinder.HasFalsePos {
 			// igd.Imat.DrawListAsTiles(igd.Img, igd.PFinder.FalsePos, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{140, 50, 50, 255}, color.Black, 1.0, true, false)
 			// igd.Imat.DrawListAsTiles(igd.Img, igd.PFinder.Moves, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{140, 50, 50, 255}, color.Black, 1.0, true, false)
-			igd.Imat.DrawListAsTiles(igd.BoardOverlayLayer, igd.PFinder.FalsePos, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{140, 50, 50, 255}, color.Black, 1.0, true, false)
-			igd.Imat.DrawListAsTiles(igd.BoardOverlayLayer, igd.PFinder.Moves, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{140, 50, 50, 255}, color.Black, 1.0, true, false)
+			//igd.Imat.DrawListAsTiles(igd.BoardOverlayLayer, igd.PFinder.FalsePos, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{140, 50, 50, 255}, color.Black, 1.0, true, false)
+			// igd.Imat.DrawListAsTiles(igd.BoardOverlayLayer, igd.PFinder.Moves, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{140, 50, 50, 255}, color.Black, 1.0, true, false)
+			igd.Imat.DrawListAsTiles_withLines(igd.BoardOverlayLayer, igd.PFinder.FalsePos, []color.Color{color.RGBA{140, 25, 25, 255}}, &tempOpts)
+
+			igd.Imat.DrawListAsTiles_withLines(igd.BoardOverlayLayer, igd.PFinder.Moves, []color.Color{color.RGBA{140, 50, 50, 255}}, &tempOpts)
+			//color.RGBA{200, 0, 200, 255}
 		}
+		igd.Imat.DrawNodeListAsTiles_withLines(igd.BoardOverlayLayer, igd.PFinder.n_OpenList, []color.Color{color.RGBA{30, 200, 200, 255}}, &tempOpts)
+		igd.Imat.DrawNodeListAsTiles_withLines(igd.BoardOverlayLayer, igd.PFinder.n_ClosedList, []color.Color{color.RGBA{200, 0, 200, 255}}, &tempOpts)
 		igd.DrawCursor(igd.BoardOverlayLayer)
 	}
 	if igd.PFinder.showNodes {
-		for _, x := range igd.PFinder.n_OpenList {
-			igd.Imat.DrawAGridTile(igd.BoardOverlayLayer, x.Postion, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{30, 200, 200, 255}, color.RGBA{255, 0, 0, 255}, 1.0, true, true)
-		}
-		for _, Y := range igd.PFinder.n_ClosedList {
-			igd.Imat.DrawAGridTile(igd.BoardOverlayLayer, Y.Postion, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{200, 0, 200, 255}, color.RGBA{255, 0, 0, 255}, 1.0, true, true)
-		}
-		//igd.PFinder.Nodes.ShowOnImat(igd.BoardOverlayLayer, igd.Helper, igd.Imat, igd.GetIMatDisplayOptions([]color.Color{color.Black}, []bool{true, true, true}, []float32{1.0, 1.0, 1.0}), []color.Color{color.RGBA{200, 50, 50, 255}, color.RGBA{50, 200, 50, 255}, color.RGBA{50, 50, 200, 255}, color.RGBA{50, 150, 200, 255}})
+
+		// for _, x := range igd.PFinder.n_OpenList {
+		// 	// igd.Imat.DrawAGridTile(igd.BoardOverlayLayer, x.Postion, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{30, 200, 200, 255}, color.RGBA{255, 0, 0, 255}, 1.0, true, true)
+		// 	igd.Imat.DrawAGridTile_With_Lines(igd.BoardOverlayLayer, x.Postion, color.RGBA{30, 200, 200, 255}, &tempOpts)
+		// }
+		// for _, Y := range igd.PFinder.n_ClosedList {
+		// 	// igd.Imat.DrawAGridTile(igd.BoardOverlayLayer, Y.Postion, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{200, 0, 200, 255}, color.RGBA{255, 0, 0, 255}, 1.0, true, true)
+		// 	igd.Imat.DrawAGridTile_With_Lines(igd.BoardOverlayLayer, Y.Postion, color.RGBA{200, 0, 200, 255}, &tempOpts)
+
+		// }
+		// igd.GetIMatDisplayOptions([]color.Color{color.Black}, []bool{true, true, true}, []float32{1.0, 1.0, 1.0})
+		//[]color.Color{color.RGBA{200, 50, 50, 255}, color.RGBA{50, 200, 50, 255}, color.RGBA{50, 50, 200, 255}, color.RGBA{50, 150, 200, 255}}
+		igd.PFinder.Nodes.ShowOnImat(igd.BoardOverlayLayer, igd.Helper, igd.Imat, igd.GetIMatDisplayOptions([]color.Color{color.Black}, []bool{true, true, true}, []float32{1.0, 1.0, 1.0}), []color.Color{color.RGBA{200, 50, 50, 255}, color.RGBA{50, 200, 50, 255}, color.RGBA{50, 50, 200, 255}, color.RGBA{50, 150, 200, 255}})
 	}
 }
 

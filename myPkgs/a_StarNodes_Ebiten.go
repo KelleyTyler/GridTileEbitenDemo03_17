@@ -32,7 +32,7 @@ func (node *Node) showOnImat_Helper(screen *ebiten.Image, ui_helper *UI_Helper, 
 		for tempColorVal > len(colors)-1 {
 			tempColorVal = tempColorVal % (len(colors) - 1)
 		}
-		imat.DrawAGridTile_With_Line(screen, node.Postion, options.BoardMargin.X, options.BoardMargin.Y, options.TileSize.X, options.TileSize.Y, options.TileSpacing.X, options.TileSpacing.Y, colors[tempColorVal], color.Black, color.Black, color.Black, 0.5, 1.0, 0.5, false, true, true, true)
+		imat.DrawAGridTile_With_Lines(screen, node.Postion, colors[tempColorVal], &options)
 		if node.ChildPTR != nil {
 
 			node.ChildPTR.showOnImat_Helper(screen, ui_helper, imat, options, colors, num+1, true)
@@ -44,7 +44,7 @@ func (node *Node) showOnImat_Helper(screen *ebiten.Image, ui_helper *UI_Helper, 
 
 			if node.ChildPTR != nil {
 				// tempColorVal := num
-				imat.DrawAGridTile_With_Line(screen, node.Postion, options.BoardMargin.X, options.BoardMargin.Y, options.TileSize.X, options.TileSize.Y, options.TileSpacing.X, options.TileSpacing.Y, colors[0], color.Black, color.Black, color.Black, 0.5, 1.0, 0.5, false, true, true, true)
+				imat.DrawAGridTile_With_Lines(screen, node.Postion, colors[0], &options)
 
 				node.ChildPTR.showOnImat_Helper(screen, ui_helper, imat, options, colors, num+1, true)
 			}

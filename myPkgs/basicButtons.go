@@ -531,6 +531,7 @@ type TextEntryField struct {
 	maxLines        int
 	counter         int
 	counterMax      int
+	UsesEnter       int
 }
 
 func (tef *TextEntryField) Init(helper *UI_Helper, position, dimensions CoordInts) {
@@ -562,7 +563,9 @@ func (tef *TextEntryField) PreDraw() {
 	t := tef.DataStrng
 	if tef.counter%60 < tef.counterMax {
 		t += "_"
-		tef.counter = 0
+		if tef.counter > 120 {
+			tef.counter = 0
+		}
 	}
 	text.Draw(tef.Img, t, tef.Helper.Btn_Text_Reg, tops)
 
@@ -749,6 +752,9 @@ func (tew *TextEntryWindow) Update() {
 				tew.TEF.DataStrng = ""
 
 			}
+			// if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+
+			// }
 			tew.TEF.Update()
 			if tew.ticker < tew.tickerLim {
 				tew.ticker++
@@ -772,3 +778,16 @@ func (tew *TextEntryWindow) Update() {
 
 	}
 }
+
+type MenuBar struct {
+	MainBackgroundImg *ebiten.Image
+}
+
+// type DropdownMenu struct {
+// 	SurfaceButton   Button
+// 	DropdownButtons []Button
+// 	Label           string
+// 	ButtonMargin    CoordInts
+// 	Panel_OpenSize  CoordInts
+// 	Selection
+// }

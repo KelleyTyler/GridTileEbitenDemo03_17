@@ -237,6 +237,7 @@ func (g *Game) Update() error {
 		} else {
 			g.TE_Save_Window.IsVisible = true
 			g.TE_Save_Window.IsActive = true
+			g.TE_Save_Window.TEF.IsActive = true
 			if g.TE_Load_Window.IsVisible {
 				g.TE_Load_Window.IsVisible = false
 			}
@@ -250,6 +251,7 @@ func (g *Game) Update() error {
 		} else {
 			g.TE_Load_Window.IsVisible = true
 			g.TE_Load_Window.IsActive = true
+			g.TE_Load_Window.TEF.IsActive = true
 			if g.TE_Save_Window.IsVisible {
 				g.TE_Save_Window.IsVisible = false
 
@@ -308,7 +310,7 @@ func (g *Game) Update() error {
 		// g.IntGrid.Process2b(5)
 		// go g.IntGrid.MazeM.MoreAdvancedDecay([]int{1, 2, 3, 4, 5}, [4]int{1, 2, 2, 1})
 		// g.IntGrid.MazeM.PrimLike_Maze_Algorithm00_Looper([]int{1, 2, 3, 4, 5}, []int{-1, 1, 2, 4}, [4]int{1, 2, 2, 1}, true)
-		g.IntGrid.MazeM.PrimeLike_Wrapper(5, []int{1, 2, 3, 4, 5}, []int{-1, 1, 2, 4}, [4]int{1, 2, 2, 1}, true)
+		g.IntGrid.MazeM.PrimeLike_Wrapper(25, []int{1, 2, 3, 4, 5}, []int{-1, 1, 2, 4}, [4]int{1, 2, 2, 1}, true)
 		// go g.IntGrid.MazeM.PrimeLike_Wrapper(5, []int{1, 2, 3, 4, 5}, []int{-1, 1, 2, 4}, [4]int{1, 2, 2, 1}, true)
 
 		g.IntGrid.BoardChange = true

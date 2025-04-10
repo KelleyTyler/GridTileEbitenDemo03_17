@@ -28,14 +28,23 @@ import (
 func (igd *IntegerGridManager) AStarPrep(WallValues []int) {
 	if igd.PFinder.IsFullyInitialized {
 		if !igd.PFinder.Cursor.Position.IsEqualTo(igd.PFinder.StartPos) {
-			igd.PFinder.Cursor.Position = igd.PFinder.StartPos
+			igd.PFinder.StartPos = igd.PFinder.Cursor.Position
 			igd.UpdateCursor()
 		}
 		var MarginValues [4]int = [4]int{1, 2, 2, 1}
 		startNode := InitNode(igd.PFinder.StartPos, igd.PFinder.StartPos, igd.PFinder.EndPos)
-		igd.PFinder.OpenList = make(CoordList, 0)
-		igd.PFinder.ClosedList = make(CoordList, 0)
-		igd.PFinder.BlockedList = make(CoordList, 0)
+		// igd.PFinder.OpenList = make(CoordList, 0)
+		// igd.PFinder.ClosedList = make(CoordList, 0)
+		// igd.PFinder.BlockedList = make(CoordList, 0)
+		if igd.PFinder.pathComplete {
+			igd.PFinder.n_OpenList = make([]*Node, 0)
+			igd.PFinder.n_ClosedList = make([]*Node, 0)
+			igd.PFinder.n_BlockedList = make([]*Node, 0)
+			igd.PFinder.pathComplete = false
+		}
+		// igd.PFinder.n_OpenList = make([]*Node, 0)
+		// igd.PFinder.n_ClosedList = make([]*Node, 0)
+		// igd.PFinder.n_BlockedList = make([]*Node, 0)
 		// temp := igd.Imat.NodeAr_GetNeighbors4(startNode, MarginValues, igd.PFinder.EndPos)
 		temp := igd.Imat.NodeAr_GetNeighbors4FILTERED(startNode, MarginValues, WallValues, igd.PFinder.EndPos)
 		igd.PFinder.n_OpenList = append(igd.PFinder.n_OpenList, temp...)
@@ -62,6 +71,17 @@ func (igd *IntegerGridManager) AStarPrep(WallValues []int) {
 			igd.AStarTICK(MarginValues, WallValues)
 
 		}
+		//TODO: MAKE THIS LEANER AND MEANER AND OVERALL BETTER!
+		//------Ideally it should resemble many of the other similar projects already on github;
+		//---------HOWEVER INTEGRATED WITH INTMATRIX!!!
+		//---- SEARCHES FOR MULTIPLE ROUTES
+		//-------- SEARCHES FOR THE "FASTEST" ROUTE
+		//---- SEARCHES TAKING ADVANTAGE OF DIFFERENT MOVEMENT SPEED CONDITIONS OVER DIFFERENT TILE VALUES (instead of having them all be "wall"
+		//---- Searches that follow different patterns;
+		//---- "Give Up" limits/conditions;
+		//---- Multi-tile creature calculations? IE: I want a Giant who's 2x2 tiles as far as their horizontal footprint is concerned;
+		//--------- REQUIRES MAZE GENERATOR THAT CAN HANDLE 2x2  WIDE HALLWAYS
+		//--------VERTICAL PATHFINDING;
 	}
 
 }
@@ -174,16 +194,6 @@ func (igd *IntegerGridManager) AStarTICK(MarginValues [4]int, WallValues []int) 
 			fmt.Printf("Q IS NILL!\n\n")
 		}
 	}
-	// else {
-	// 	// if !igd.PFinder.pathComplete {
-
-	// 	// }
-	// }
-	// igd.PFinder.n_OpenList = NodesAr_Sort_ByF_Value(igd.PFinder.n_OpenList)
-	// var q CoordInts
-	// igd.PFinder.OpenList = igd.PFinder.OpenList.SortAndRemoveProblems(igd.PFinder.StartPos, igd.PFinder.Cursor.Position, igd.PFinder.EndPos, WallValues, &igd.Imat)
-	// q, igd.PFinder.OpenList = igd.PFinder.OpenList.PopFromFront()
-
 	//so I'm supposed to make 8 succesors to q and have said successors point to q as their parent; hence why I was thinking I needed a linked list;
 	// however this isn't particularly useful;
 	// so I'm going to probably need to create an array of like

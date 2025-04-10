@@ -39,15 +39,21 @@ func (mazeM *MazeMaker) Update() {
 		mazeM.ProcessStarted = false
 	}
 }
-func (mazeM *MazeMaker) Draw_CoordLines_raw(screen *ebiten.Image, offsetX, offsetY, tileW, tileH, gapX, gapY int, clr0 color.Color) {
-	mazeM.Imat.DrawListAsTiles_withLines(screen, mazeM.Cords0, offsetX, offsetY, tileW, tileH, gapX, gapY, clr0, color.Black, color.Black, 2.0, true)
+func (mazeM *MazeMaker) Draw_CoordLines_raw_00(screen *ebiten.Image, offsetX, offsetY, tileW, tileH, gapX, gapY int, clr0 color.Color) {
+	mazeM.Imat.DrawListAsTiles_withLines_Old(screen, mazeM.Cords0, offsetX, offsetY, tileW, tileH, gapX, gapY, clr0, color.Black, color.Black, 2.0, true)
+}
+func (mazeM *MazeMaker) Draw_CoordLines_Raw(screen *ebiten.Image, clr0 color.Color, options IntMatrix_EbtnDisplay_Options) {
+	mazeM.Imat.DrawListAsTiles_withLines(screen, mazeM.Cords0, []color.Color{clr0}, &options)
 }
 func (mazeM *MazeMaker) ClearCords0() {
 	mazeM.Cords0 = make(CoordList, 0)
 }
 
 func (mazeM *MazeMaker) DrawCoordLinesFromIGD(igd IntegerGridManager, clr0 color.Color) {
-	mazeM.Imat.DrawListAsTiles_withLines(igd.Img, mazeM.Cords0, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, clr0, color.Black, color.Black, 2.0, true)
+	Ops := igd.GetIMatDisplayOptions([]color.Color{color.Black, color.Black, color.Black}, []bool{true, true, true}, []float32{1.0, 1.0, 1.0})
+	mazeM.Imat.DrawListAsTiles_withLines(igd.Img, mazeM.Cords0, []color.Color{clr0}, &Ops)
+	//igd.BoardOverlayChange = true
+	// mazeM.Imat.DrawListAsTiles_withLines(igd.Img, mazeM.Cords0, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, clr0, color.Black, color.Black, 2.0, true)
 }
 func (mazeM *MazeMaker) ToString() string {
 	strng := "MAZE MAKER:\n"

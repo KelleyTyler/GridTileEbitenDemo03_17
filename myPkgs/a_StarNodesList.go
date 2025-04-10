@@ -185,39 +185,55 @@ func (imat *IntMatrix) NodeAr_GetNeighbors4FILTERED(Parent *Node, buffer [4]int,
 	return retList
 }
 
-//=====> Have a value
+// //=====> Have a value
 
-type Node_PriorityQueue []*Node
+// type Node_PriorityQueue []*Node
 
-func (nodel Node_PriorityQueue) Sort_ByF_Value() {
-	// temp := make(Node_PriorityQueue, len(*nodel))
-	// copy(temp, *nodel)
-	for range nodel {
-		for i := 1; i < len(nodel)+1; i++ {
-			if nodel[i].MCost_Sum > nodel[i-1].MCost_Sum {
-				tNode := nodel[i]
-				nodel[i] = nodel[i-1]
-				nodel[i-1] = tNode
-			}
-		}
-	}
-}
-func (nodel *Node_PriorityQueue) Sort_ByF_Value_return2() Node_PriorityQueue {
-	temp := make(Node_PriorityQueue, len(*nodel))
-	copy(temp, *nodel)
-	for range temp {
-		for i := 1; i < len(temp)+1; i++ {
-			if temp[i].MCost_Sum > temp[i-1].MCost_Sum {
-				tNode := temp[i]
-				temp[i] = temp[i-1]
-				temp[i-1] = tNode
-			}
-		}
-	}
-	return temp
-}
+// func (nodel Node_PriorityQueue) Sort_ByF_Value() {
+// 	// temp := make(Node_PriorityQueue, len(*nodel))
+// 	// copy(temp, *nodel)
+// 	for range nodel {
+// 		for i := 1; i < len(nodel)+1; i++ {
+// 			if nodel[i].MCost_Sum > nodel[i-1].MCost_Sum {
+// 				tNode := nodel[i]
+// 				nodel[i] = nodel[i-1]
+// 				nodel[i-1] = tNode
+// 			}
+// 		}
+// 	}
+// }
+// func (nodel *Node_PriorityQueue) Sort_ByF_Value_return2() Node_PriorityQueue {
+// 	temp := make(Node_PriorityQueue, len(*nodel))
+// 	copy(temp, *nodel)
+// 	for range temp {
+// 		for i := 1; i < len(temp)+1; i++ {
+// 			if temp[i].MCost_Sum > temp[i-1].MCost_Sum {
+// 				tNode := temp[i]
+// 				temp[i] = temp[i-1]
+// 				temp[i-1] = tNode
+// 			}
+// 		}
+// 	}
+// 	return temp
+// }
 
-// func (nodel *Node_PriorityQueue) PopFromFront() *Node {
+// // func (nodel *Node_PriorityQueue) PopFromFront() *Node {
+// // 	tempAr := make(Node_PriorityQueue, len(*nodel))
+// // 	// copy(temp, nodel)
+// // 	var temp *Node
+// // 	if len(*nodel) > 0 {
+// // 		temp = nodel.GetValueAt(0)
+// // 		if len(*nodel) > 1 {
+// // 			for i := 1; i < len(*nodel)-1; i++ {
+// // 				tempAr = append(tempAr, nodel.GetValueAt(i))
+// // 			}
+// // 		}
+// // 	}
+// // 	nodel = &tempAr
+// // 	return temp
+// // }
+
+// func (nodel *Node_PriorityQueue) PopFromFront_return2() (*Node, Node_PriorityQueue) {
 // 	tempAr := make(Node_PriorityQueue, len(*nodel))
 // 	// copy(temp, nodel)
 // 	var temp *Node
@@ -229,32 +245,16 @@ func (nodel *Node_PriorityQueue) Sort_ByF_Value_return2() Node_PriorityQueue {
 // 			}
 // 		}
 // 	}
-// 	nodel = &tempAr
-// 	return temp
+// 	return temp, tempAr
 // }
 
-func (nodel *Node_PriorityQueue) PopFromFront_return2() (*Node, Node_PriorityQueue) {
-	tempAr := make(Node_PriorityQueue, len(*nodel))
-	// copy(temp, nodel)
-	var temp *Node
-	if len(*nodel) > 0 {
-		temp = nodel.GetValueAt(0)
-		if len(*nodel) > 1 {
-			for i := 1; i < len(*nodel)-1; i++ {
-				tempAr = append(tempAr, nodel.GetValueAt(i))
-			}
-		}
-	}
-	return temp, tempAr
-}
-
-func (nodel *Node_PriorityQueue) UpdateOnDistanceToParent() {
-	for _, n := range *nodel {
-		if n.ParentPTR != nil {
-			n.SetCostToParent()
-		}
-	}
-}
-func (nodel Node_PriorityQueue) GetValueAt(index int) *Node {
-	return nodel[index]
-}
+// func (nodel *Node_PriorityQueue) UpdateOnDistanceToParent() {
+// 	for _, n := range *nodel {
+// 		if n.ParentPTR != nil {
+// 			n.SetCostToParent()
+// 		}
+// 	}
+// }
+// func (nodel Node_PriorityQueue) GetValueAt(index int) *Node {
+// 	return nodel[index]
+// }
