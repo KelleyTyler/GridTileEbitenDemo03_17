@@ -42,6 +42,8 @@ type Pathfinding struct {
 	n_ClosedList  []*Node
 	n_BlockedList []*Node
 	pathComplete  bool
+	SHOW_PATH     bool
+	SHOWBLOCKED   bool
 }
 
 // func (igd *Pathfinding) Tick_DownFalseposlane() {
@@ -83,6 +85,8 @@ func (igd *IntegerGridManager) RESETPathfinder() {
 	igd.PFinder.n_ClosedList = make([]*Node, 0)
 	igd.PFinder.n_BlockedList = make([]*Node, 0)
 	igd.PFinder.pathComplete = false
+	igd.PFinder.SHOWBLOCKED = false
+	igd.PFinder.SHOW_PATH = false
 	for i, a := range igd.Imat {
 		igd.PFinder.Visited[i] = make([]int, len(a))
 		igd.PFinder.Distance[i] = make([]int, len(a))
@@ -351,7 +355,7 @@ func (igd *IntegerGridManager) MoveCursorFreely(dir int, speed int, walls []int)
 		if igd.Imat.IsValid(tempPos) {
 			if !IntArrayContains(walls, igd.Imat.GetCoordVal(tempPos)) {
 				igd.PFinder.Cursor.Position = tempPos
-				igd.UpdateCursor()
+				igd.UpdateCursor(walls)
 
 				return true
 
@@ -369,22 +373,22 @@ func (igd *IntegerGridManager) MoveCursorAroundPath(dir int, speed int, walls []
 		if igd.Imat.IsValid(tempPos) {
 			if !IntArrayContains(walls, igd.Imat.GetCoordVal(tempPos)) {
 				igd.PFinder.Cursor.Position = tempPos
-				igd.UpdateCursor()
+				igd.UpdateCursor(walls)
 
 			}
 		}
 	}
 
 }
-func (igd *IntegerGridManager) UpdateCursor() {
+func (igd *IntegerGridManager) UpdateCursor(walls []int) {
 	temp, temp2, _ := igd.Imat.GetNeighbors8(igd.PFinder.Cursor.Position, [4]int{1, 2, 1, 2})
 	igd.PFinder.Cursor.Neighbor_Values = temp2
 	igd.PFinder.Cursor.Neighbors = [8]CoordInts(temp)
 	temp3, temp4 := igd.PFinder.Cursor.GetCircle(igd.PFinder.Cursor.circRad, igd.Imat)
 	igd.PFinder.Cursor.CirclePoints = temp3
 	igd.PFinder.Cursor.CircleValues = temp4
-
-	igd.FindPath(0)
+	igd.AStarPrep(0, 15, walls)
+	// igd.FindPath(0)
 	// igd.BoardChange = true
 	igd.BoardOverlayChange = true
 }

@@ -21,9 +21,9 @@ func (igd *IntegerGridManager) FindPather_BreadthFirst(start, end CoordInts, num
 		return tempPath, true
 	}
 	for _, d := range directions {
-		newNum := num + 1
+		//newNum := num + 1
 		newPoint := start.AddCoords(d)
-		fmt.Printf("HAH! %d\n\n", newNum)
+		//fmt.Printf("HAH! %d\n\n", newNum)
 
 		if igd.Imat.IsValid(newPoint) {
 

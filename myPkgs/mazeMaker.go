@@ -85,6 +85,7 @@ func (mazeM *MazeMaker) BasicDecayWrapper(Imat IntMatrix, filterFor []int, buffe
 		}
 		if isDone {
 			mazeM.ProcessEnd = true
+			mazeM.Cords0 = make(CoordList, 0)
 			mazeM.ProcessOngoing = false
 		}
 	}

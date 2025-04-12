@@ -49,7 +49,7 @@ type UI_Helper struct {
 	IsInitialized               bool
 	Button_Colors               []color.Color
 	Btn_Sounds                  [][]byte
-	Btn_TextSrc                 *text.GoTextFaceSource
+	Btn_TextSrc                 []*text.GoTextFaceSource
 	Btn_Text_Mono, Btn_Text_Reg text.Face
 	// BtnImgs                     []ebiten.Image
 	SoundSys *AudioThing
@@ -60,24 +60,27 @@ type UI_Helper struct {
 func (ui_Helper *UI_Helper) Init_Default(sound *AudioThing) error {
 	ui_Helper.Button_Colors = []color.Color{color.RGBA{75, 150, 75, 255}, color.RGBA{120, 220, 75, 255}, color.RGBA{140, 240, 100, 255},
 		color.RGBA{150, 75, 75, 255}, color.RGBA{220, 120, 75, 255}, color.RGBA{240, 140, 90, 255}}
-
+	ui_Helper.Btn_TextSrc = make([]*text.GoTextFaceSource, 0)
 	ui_Helper.IsInitialized = true
 	var err error
-	ui_Helper.Btn_TextSrc, err = text.NewGoTextFaceSource(bytes.NewReader(gomono.TTF))
+	var tempTextSrc *text.GoTextFaceSource
+	tempTextSrc, err = text.NewGoTextFaceSource(bytes.NewReader(gomono.TTF))
 	if err != nil {
 		log.Fatal("err: ", err)
 	}
+	ui_Helper.Btn_TextSrc = append(ui_Helper.Btn_TextSrc, tempTextSrc)
 	ui_Helper.Btn_Text_Mono = &text.GoTextFace{
-		Source: ui_Helper.Btn_TextSrc,
+		Source: ui_Helper.Btn_TextSrc[0],
 		Size:   20,
 	}
-	ui_Helper.Btn_TextSrc, err = text.NewGoTextFaceSource(bytes.NewReader(goregular.TTF))
+	tempTextSrc, err = text.NewGoTextFaceSource(bytes.NewReader(goregular.TTF))
 	if err != nil {
 		log.Fatal("err: ", err)
 	}
+	ui_Helper.Btn_TextSrc = append(ui_Helper.Btn_TextSrc, tempTextSrc)
 	ui_Helper.Btn_Text_Reg = &text.GoTextFace{
-		Source: ui_Helper.Btn_TextSrc,
-		Size:   20,
+		Source: ui_Helper.Btn_TextSrc[1],
+		Size:   10,
 	}
 
 	ui_Helper.SoundSys = sound
@@ -114,14 +117,13 @@ func IsMouseOverPos(adj_x, adj_y int, position, size CoordInts) bool {
 		return false
 	}
 }
-
-type General_UI_Interface interface {
-	Init(helper *UI_Helper, position, dimensions CoordInts)
-	Update()
-	UpdateAdj(parentPos CoordInts)
-	Draw(screen *ebiten.Image)
-	ToString() string
-	GetType() string
+func (ui_Helper *UI_Helper) GetTextFace(textnum, size int) *text.Face {
+	var textOut text.Face
+	textOut = &text.GoTextFace{
+		Source: ui_Helper.Btn_TextSrc[textnum],
+		Size:   float64(size),
+	}
+	return &textOut
 }
 
 type Button struct {
@@ -137,21 +139,38 @@ type Button struct {
 	IsEnabled bool //not to be confused with active; this is
 	isHovered bool
 	IsToggled bool
-
+	IsVisible bool
+	// IsInit    uint8
 	// PointingBool *bool
 
 	Helper *UI_Helper
 }
 
+func (btn *Button) Draw(screen *ebiten.Image) {
+	if btn.IsVisible {
+		if btn.isHovered {
+			btn.DrawButton(screen)
+		}
+		// else if btn.IsInit < 4 {
+		// 	btn.DrawButton(screen)
+		// 	btn.IsInit++
+		// 	fmt.Printf("%s IS INITED SIVIBLE %t; INITED: %d \n", btn.Name, btn.IsVisible, btn.IsInit)
+
+		// }
+
+	}
+}
 func (btn *Button) InitButton(name, label string, uiHelpr *UI_Helper, bType int, Pos_X, Pos_Y, BtnWidth, BtnHeight, OffsetX, OffsetY int) {
 	btn.Name, btn.Label = name, label
 	btn.Offset.X, btn.Offset.Y, btn.Size.X, btn.Size.Y = OffsetX, OffsetY, BtnWidth, BtnHeight
 	btn.Coords.X, btn.Coords.Y = Pos_X, Pos_Y
 	btn.IsEnabled = true
 	btn.IsToggled = false
-	btn.isHovered = false
+	btn.isHovered = true
 	btn.Helper = uiHelpr
 	btn.BType = bType
+	// btn.IsInit = 0//
+	btn.IsVisible = true
 	// btn.Color = []color.Color{color.RGBA{75, 150, 75, 255}, color.RGBA{120, 220, 75, 255}, color.RGBA{140, 240, 100, 255},
 	// color.RGBA{150, 75, 75, 255}, color.RGBA{220, 120, 75, 255}, color.RGBA{240, 140, 90, 255}}
 	btn.Color = btn.Helper.Button_Colors
@@ -218,59 +237,6 @@ func (btn *Button) Update3() bool { //no clue if this works;
 		}
 	}
 }
-func (btn *Button) Update(Raw_Mouse_X, Raw_Mouse_Y int, isTriggered bool) {
-	// Raw_Mouse_X, Raw_Mouse_Y := ebiten.CursorPosition()
-	if (Raw_Mouse_X > btn.Coords.X && Raw_Mouse_X < btn.Coords.X+btn.Size.X) && (Raw_Mouse_Y > btn.Coords.Y && Raw_Mouse_Y < btn.Coords.Y+btn.Size.Y) {
-		if isTriggered {
-
-			if btn.BType == 2 {
-				btn.IsToggled = !btn.IsToggled
-				//fmt.Printf("CLICK ON\n")
-				//btn.IsEnabled = !btn.IsEnabled
-			} else {
-				btn.State = 2
-				// btn.IsToggled = true
-				//fmt.Printf("CLICK ON_NO %dx\n", btn.BType)
-			}
-		} else {
-			// if btn.BType != 3 && btn.IsToggled {
-			// 	fmt.Printf("CLICK OFF\n")
-			// 	btn.IsToggled = false
-			// }
-			btn.isHovered = true
-			btn.State = 1
-		}
-	} else {
-		btn.State = 0
-	}
-
-}
-
-func (btn *Button) InitButton_deprecated(name, label string, bType int, Pos_X, Pos_Y, BtnWidth, BtnHeight, OffsetX, OffsetY int) {
-	btn.Name, btn.Label = name, label
-	btn.Offset.X, btn.Offset.Y, btn.Size.X, btn.Size.Y = OffsetX, OffsetY, BtnWidth, BtnHeight
-	btn.Coords.X, btn.Coords.Y = Pos_X, Pos_Y
-	btn.IsEnabled = true
-	btn.IsToggled = false
-	btn.isHovered = false
-	btn.BType = bType
-	btn.Color = []color.Color{color.RGBA{75, 150, 75, 255}, color.RGBA{120, 220, 75, 255}, color.RGBA{140, 240, 100, 255},
-		color.RGBA{150, 75, 75, 255}, color.RGBA{220, 120, 75, 255}, color.RGBA{240, 140, 90, 255}}
-}
-func (btn *Button) UpdateTwo() bool {
-	if btn.IsEnabled {
-		if btn.BType == 2 {
-			return btn.IsToggled
-		} else {
-			if btn.State > 1 {
-				return true
-			} else {
-				return false
-			}
-		}
-	}
-	return false
-}
 
 /* Reasoning that this should depend on the state of the button;
  */
@@ -303,30 +269,34 @@ func (btn *Button) ChangeLabel(strng string) {
 	btn.Label = strng
 }
 func (btn *Button) DrawButton(screen *ebiten.Image) {
-
+	//out := fmt.Sprintf("%s %t\n", btn.Label, btn.IsToggled)
+	out := fmt.Sprintf("%s\n", btn.Label)
 	// w := btn.Size.X
 	// h := btn.Size.Y
-	scaler := 2.0
+	scaler := 1.0
 	// var opts ebiten.DrawImageOptions
 	// opts.GeoM.Translate(-float64(w)/2.0, -float64(h)/2.0)
 	// opts.GeoM.Rotate(2 * math.Pi * float64(btn.Angle) / float64(180))
 	// // g.op.GeoM.Translate(float64(w)/2, float64(h)/2)
 	// opts.GeoM.Translate(float64(w)/2, float64(h)/2)
 	// opts.GeoM.Translate(float64(btn.Coords.X)+float64(w)/2, float64(btn.Coords.X)+float64(h)/2)
-	vector.DrawFilledRect(screen, float32(btn.Coords.X), float32(btn.Coords.Y), float32(btn.Size.X), float32(btn.Size.Y), btn.GetColor(), true)
-	vector.StrokeRect(screen, float32(btn.Coords.X), float32(btn.Coords.Y), float32(btn.Size.X), float32(btn.Size.Y), 2.0, color.Black, true)
-	//out := fmt.Sprintf("%s %t\n", btn.Label, btn.IsToggled)
-	out := fmt.Sprintf("%s\n", btn.Label)
+
 	// if btn.PointingBool != nil {
 	// 	out += fmt.Sprintf("%t\n", *btn.PointingBool)
 	// }	btn.Helper.Btn_Text.
-	tops := &text.DrawOptions{}
 
-	tops.GeoM.Translate(float64(btn.Coords.X+4)*scaler, float64(btn.Coords.Y+4)*scaler)
+	vector.DrawFilledRect(screen, float32(btn.Coords.X), float32(btn.Coords.Y), float32(btn.Size.X), float32(btn.Size.Y), btn.GetColor(), true)
+	vector.StrokeRect(screen, float32(btn.Coords.X), float32(btn.Coords.Y), float32(btn.Size.X), float32(btn.Size.Y), 2.0, color.Black, true)
+	tops := &text.DrawOptions{}
+	tops.GeoM.Reset()
+	tops.GeoM.Translate(float64(btn.Coords.X+(btn.Size.X/2))*scaler, float64(btn.Coords.Y+(btn.Size.Y/2)+4)*scaler)
 	tops.GeoM.Scale(1/scaler, 1/scaler)
 	tops.ColorScale.ScaleWithColor(color.White)
-	tops.LineSpacing = float64(20)
-	text.Draw(screen, out, btn.Helper.Btn_Text_Reg, tops)
+	tops.LineSpacing = float64(10)
+	tops.PrimaryAlign = text.AlignCenter
+	tops.SecondaryAlign = text.AlignCenter
+
+	text.Draw(screen, out, *btn.Helper.GetTextFace(0, 10), tops)
 	//ebitenutil.DebugPrintAt(screen, out, btn.Coords.X, btn.Coords.Y)
 	// if sprt.showSimg {
 	// 	screen.DrawImage(sprt.animars.GetCurrFrame(), &g.op)
@@ -336,6 +306,7 @@ func (btn *Button) DrawButton(screen *ebiten.Image) {
 	// screen.DrawImage(&sprt.Simg[sprt.imgArrCurrent], &g.op)
 	// screen.DrawImage(, &opts)
 }
+
 func (btn *Button) DrawButton_adj(screen *ebiten.Image, adj_X, adj_Y int) {
 
 	// w := btn.Size.X
@@ -374,14 +345,18 @@ type TextPanel struct {
 func (txtPnl *TextPanel) Draw(screen *ebiten.Image) {
 	vector.DrawFilledRect(screen, float32(txtPnl.Position.X), float32(txtPnl.Position.Y), float32(txtPnl.Size.X), float32(txtPnl.Size.Y), txtPnl.Color, true)
 	vector.StrokeRect(screen, float32(txtPnl.Position.X), float32(txtPnl.Position.Y), float32(txtPnl.Size.X), float32(txtPnl.Size.Y), 2.0, color.Black, true)
-	scaler := 2.0
+	scaler := 1.0
 	tops := &text.DrawOptions{}
-
-	tops.GeoM.Translate(float64(txtPnl.Position.X+4)*scaler, float64(txtPnl.Position.Y+2)*scaler)
+	tops.GeoM.Reset()
+	tops.GeoM.Translate(float64(txtPnl.Position.X+(txtPnl.Size.X/2))*scaler, float64(txtPnl.Position.Y+(txtPnl.Size.Y/2))*scaler)
 	tops.GeoM.Scale(1/scaler, 1/scaler)
 	tops.ColorScale.ScaleWithColor(color.White)
-	tops.LineSpacing = float64(20)
-	text.Draw(screen, txtPnl.Label, txtPnl.Helper.Btn_Text_Reg, tops)
+	// tops.LineSpacing = float64(20)
+	tops.PrimaryAlign = text.AlignCenter
+	tops.SecondaryAlign = text.AlignCenter
+	// text.Draw(screen, txtPnl.Label, txtPnl.Helper.Btn_Text_Reg, tops)
+	text.Draw(screen, txtPnl.Label, *txtPnl.Helper.GetTextFace(0, 10), tops)
+
 	// ebitenutil.DebugPrintAt(screen, txtPnl.Label, txtPnl.Position.X, txtPnl.Position.Y)
 }
 func (txtPnl *TextPanel) Init(label string, uiHelper *UI_Helper, position, size CoordInts, color color.Color) {
@@ -551,7 +526,8 @@ func (tef *TextEntryField) Init(helper *UI_Helper, position, dimensions CoordInt
 func (tef *TextEntryField) PreDraw() {
 	//fmt.Printf("PREDRAW")
 	tef.Img.Fill(color.RGBA{255, 255, 255, 255})
-	scaler := 1.5 //1.75
+	// scaler := 0.75 //1.75
+	scaler := 1.0
 	tops := &text.DrawOptions{}
 	tops.GeoM.Reset()
 	// tops.GeoM.Translate(float64(tef.Position.X+2)*scaler, float64(tef.Position.Y)*scaler)
@@ -567,7 +543,7 @@ func (tef *TextEntryField) PreDraw() {
 			tef.counter = 0
 		}
 	}
-	text.Draw(tef.Img, t, tef.Helper.Btn_Text_Reg, tops)
+	text.Draw(tef.Img, t, *tef.Helper.GetTextFace(0, 20), tops)
 
 }
 
@@ -713,14 +689,16 @@ func (tew *TextEntryWindow) Draw(screen *ebiten.Image) {
 
 		tew.TEF.Draw(screen)
 
-		scaler := 1.5
+		scaler := 1.0
 		tops := &text.DrawOptions{}
 
 		tops.GeoM.Translate(float64(tew.Position.X+8)*scaler, float64(tew.Position.Y+4)*scaler)
 		tops.GeoM.Scale(1/scaler, 1/scaler)
 		tops.ColorScale.ScaleWithColor(color.White)
-		tops.LineSpacing = float64(20) * scaler
-		text.Draw(screen, tew.WindowName, tew.Helper.Btn_Text_Reg, tops)
+		tops.LineSpacing = float64(10) * scaler
+		// text.Draw(screen, tew.WindowName, tew.Helper.Btn_Text_Reg, tops)
+		text.Draw(screen, tew.WindowName, *tew.Helper.GetTextFace(1, 10), tops)
+
 		if tew.ShowPrompt {
 			scaler = 1.75
 			tops.GeoM.Reset()
@@ -728,7 +706,7 @@ func (tew *TextEntryWindow) Draw(screen *ebiten.Image) {
 			tops.GeoM.Scale(1/scaler, 1/scaler)
 			tops.ColorScale.ScaleWithColor(color.Black)
 			tops.LineSpacing = float64(20) * scaler
-			text.Draw(screen, tew.Prompt, tew.Helper.Btn_Text_Reg, tops)
+			text.Draw(screen, tew.Prompt, *tew.Helper.GetTextFace(1, 10), tops)
 		}
 
 	}
@@ -778,16 +756,3 @@ func (tew *TextEntryWindow) Update() {
 
 	}
 }
-
-type MenuBar struct {
-	MainBackgroundImg *ebiten.Image
-}
-
-// type DropdownMenu struct {
-// 	SurfaceButton   Button
-// 	DropdownButtons []Button
-// 	Label           string
-// 	ButtonMargin    CoordInts
-// 	Panel_OpenSize  CoordInts
-// 	Selection
-// }

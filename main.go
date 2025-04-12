@@ -95,8 +95,8 @@ func (g *Game) init() error {
 	g.btn17.InitButton("Btn17", "Pathfind\nBreadth", &g.UIHelp, 0, col1, block3, 64, 32, 0, 0)
 	g.btn18.InitButton("Btn18", "Pathfind\nManhattan", &g.UIHelp, 0, col0, block3+36, 64, 32, 0, 0)
 	g.btn19.InitButton("Btn19", "Draw\nCircle", &g.UIHelp, 2, col1, block3+36, 64, 32, 0, 0)
-	g.btn20.InitButton("Btn20", "ShowCursr\nneighbors", &g.UIHelp, 0, col0, block3+72, 64, 32, 0, 0)
-	g.btn21.InitButton("Btn21", "AddCirc\ntoMazeGen", &g.UIHelp, 2, col1, block3+72, 64, 32, 0, 0)
+	g.btn20.InitButton("Btn20", "SHOW\nBLOCKED", &g.UIHelp, 0, col0, block3+72, 64, 32, 0, 0)
+	g.btn21.InitButton("Btn21", "SHOW\nPATH", &g.UIHelp, 0, col1, block3+72, 64, 32, 0, 0)
 	block4 := 444
 	g.numPanel00.Init("nums00", "Maze3Param", &g.UIHelp, true, col0, block4, 32, 16, 0, 10, 20, 1)
 	g.numPanel01.Init("nums01", "Maze3Param", &g.UIHelp, true, col1, block4, 32, 16, 0, 6, 20, 1)
@@ -128,31 +128,31 @@ func (g *Game) PreDrawGUI(screen *ebiten.Image) {
 	// if mx > Settings.ScreenResX-200 {
 
 	// }
-	g.btn00.DrawButton(screen)
-	g.btn01.DrawButton(screen)
-	g.btn02.DrawButton(screen)
-	g.btn03.DrawButton(screen)
+	g.btn00.Draw(screen)
+	g.btn01.Draw(screen)
+	g.btn02.Draw(screen)
+	g.btn03.Draw(screen)
 
-	g.btn04.DrawButton(screen)
-	g.btn05.DrawButton(screen)
-	g.btn06.DrawButton(screen)
-	g.btn07.DrawButton(screen)
-	g.btn08.DrawButton(screen)
-	g.btn09.DrawButton(screen)
-	g.btn10.DrawButton(screen)
-	g.btn11.DrawButton(screen)
+	g.btn04.Draw(screen)
+	g.btn05.Draw(screen)
+	g.btn06.Draw(screen)
+	g.btn07.Draw(screen)
+	g.btn08.Draw(screen)
+	g.btn09.Draw(screen)
+	g.btn10.Draw(screen)
+	g.btn11.Draw(screen)
 
-	g.btn12.DrawButton(screen)
-	g.btn13.DrawButton(screen)
-	g.btn14.DrawButton(screen)
-	g.btn15.DrawButton(screen)
-	g.btn16.DrawButton(screen)
+	g.btn12.Draw(screen)
+	g.btn13.Draw(screen)
+	g.btn14.Draw(screen)
+	g.btn15.Draw(screen)
+	g.btn16.Draw(screen)
 
-	g.btn17.DrawButton(screen)
-	g.btn18.DrawButton(screen)
-	g.btn19.DrawButton(screen)
-	g.btn20.DrawButton(screen)
-	g.btn21.DrawButton(screen)
+	g.btn17.Draw(screen)
+	g.btn18.Draw(screen)
+	g.btn19.Draw(screen)
+	g.btn20.Draw(screen)
+	g.btn21.Draw(screen)
 
 	g.numPanel00.Draw(screen)
 	g.numPanel01.Draw(screen)
@@ -298,7 +298,7 @@ func (g *Game) Update() error {
 	}
 	if g.btn06.Update3() {
 		// go g.IntGrid.Process()
-		g.IntGrid.MazeM.BasicDecayProcess([]int{1, 2, 3, 4, 5}, [4]int{5, 6, 6, 5})
+		g.IntGrid.MazeM.BasicDecayProcess([]int{1, 2, 3, 4, 5}, [4]int{3, 4, 4, 3})
 		// go g.IntGrid.MazeM.BasicDecayProcess([]int{1, 2, 3, 4, 5}, [4]int{5, 6, 6, 5})
 
 		g.IntGrid.BoardChange = true
@@ -350,14 +350,16 @@ func (g *Game) Update() error {
 	}
 	if g.btn16.Update3() {
 		//g.IntGrid.PFindr_DrawBresenHamLine([]int{0, 2, 3, 4})
-		g.IntGrid.AStarPrep([]int{0, 2, 3, 4, 5, 6})
+		g.IntGrid.AStarPrep(0, 15, []int{0, 2, 3, 4, 5, 6})
 		// go g.IntGrid.MoveCursorAround(mypkgs.CoordInts{X: 2, Y: 2}, []int{0, 2, 3, 4})
 	}
 	if g.btn17.Update3() {
 		// g.IntGrid.PFindr_DrawSlope()
 		// g.IntGrid.PFindr_DrawManhattan()
 		// g.IntGrid.FindPath(g.numPanel05.CurValue)
-		g.IntGrid.AStarTICK([4]int{1, 2, 2, 1}, []int{0, 2, 3, 4, 5, 6})
+		for range 20 {
+			g.IntGrid.AStarTICK([4]int{1, 2, 2, 1}, []int{0, 2, 3, 4, 5, 6})
+		}
 		//mypkgs.FindPath(g.IntGrid.Imat,g.IntGrid.PFinder.StartPos,g.I)
 		//g.IntGrid.PFinder.HasFalsePos = !g.IntGrid.PFinder.HasFalsePos
 	}
@@ -372,9 +374,17 @@ func (g *Game) Update() error {
 	if g.btn20.Update3() {
 		// g.IntGrid.PFinder.Cursor.ShowNeighbors = !g.IntGrid.PFinder.Cursor.ShowNeighbors
 		// mypkgs.NodeTest(g.IntGrid.Imat)
-		g.IntGrid.PathfinderNodeDemo(10, false)
+		// g.IntGrid.PathfinderNodeDemo(10, false)
+		g.IntGrid.PFinder.SHOWBLOCKED = !g.IntGrid.PFinder.SHOWBLOCKED
+		g.IntGrid.BoardOverlayChange = true
 	}
-
+	if g.btn21.Update3() {
+		// g.IntGrid.PFinder.Cursor.ShowNeighbors = !g.IntGrid.PFinder.Cursor.ShowNeighbors
+		// mypkgs.NodeTest(g.IntGrid.Imat)
+		// g.IntGrid.PathfinderNodeDemo(10, false)
+		g.IntGrid.PFinder.SHOW_PATH = !g.IntGrid.PFinder.SHOW_PATH
+		g.IntGrid.BoardOverlayChange = true
+	}
 	if !g.TE_Load_Window.IsVisible && !g.TE_Save_Window.IsVisible {
 		if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 			// backgroundImg.Fill(color.RGBA{150, 150, 150, 255})

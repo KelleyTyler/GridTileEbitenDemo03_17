@@ -191,12 +191,12 @@ func (igd *IntegerGridManager) RedrawBoardOverlay() {
 	if igd.PFinder.IsEndInit {
 		// igd.Imat.DrawAGridTile(igd.Img, igd.PFinder.EndPos, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{50, 50, 50, 255}, color.Black, 1.0, true, true)
 		//igd.Imat.DrawAGridTile(igd.BoardOverlayLayer, igd.PFinder.EndPos, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{50, 50, 50, 255}, color.Black, 1.0, true, true)
-		igd.Imat.DrawAGridTile_With_Lines(igd.BoardOverlayLayer, igd.PFinder.EndPos, color.RGBA{50, 50, 50, 255}, igd.GetIMatDisplayOptions_ptr([]color.Color{color.Black, color.Black, color.Black}, []bool{true, false, true}, []float32{1.0, 1.0, 1.0}))
+		igd.Imat.DrawAGridTile_With_Lines(igd.BoardOverlayLayer, igd.PFinder.EndPos, color.RGBA{200, 200, 200, 255}, igd.GetIMatDisplayOptions_ptr([]color.Color{color.Black, color.Black, color.Black}, []bool{true, true, true}, []float32{2.0, 2.0, 2.0}))
 	}
 	if igd.MazeM.Cords0_IsVisible {
 		// igd.MazeM.Draw_CoordLines_raw(igd.Img, igd.BoardPosition.X, igd.BoardPosition.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{150, 200, 150, 255})
 		// igd.MazeM.Draw_CoordLines_raw(igd.BoardOverlayLayer, igd.BoardMargin.X, igd.BoardMargin.Y, igd.Tile_Size.X, igd.Tile_Size.Y, igd.Margin.X, igd.Margin.Y, color.RGBA{150, 200, 150, 255})
-		igd.MazeM.Draw_CoordLines_Raw(igd.BoardOverlayLayer, color.RGBA{150, 200, 150, 255}, igd.GetIMatDisplayOptions([]color.Color{color.Black, color.Black, color.Black}, []bool{true, true, false}, []float32{1.0, 1.0, 1.0}))
+		igd.MazeM.Draw_CoordLines_Raw(igd.BoardOverlayLayer, color.RGBA{75, 175, 75, 255}, igd.GetIMatDisplayOptions([]color.Color{color.Black, color.Black, color.Black}, []bool{true, true, false}, []float32{1.0, 1.0, 1.0}))
 	}
 	if igd.PFinder.IsFullyInitialized {
 		if igd.PFinder.HasFalsePos {
@@ -210,7 +210,14 @@ func (igd *IntegerGridManager) RedrawBoardOverlay() {
 			//color.RGBA{200, 0, 200, 255}
 		}
 		igd.Imat.DrawNodeListAsTiles_withLines(igd.BoardOverlayLayer, igd.PFinder.n_OpenList, []color.Color{color.RGBA{30, 200, 200, 255}}, &tempOpts)
-		igd.Imat.DrawNodeListAsTiles_withLines(igd.BoardOverlayLayer, igd.PFinder.n_ClosedList, []color.Color{color.RGBA{200, 0, 200, 255}}, &tempOpts)
+		if igd.PFinder.SHOW_PATH {
+			igd.Imat.DrawNodeListAsTiles_withLines(igd.BoardOverlayLayer, igd.PFinder.n_ClosedList, []color.Color{color.RGBA{200, 0, 200, 255}, color.RGBA{20, 20, 200, 255}, color.RGBA{100, 0, 100, 255}, color.RGBA{154, 0, 154, 255}}, &tempOpts)
+
+		}
+		if igd.PFinder.SHOWBLOCKED {
+			igd.Imat.DrawNodeListAsTiles_withLines(igd.BoardOverlayLayer, igd.PFinder.n_BlockedList, []color.Color{color.RGBA{55, 55, 55, 255}}, &tempOpts)
+		}
+
 		igd.DrawCursor(igd.BoardOverlayLayer)
 	}
 	if igd.PFinder.showNodes {

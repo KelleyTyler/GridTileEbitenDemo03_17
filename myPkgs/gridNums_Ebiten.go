@@ -60,6 +60,18 @@ func (imat IntMatrix) DrawNodeListAsTiles_withLines(screen *ebiten.Image, nodes 
 
 			imat.DrawAGridTile_With_Lines(screen, a.Postion, colr[0], options)
 		}
+	} else if len(colr) > 1 {
+		temp := 0
+		limit := len(colr) - 1
+		for _, a := range nodes {
+			if temp < limit {
+				temp++
+			} else {
+				temp = 0
+			}
+			imat.DrawAGridTile_With_Lines(screen, a.Postion, colr[temp], options)
+
+		}
 	}
 
 }

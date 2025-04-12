@@ -54,7 +54,11 @@ func (iMat IntMatrix) GetDimensions() (int, int) {
 
 func (imat IntMatrix) GetCoordVal(cord CoordInts) int {
 	//fmt.Printf("GET COORD VAL %d %d\n\n", cord.X, cord.Y)
-	return imat[cord.Y][cord.X]
+	if imat.IsValid(cord) {
+		return imat[cord.Y][cord.X]
+	} else {
+		return -1
+	}
 
 }
 
@@ -82,28 +86,28 @@ func (iMat IntMatrix) GetNeighbors4(coordPoint CoordInts, buffer [4]int) (CoordL
 	var outAr [4]int
 	//North
 	outList[0] = CoordInts{coordPoint.X, coordPoint.Y - 1}
-	if coordPoint.Y < buffer[0] {
+	if coordPoint.Y < buffer[0] || !iMat.IsValid(outList[0]) {
 		outAr[0] = -1
 	} else {
 		outAr[0] = iMat.GetCoordVal(outList[0])
 	}
 	//east
 	outList[1] = CoordInts{coordPoint.X + 1, coordPoint.Y}
-	if coordPoint.X > len(iMat[0])-buffer[1] {
+	if (coordPoint.X > len(iMat[0])-buffer[1]) || !iMat.IsValid(outList[1]) {
 		outAr[1] = -1
 	} else {
 		outAr[1] = iMat.GetCoordVal(outList[1])
 	}
 	//south
 	outList[2] = CoordInts{coordPoint.X, coordPoint.Y + 1}
-	if coordPoint.Y > len(iMat)-buffer[2] {
+	if coordPoint.Y > len(iMat)-buffer[2] || !iMat.IsValid(outList[2]) {
 		outAr[2] = -1
 	} else {
 		outAr[2] = iMat.GetCoordVal(outList[2])
 	}
 	//west
 	outList[3] = CoordInts{coordPoint.X - 1, coordPoint.Y}
-	if coordPoint.X < buffer[3] {
+	if coordPoint.X < buffer[3] || !iMat.IsValid(outList[3]) {
 		outAr[3] = -1
 	} else {
 		outAr[3] = iMat.GetCoordVal(outList[3])

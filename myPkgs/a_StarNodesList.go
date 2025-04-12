@@ -116,10 +116,27 @@ func NodesAr_RemoveDuplicates(nodel []*Node) []*Node {
 	nodel = temp
 	return temp
 }
+func NodesAr_RemoveByNode(nodel []*Node, node *Node) []*Node {
+	// temp := make([]*Node, len(nodel))
+	// copy(temp, nodel)
+	tee := 0
+	for i, a := range nodel {
+		if a.Postion.IsEqualTo(node.Postion) {
+			// if node.ParentPTR != a.ParentPTR {
+			// 	temp = append(temp, a)
+			// }
+			tee = i
+
+		}
+	}
+	nodel = append(nodel[:tee], nodel[tee+1:]...)
+	//nodel = temp
+	return nodel
+}
 
 // func
 
-func (imat *IntMatrix) NodeAr_GetNeighbors4(Parent *Node, buffer [4]int, endPoint CoordInts) []*Node {
+func (imat *IntMatrix) NodeAr_GetNeighbors4(Parent *Node, buffer [4]int, startpoint, endPoint CoordInts) []*Node {
 	retList := make([]*Node, 0)
 	templist, _, _ := imat.GetNeighbors4(Parent.Postion, buffer)
 	for _, c := range templist {
@@ -131,7 +148,9 @@ func (imat *IntMatrix) NodeAr_GetNeighbors4(Parent *Node, buffer [4]int, endPoin
 			temp.MCost_toEnd = int(math.Abs(float64(xx)) + math.Abs(float64(yy)))
 			xx, yy = temp.Postion.GetDifferenceInInts(Parent.Postion)
 			temp.MCost_toParent = int(math.Abs(float64(xx)) + math.Abs(float64(yy)))
-			temp.MCost_Sum = temp.MCost_toEnd + temp.MCost_toParent
+			temp.MCost_toStart = temp.Postion.GetOverallManhattanDistance(startpoint)
+
+			temp.MCost_Sum = temp.MCost_toEnd + temp.MCost_toStart
 			if imat.IsValid(temp.Postion) {
 				temp.ValueOnCoord = imat.GetCoordVal(temp.Postion)
 			}
@@ -159,7 +178,7 @@ func NodeAr_Contains_what(nodel []*Node, nod *Node) (*Node, bool) {
 	}
 	return nil, false
 }
-func (imat *IntMatrix) NodeAr_GetNeighbors4FILTERED(Parent *Node, buffer [4]int, WallValues []int, endPoint CoordInts) []*Node {
+func (imat *IntMatrix) NodeAr_GetNeighbors4FILTERED(Parent *Node, buffer [4]int, WallValues []int, startpoint, endPoint CoordInts) []*Node {
 	retList := make([]*Node, 0)
 	templist, _, _ := imat.GetNeighbors4(Parent.Postion, buffer)
 	for _, c := range templist {
@@ -172,6 +191,89 @@ func (imat *IntMatrix) NodeAr_GetNeighbors4FILTERED(Parent *Node, buffer [4]int,
 				temp.MCost_toEnd = int(math.Abs(float64(xx)) + math.Abs(float64(yy)))
 				xx, yy = temp.Postion.GetDifferenceInInts(Parent.Postion)
 				temp.MCost_toParent = int(math.Abs(float64(xx)) + math.Abs(float64(yy)))
+				temp.MCost_Sum = temp.MCost_toEnd + temp.MCost_toParent
+				if imat.IsValid(temp.Postion) {
+					temp.ValueOnCoord = imat.GetCoordVal(temp.Postion)
+				}
+				retList = append(retList, temp)
+			}
+		}
+	}
+
+	// retList = append(retList)
+	return retList
+}
+func (imat *IntMatrix) NodeAr_GetNeighbors4_Filtered_MD(Parent *Node, buffer [4]int, WallValues []int, startpoint, endPoint CoordInts) []*Node {
+	retList := make([]*Node, 0)
+	templist, _, _ := imat.GetNeighbors4(Parent.Postion, buffer)
+	for _, c := range templist {
+		if !c.IsEqualTo(Parent.Postion) {
+			if !imat.IsCoordValueInArrayOfValues(c, WallValues) {
+				temp := InitNode(Parent.Postion, c, endPoint)
+				temp.ParentPTR = Parent
+
+				// xx, yy := temp.Postion.GetDifferenceInInts(endPoint)
+				// temp.MCost_toEnd = int(math.Abs(float64(xx)) + math.Abs(float64(yy)))
+				// xx, yy = temp.Postion.GetDifferenceInInts(Parent.Postion)
+				// temp.MCost_toParent = int(math.Abs(float64(xx)) + math.Abs(float64(yy)))
+				temp.MCost_toStart = temp.Postion.GetDistanceIntTimesTen(startpoint)
+				temp.MCost_toEnd = temp.Postion.GetDistanceIntTimesTen(endPoint)
+				temp.MCost_toParent = temp.Postion.GetDistanceIntTimesTen(Parent.Postion)
+				temp.MCost_Sum = temp.MCost_toEnd + temp.MCost_toStart
+				if imat.IsValid(temp.Postion) {
+					temp.ValueOnCoord = imat.GetCoordVal(temp.Postion)
+				}
+				retList = append(retList, temp)
+			}
+		}
+	}
+
+	// retList = append(retList)
+	return retList
+}
+func (imat *IntMatrix) NodeAr_GetNeighbors8_Filtered_Manhattan(Parent *Node, buffer [4]int, WallValues []int, startpoint, endPoint CoordInts) []*Node {
+	retList := make([]*Node, 0)
+	// templist, _, _ := imat.GetNeighbors4(Parent.Postion, buffer)
+	templist, _, _ := imat.GetNeighbors8(Parent.Postion, buffer)
+	for _, c := range templist {
+		if !c.IsEqualTo(Parent.Postion) {
+			if !imat.IsCoordValueInArrayOfValues(c, WallValues) {
+				temp := InitNode(Parent.Postion, c, endPoint)
+				temp.ParentPTR = Parent
+
+				xx, yy := temp.Postion.GetDifferenceInInts(endPoint)
+				temp.MCost_toEnd = int(math.Abs(float64(xx)) + math.Abs(float64(yy)))
+				xx, yy = temp.Postion.GetDifferenceInInts(Parent.Postion)
+				temp.MCost_toParent = int(math.Abs(float64(xx)) + math.Abs(float64(yy)))
+				// temp.MCost_toStart = temp.Postion.GetDistanceIntTimesTen(startpoint)
+				temp.MCost_toStart = temp.Postion.GetOverallManhattanDistance(startpoint)
+				temp.MCost_Sum = temp.MCost_toEnd + temp.MCost_toParent
+				if imat.IsValid(temp.Postion) {
+					temp.ValueOnCoord = imat.GetCoordVal(temp.Postion)
+				}
+				retList = append(retList, temp)
+			}
+		}
+	}
+
+	// retList = append(retList)
+	return retList
+}
+func (imat *IntMatrix) NodeAr_GetNeighbors8_Filtered_MD(Parent *Node, buffer [4]int, WallValues []int, endPoint CoordInts) []*Node {
+	retList := make([]*Node, 0)
+	// templist, _, _ := imat.GetNeighbors4(Parent.Postion, buffer)
+	templist, _, _ := imat.GetNeighbors8(Parent.Postion, buffer)
+	for _, c := range templist {
+		if !c.IsEqualTo(Parent.Postion) {
+			if !imat.IsCoordValueInArrayOfValues(c, WallValues) {
+				temp := InitNode(Parent.Postion, c, endPoint)
+				temp.ParentPTR = Parent
+
+				temp.MCost_toEnd = temp.Postion.GetDistanceIntTimesTen(endPoint)
+				temp.MCost_toParent = temp.Postion.GetDistanceIntTimesTen(Parent.Postion)
+
+				// temp.MCost_toEnd = temp.Postion.GetOverallManhattanDistance(endPoint)
+				// temp.MCost_toParent = temp.Postion.GetOverallManhattanDistance(Parent.Postion)
 				temp.MCost_Sum = temp.MCost_toEnd + temp.MCost_toParent
 				if imat.IsValid(temp.Postion) {
 					temp.ValueOnCoord = imat.GetCoordVal(temp.Postion)

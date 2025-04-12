@@ -5,6 +5,7 @@ package mypkgs
 */
 import (
 	"fmt"
+	"math"
 )
 
 type CoordInts struct {
@@ -69,11 +70,57 @@ func (coord1 CoordInts) GetDistance(coord2 CoordInts) float64 {
 	if coord1.Y > coord2.Y {
 		x0, y0 = coord1.GetDifferenceInInts(coord2)
 	} else {
-		x0, y0 = coord2.GetDifferenceInInts(coord2)
+		x0, y0 = coord2.GetDifferenceInInts(coord1)
 	}
 	return (float64(y0) / float64(x0))
 }
+func (coord1 CoordInts) GetDistanceInt(coord2 CoordInts) int {
+	//rise over run y2-y1 over x2-x1)
+	var x0, y0 int = -1, -1
 
+	if coord1.Y > coord2.Y {
+		x0, y0 = coord1.GetDifferenceInInts(coord2)
+	} else {
+		x0, y0 = coord2.GetDifferenceInInts(coord1)
+	}
+	if x0 == 0 {
+		return y0
+	} else {
+		return int(float64(y0) / float64(x0))
+	}
+
+}
+func (coord1 CoordInts) GetDistanceIntTimesTen(coord2 CoordInts) int {
+	//rise over run y2-y1 over x2-x1)
+	var x0, y0 int = -1, -1
+
+	if coord1.Y > coord2.Y {
+		x0, y0 = coord1.GetDifferenceInInts(coord2)
+	} else {
+		x0, y0 = coord2.GetDifferenceInInts(coord1)
+	}
+
+	return int(math.Sqrt((math.Pow(float64(y0), 2) + math.Pow(float64(x0), 2))) * 10)
+}
+
+// func (coord1 CoordInts) GetDistanceIntTimesTen(coord2 CoordInts) int {
+// 	//rise over run y2-y1 over x2-x1)
+// 	var x0, y0 int = -1, -1
+
+//		if coord1.Y > coord2.Y {
+//			x0, y0 = coord1.GetDifferenceInInts(coord2)
+//		} else {
+//			x0, y0 = coord2.GetDifferenceInInts(coord1)
+//		}
+//		return int((float64(y0) / float64(x0)) * 100.0)
+//	}
 func (coord1 CoordInts) AddCoords(coord2 CoordInts) CoordInts {
 	return CoordInts{X: coord1.X + coord2.X, Y: coord1.Y + coord2.Y}
 }
+
+func (coord0 CoordInts) GetOverallManhattanDistance(coord1 CoordInts) int {
+	xx, yy := coord0.GetDifferenceInInts(coord1)
+	return int(math.Abs(float64(xx)) + math.Abs(float64(yy))) //this is probably a bad idea or has some weird inaccuracy causing thing that I'm not thinking of but who cares?
+}
+
+// func (coord0 CoordInts) GetSplitManhattanDistance()
